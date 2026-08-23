@@ -1,0 +1,470 @@
+# CreditScoreV4 ML Governance - Master Configuration
+
+project:
+  name: "CreditScoreV4"
+  version: "4.2.1"
+  description: "Production ML Governance Framework for Consumer Lending"
+  team: "ML Engineering"
+  
+environment:
+  current: "${ENVIRONMENT:development}"
+  debug: "${DEBUG:false}"
+  log_level: "${LOG_LEVEL:INFO}"
+
+# Data Sources
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  validation_path: "data/validation"
+  
+  upstream_vendor:
+    name: "credit_data_aggregator"
+    api_url: "${UPSTREAM_VENDOR_API_URL}"
+    api_key: "${UPSTREAM_VENDOR_API_KEY}"
+    timeout_seconds: 30
+    retry_attempts: 3
+    
+  features:
+    target: "delinquent"
+    protected_attributes:
+      - "race"
+      - "gender"
+      - "age_group"
+    
+    numerical:
+      - "credit_history_length"
+      - "debt_to_income_ratio"
+      - "annual_income"
+      - "device_risk_score"
+      - "employment_length"
+      - "num_credit_lines"
+      - "avg_credit_utilization"
+      
+    categorical:
+      - "loan_purpose"
+      - "home_ownership"
+      - "verification_status"
+      - "state"
+      
+    high_cardinality:
+      - "zip_code"
+      
+    derived:
+      - "income_per_dependent"
+      - "credit_utilization_trend"
+
+# Data Quality Gates
+data_quality:
+  great_expectations:
+    suite_name: "creditscorev4_suite"
+    checkpoint_name: "creditscorev4_checkpoint"
+    
+  null_thresholds:
+    global: 0.05        # 5% max NULL rate globally
+    per_feature:
+      device_risk_score: 0.02
+      annual_income: 0.01
+      debt_to_income_ratio: 0.03
+      
+  schema_validation:
+    strict_mode: true
+    allow_extra_columns: false
+    enforce_types: true
+    
+  data_contracts:
+    - name: "ingestion_contract"
+      description: "Validates raw data from upstream vendor"
+      checks:
+        - "expect_table_row_count_to_be_between"
+        - "expect_column_values_to_not_be_null"
+        - "expect_column_values_to_be_between"
+        - "expect_column_values_to_be_in_set"
+        
+    - name: "preprocessing_contract"
+      description: "Validates data after preprocessing"
+      checks:
+        - "expect_no_null_values"
+        - "expect_feature_distributions_stable"
+        - "expect_no_data_leakage"
+
+# Drift Detection
+drift:
+  psi:
+    enabled: true
+    warning_threshold: 0.1
+    critical_threshold: 0.2
+    
+  feature_level:
+    enabled: true
+    features_to_monitor:
+      - "device_risk_score"
+      - "debt_to_income_ratio"
+      - "annual_income"
+      - "credit_history_length"
+      
+  score_level:
+    enabled: true
+    bin_strategy: "quantile"
+    num_bins: 10
+    
+  ks_test:
+    enabled: true
+    alpha: 0.05
+    
+  ad_test:
+    enabled: true
+    alpha: 0.05
+    
+  monitoring_schedule: "0 6 * * *"  # Daily at 6 AM
+
+# Fairness Monitoring
+fairness:
+  metrics:
+    demographic_parity:
+      enabled: true
+      threshold: 0.05  # Max 5pp difference
+      
+    equal_opportunity:
+      enabled: true
+      threshold: 0.05
+      
+    equalized_odds:
+      enabled: true
+      threshold: 0.05
+      
+    disparate_impact:
+      enabled: true
+      threshold: 0.80  # 4/5ths rule
+      
+    calibration:
+      enabled: true
+      threshold: 0.05
+      
+  protected_groups:
+    race:
+      - "White"
+      - "Black"
+      - "Asian"
+      - "Hispanic"
+      - "Other"
+    gender:
+      - "Male"
+      - "Female"
+      - "Non-Binary"
+    age_group:
+      - "18-25"
+      - "26-35"
+      - "36-45"
+      - "46-55"
+      - "55+"
+      
+  shap_bias_attribution:
+    enabled: true
+    top_n_features: 10
+    
+  fairness_audit_schedule: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+
+# Model Training
+model:
+  name: "creditscorev4"
+  type: "xgboost"
+  
+  xgboost:
+    objective: "binary:logistic"
+    eval_metric: "auc"
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 500
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    gamma: 0.1
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    scale_pos_weight: "auto"
+    early_stopping_rounds: 50
+    
+  validation:
+    strategy: "stratified_kfold"
+    n_splits: 5
+    test_size: 0.2
+    
+  hyperparameter_tuning:
+    enabled: true
+    method: "optuna"
+    n_trials: 100
+    timeout_hours: 4
+    
+  baseline_metrics:
+    min_auc: 0.78
+    min_precision: 0.65
+    min_recall: 0.70
+    max_fairness_violation: 0.05
+
+# MLOps Pipeline
+mlops:
+  airflow:
+    dag_id: "creditscorev4_pipeline"
+    schedule_interval: "0 2 * * *"  # Daily at 2 AM
+    catchup: false
+    max_active_runs: 1
+    
+    tasks:
+      - "data_ingestion"
+      - "data_validation"
+      - "preprocessing"
+      - "feature_engineering"
+      - "model_training"
+      - "model_validation"
+      - "drift_check"
+      - "fairness_audit"
+      - "model_registration"
+      - "shadow_deployment"
+      
+  mlflow:
+    experiment_name: "creditscorev4_experiment"
+    tracking_enabled: true
+    autolog_enabled: true
+    
+  model_registry:
+    staging_criteria:
+      - "auc > 0.78"
+      - "no_fairness_violations"
+      - "all_data_quality_passed"
+      
+    production_criteria:
+      - "auc > 0.80"
+      - "psi < 0.1"
+      - "disparate_impact > 0.80"
+      - "shadow_deployment_approved"
+
+# Deployment
+deployment:
+  shadow:
+    enabled: true
+    duration_days: 14
+    traffic_split: 0.0  # 0% production traffic, logs predictions
+    
+  canary:
+    enabled: true
+    stages:
+      - name: "10_percent"
+        traffic_split: 0.10
+        duration_hours: 24
+        success_criteria:
+          - "auc_degradation < 0.02"
+          - "no_sev_incidents"
+          
+      - name: "50_percent"
+        traffic_split: 0.50
+        duration_hours: 48
+        success_criteria:
+          - "auc_degradation < 0.01"
+          - "fairness_metrics_stable"
+          
+      - name: "100_percent"
+        traffic_split: 1.00
+        duration_hours: 72
+        success_criteria:
+          - "auc_degradation < 0.005"
+          - "all_monitoring_green"
+          
+  auto_rollback:
+    enabled: true
+    triggers:
+      - metric: "auc"
+        threshold: 0.76
+        comparison: "less_than"
+        
+      - metric: "disparate_impact"
+        threshold: 0.80
+        comparison: "less_than"
+        
+      - metric: "null_rate"
+        threshold: 0.05
+        comparison: "greater_than"
+        
+      - metric: "psi"
+        threshold: 0.25
+        comparison: "greater_than"
+        
+      - metric: "error_rate"
+        threshold: 0.05
+        comparison: "greater_than"
+
+# Serving API
+serving:
+  framework: "fastapi"
+  host: "0.0.0.0"
+  port: 8080
+  workers: 4
+  
+  batch_inference:
+    enabled: true
+    max_batch_size: 1000
+    timeout_ms: 5000
+    
+  caching:
+    enabled: true
+    ttl_seconds: 300
+    
+  rate_limiting:
+    requests_per_minute: 10000
+    
+  observability:
+    request_logging: true
+    prediction_logging: true
+    latency_histograms: true
+
+# Monitoring & Alerting
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics:
+      - "model_latency_seconds"
+      - "model_predictions_total"
+      - "model_auc_score"
+      - "data_null_rate"
+      - "drift_psi_score"
+      - "fairness_disparate_impact"
+      
+  grafana:
+    enabled: true
+    dashboards:
+      - "model_performance"
+      - "data_quality"
+      - "drift_detection"
+      - "fairness_metrics"
+      - "system_health"
+      
+  alerting:
+    channels:
+      - type: "pagerduty"
+        severity_levels: ["critical", "error"]
+        
+      - type: "slack"
+        severity_levels: ["warning", "critical", "error"]
+        
+      - type: "email"
+        severity_levels: ["info", "warning", "critical", "error"]
+        
+    rules:
+      - name: "auc_degradation"
+        condition: "auc < 0.78"
+        severity: "critical"
+        auto_rollback: true
+        
+      - name: "data_quality_failure"
+        condition: "null_rate > 0.05"
+        severity: "error"
+        auto_rollback: true
+        
+      - name: "drift_detected"
+        condition: "psi > 0.2"
+        severity: "warning"
+        auto_rollback: false
+        
+      - name: "fairness_violation"
+        condition: "disparate_impact < 0.80"
+        severity: "critical"
+        auto_rollback: true
+        
+      - name: "high_latency"
+        condition: "p99_latency > 500ms"
+        severity: "warning"
+        auto_rollback: false
+
+# Incident Response
+incident_response:
+  severity_levels:
+    sev1:
+      description: "Critical - Production outage or severe model degradation"
+      response_time_minutes: 15
+      escalation_enabled: true
+      auto_rollback: true
+      
+    sev2:
+      description: "High - Significant performance degradation or data quality issues"
+      response_time_minutes: 60
+      escalation_enabled: true
+      auto_rollback: true
+      
+    sev3:
+      description: "Medium - Monitoring alerts or minor drift detected"
+      response_time_minutes: 240
+      escalation_enabled: false
+      auto_rollback: false
+      
+    sev4:
+      description: "Low - Informational or planned maintenance"
+      response_time_minutes: 1440
+      escalation_enabled: false
+      auto_rollback: false
+      
+  runbooks:
+    - id: "RB-001"
+      title: "AUC Degradation Response"
+      trigger: "auc < 0.78"
+      steps:
+        - "Check data quality metrics"
+        - "Run drift detection"
+        - "Analyze feature importance shifts"
+        - "Check upstream vendor status"
+        - "Initiate auto-rollback if configured"
+        
+    - id: "RB-002"
+      title: "Data Quality Failure Response"
+      trigger: "null_rate > threshold"
+      steps:
+        - "Identify affected features"
+        - "Check upstream schema changes"
+        - "Run data contract validation"
+        - "Alert data engineering team"
+        - "Initiate auto-rollback if configured"
+        
+    - id: "RB-003"
+      title: "Fairness Violation Response"
+      trigger: "disparate_impact < 0.80"
+      steps:
+        - "Run SHAP bias attribution"
+        - "Identify biased features"
+        - "Check for proxy variables"
+        - "Alert compliance team"
+        - "Initiate auto-rollback if configured"
+
+# Security & Compliance
+security:
+  data_encryption:
+    at_rest: true
+    in_transit: true
+    algorithm: "AES-256"
+    
+  pii_handling:
+    mask_in_logs: true
+    allowed_columns: ["customer_id_hash"]
+    
+  audit_logging:
+    enabled: true
+    retention_days: 2555  # 7 years for regulatory compliance
+    events:
+      - "model_prediction"
+      - "model_deployment"
+      - "data_access"
+      - "configuration_change"
+      
+  compliance:
+    regulations:
+      - "ECOA"
+      - "FCRA"
+      - "Fair Lending"
+      - "GDPR"
+      - "CCPA"
+    
+    fairness_reporting:
+      frequency: "quarterly"
+      required_metrics:
+        - "demographic_parity"
+        - "equal_opportunity"
+        - "disparate_impact"
+        - "calibration_by_group"

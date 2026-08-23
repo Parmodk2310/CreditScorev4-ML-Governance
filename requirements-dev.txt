@@ -1,0 +1,5240 @@
+
+# File 5: src/__init__.py
+init_content = '"""CreditScoreV4 ML Governance Framework"""\n__version__ = "4.2.1"\n'
+
+with open(f"{project_root}/src/__init__.py", "w") as f:
+    f.write(init_content)
+
+# File 6: configs/config.yaml
+config_yaml = '''# CreditScoreV4 ML Governance - Master Configuration
+
+project:
+  name: "CreditScoreV4"
+  version: "4.2.1"
+  description: "Production ML Governance Framework for Consumer Lending"
+  team: "ML Engineering"
+  
+environment:
+  current: "${ENVIRONMENT:development}"
+  debug: "${DEBUG:false}"
+  log_level: "${LOG_LEVEL:INFO}"
+
+# Data Sources
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  validation_path: "data/validation"
+  
+  upstream_vendor:
+    name: "credit_data_aggregator"
+    api_url: "${UPSTREAM_VENDOR_API_URL}"
+    api_key: "${UPSTREAM_VENDOR_API_KEY}"
+    timeout_seconds: 30
+    retry_attempts: 3
+    
+  features:
+    target: "delinquent"
+    protected_attributes:
+      - "race"
+      - "gender"
+      - "age_group"
+    
+    numerical:
+      - "credit_history_length"
+      - "debt_to_income_ratio"
+      - "annual_income"
+      - "device_risk_score"
+      - "employment_length"
+      - "num_credit_lines"
+      - "avg_credit_utilization"
+      
+    categorical:
+      - "loan_purpose"
+      - "home_ownership"
+      - "verification_status"
+      - "state"
+      
+    high_cardinality:
+      - "zip_code"
+      
+    derived:
+      - "income_per_dependent"
+      - "credit_utilization_trend"
+
+# Data Quality Gates
+data_quality:
+  great_expectations:
+    suite_name: "creditscorev4_suite"
+    checkpoint_name: "creditscorev4_checkpoint"
+    
+  null_thresholds:
+    global: 0.05        # 5% max NULL rate globally
+    per_feature:
+      device_risk_score: 0.02
+      annual_income: 0.01
+      debt_to_income_ratio: 0.03
+      
+  schema_validation:
+    strict_mode: true
+    allow_extra_columns: false
+    enforce_types: true
+    
+  data_contracts:
+    - name: "ingestion_contract"
+      description: "Validates raw data from upstream vendor"
+      checks:
+        - "expect_table_row_count_to_be_between"
+        - "expect_column_values_to_not_be_null"
+        - "expect_column_values_to_be_between"
+        - "expect_column_values_to_be_in_set"
+        
+    - name: "preprocessing_contract"
+      description: "Validates data after preprocessing"
+      checks:
+        - "expect_no_null_values"
+        - "expect_feature_distributions_stable"
+        - "expect_no_data_leakage"
+
+# Drift Detection
+drift:
+  psi:
+    enabled: true
+    warning_threshold: 0.1
+    critical_threshold: 0.2
+    
+  feature_level:
+    enabled: true
+    features_to_monitor:
+      - "device_risk_score"
+      - "debt_to_income_ratio"
+      - "annual_income"
+      - "credit_history_length"
+      
+  score_level:
+    enabled: true
+    bin_strategy: "quantile"
+    num_bins: 10
+    
+  ks_test:
+    enabled: true
+    alpha: 0.05
+    
+  ad_test:
+    enabled: true
+    alpha: 0.05
+    
+  monitoring_schedule: "0 6 * * *"  # Daily at 6 AM
+
+# Fairness Monitoring
+fairness:
+  metrics:
+    demographic_parity:
+      enabled: true
+      threshold: 0.05  # Max 5pp difference
+      
+    equal_opportunity:
+      enabled: true
+      threshold: 0.05
+      
+    equalized_odds:
+      enabled: true
+      threshold: 0.05
+      
+    disparate_impact:
+      enabled: true
+      threshold: 0.80  # 4/5ths rule
+      
+    calibration:
+      enabled: true
+      threshold: 0.05
+      
+  protected_groups:
+    race:
+      - "White"
+      - "Black"
+      - "Asian"
+      - "Hispanic"
+      - "Other"
+    gender:
+      - "Male"
+      - "Female"
+      - "Non-Binary"
+    age_group:
+      - "18-25"
+      - "26-35"
+      - "36-45"
+      - "46-55"
+      - "55+"
+      
+  shap_bias_attribution:
+    enabled: true
+    top_n_features: 10
+    
+  fairness_audit_schedule: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+
+# Model Training
+model:
+  name: "creditscorev4"
+  type: "xgboost"
+  
+  xgboost:
+    objective: "binary:logistic"
+    eval_metric: "auc"
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 500
+    subsample: 0.8
+    colsample_bytree: 0.8
+    min_child_weight: 3
+    gamma: 0.1
+    reg_alpha: 0.1
+    reg_lambda: 1.0
+    scale_pos_weight: "auto"
+    early_stopping_rounds: 50
+    
+  validation:
+    strategy: "stratified_kfold"
+    n_splits: 5
+    test_size: 0.2
+    
+  hyperparameter_tuning:
+    enabled: true
+    method: "optuna"
+    n_trials: 100
+    timeout_hours: 4
+    
+  baseline_metrics:
+    min_auc: 0.78
+    min_precision: 0.65
+    min_recall: 0.70
+    max_fairness_violation: 0.05
+
+# MLOps Pipeline
+mlops:
+  airflow:
+    dag_id: "creditscorev4_pipeline"
+    schedule_interval: "0 2 * * *"  # Daily at 2 AM
+    catchup: false
+    max_active_runs: 1
+    
+    tasks:
+      - "data_ingestion"
+      - "data_validation"
+      - "preprocessing"
+      - "feature_engineering"
+      - "model_training"
+      - "model_validation"
+      - "drift_check"
+      - "fairness_audit"
+      - "model_registration"
+      - "shadow_deployment"
+      
+  mlflow:
+    experiment_name: "creditscorev4_experiment"
+    tracking_enabled: true
+    autolog_enabled: true
+    
+  model_registry:
+    staging_criteria:
+      - "auc > 0.78"
+      - "no_fairness_violations"
+      - "all_data_quality_passed"
+      
+    production_criteria:
+      - "auc > 0.80"
+      - "psi < 0.1"
+      - "disparate_impact > 0.80"
+      - "shadow_deployment_approved"
+
+# Deployment
+deployment:
+  shadow:
+    enabled: true
+    duration_days: 14
+    traffic_split: 0.0  # 0% production traffic, logs predictions
+    
+  canary:
+    enabled: true
+    stages:
+      - name: "10_percent"
+        traffic_split: 0.10
+        duration_hours: 24
+        success_criteria:
+          - "auc_degradation < 0.02"
+          - "no_sev_incidents"
+          
+      - name: "50_percent"
+        traffic_split: 0.50
+        duration_hours: 48
+        success_criteria:
+          - "auc_degradation < 0.01"
+          - "fairness_metrics_stable"
+          
+      - name: "100_percent"
+        traffic_split: 1.00
+        duration_hours: 72
+        success_criteria:
+          - "auc_degradation < 0.005"
+          - "all_monitoring_green"
+          
+  auto_rollback:
+    enabled: true
+    triggers:
+      - metric: "auc"
+        threshold: 0.76
+        comparison: "less_than"
+        
+      - metric: "disparate_impact"
+        threshold: 0.80
+        comparison: "less_than"
+        
+      - metric: "null_rate"
+        threshold: 0.05
+        comparison: "greater_than"
+        
+      - metric: "psi"
+        threshold: 0.25
+        comparison: "greater_than"
+        
+      - metric: "error_rate"
+        threshold: 0.05
+        comparison: "greater_than"
+
+# Serving API
+serving:
+  framework: "fastapi"
+  host: "0.0.0.0"
+  port: 8080
+  workers: 4
+  
+  batch_inference:
+    enabled: true
+    max_batch_size: 1000
+    timeout_ms: 5000
+    
+  caching:
+    enabled: true
+    ttl_seconds: 300
+    
+  rate_limiting:
+    requests_per_minute: 10000
+    
+  observability:
+    request_logging: true
+    prediction_logging: true
+    latency_histograms: true
+
+# Monitoring & Alerting
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics:
+      - "model_latency_seconds"
+      - "model_predictions_total"
+      - "model_auc_score"
+      - "data_null_rate"
+      - "drift_psi_score"
+      - "fairness_disparate_impact"
+      
+  grafana:
+    enabled: true
+    dashboards:
+      - "model_performance"
+      - "data_quality"
+      - "drift_detection"
+      - "fairness_metrics"
+      - "system_health"
+      
+  alerting:
+    channels:
+      - type: "pagerduty"
+        severity_levels: ["critical", "error"]
+        
+      - type: "slack"
+        severity_levels: ["warning", "critical", "error"]
+        
+      - type: "email"
+        severity_levels: ["info", "warning", "critical", "error"]
+        
+    rules:
+      - name: "auc_degradation"
+        condition: "auc < 0.78"
+        severity: "critical"
+        auto_rollback: true
+        
+      - name: "data_quality_failure"
+        condition: "null_rate > 0.05"
+        severity: "error"
+        auto_rollback: true
+        
+      - name: "drift_detected"
+        condition: "psi > 0.2"
+        severity: "warning"
+        auto_rollback: false
+        
+      - name: "fairness_violation"
+        condition: "disparate_impact < 0.80"
+        severity: "critical"
+        auto_rollback: true
+        
+      - name: "high_latency"
+        condition: "p99_latency > 500ms"
+        severity: "warning"
+        auto_rollback: false
+
+# Incident Response
+incident_response:
+  severity_levels:
+    sev1:
+      description: "Critical - Production outage or severe model degradation"
+      response_time_minutes: 15
+      escalation_enabled: true
+      auto_rollback: true
+      
+    sev2:
+      description: "High - Significant performance degradation or data quality issues"
+      response_time_minutes: 60
+      escalation_enabled: true
+      auto_rollback: true
+      
+    sev3:
+      description: "Medium - Monitoring alerts or minor drift detected"
+      response_time_minutes: 240
+      escalation_enabled: false
+      auto_rollback: false
+      
+    sev4:
+      description: "Low - Informational or planned maintenance"
+      response_time_minutes: 1440
+      escalation_enabled: false
+      auto_rollback: false
+      
+  runbooks:
+    - id: "RB-001"
+      title: "AUC Degradation Response"
+      trigger: "auc < 0.78"
+      steps:
+        - "Check data quality metrics"
+        - "Run drift detection"
+        - "Analyze feature importance shifts"
+        - "Check upstream vendor status"
+        - "Initiate auto-rollback if configured"
+        
+    - id: "RB-002"
+      title: "Data Quality Failure Response"
+      trigger: "null_rate > threshold"
+      steps:
+        - "Identify affected features"
+        - "Check upstream schema changes"
+        - "Run data contract validation"
+        - "Alert data engineering team"
+        - "Initiate auto-rollback if configured"
+        
+    - id: "RB-003"
+      title: "Fairness Violation Response"
+      trigger: "disparate_impact < 0.80"
+      steps:
+        - "Run SHAP bias attribution"
+        - "Identify biased features"
+        - "Check for proxy variables"
+        - "Alert compliance team"
+        - "Initiate auto-rollback if configured"
+
+# Security & Compliance
+security:
+  data_encryption:
+    at_rest: true
+    in_transit: true
+    algorithm: "AES-256"
+    
+  pii_handling:
+    mask_in_logs: true
+    allowed_columns: ["customer_id_hash"]
+    
+  audit_logging:
+    enabled: true
+    retention_days: 2555  # 7 years for regulatory compliance
+    events:
+      - "model_prediction"
+      - "model_deployment"
+      - "data_access"
+      - "configuration_change"
+      
+  compliance:
+    regulations:
+      - "ECOA"
+      - "FCRA"
+      - "Fair Lending"
+      - "GDPR"
+      - "CCPA"
+    
+    fairness_reporting:
+      frequency: "quarterly"
+      required_metrics:
+        - "demographic_parity"
+        - "equal_opportunity"
+        - "disparate_impact"
+        - "calibration_by_group"
+'''
+
+with open(f"{project_root}/configs/config.yaml", "w") as f:
+    f.write(config_yaml)
+
+print("✅ Config files created")
+
+
+
+# File 7: src/data_ingestion/__init__.py
+with open(f"{project_root}/src/data_ingestion/__init__.py", "w") as f:
+    f.write('"""Data Ingestion Module"""\n')
+
+# File 8: src/data_ingestion/ingestor.py
+ingestor_py = '''"""
+Data Ingestion Module for CreditScoreV4
+Handles upstream vendor API integration, batch processing, and raw data landing.
+"""
+
+import hashlib
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
+import requests
+from loguru import logger
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+
+class VendorAPIClient:
+    """Client for upstream credit data aggregator API with retry logic."""
+    
+    def __init__(
+        self,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
+        timeout: int = 30,
+        max_retries: int = 3,
+    ):
+        self.base_url = base_url or os.getenv("UPSTREAM_VENDOR_API_URL", "")
+        self.api_key = api_key or os.getenv("UPSTREAM_VENDOR_API_KEY", "")
+        self.timeout = timeout
+        
+        self.session = requests.Session()
+        retry_strategy = Retry(
+            total=max_retries,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "POST"],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
+        
+        self.session.headers.update({
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Client-Version": "4.2.1",
+        })
+        
+        logger.info(f"Initialized VendorAPIClient for {self.base_url}")
+    
+    def fetch_batch(
+        self,
+        batch_date: datetime,
+        batch_size: int = 10000,
+        offset: int = 0,
+    ) -> Dict[str, Any]:
+        """Fetch a batch of credit application data from upstream vendor."""
+        endpoint = f"{self.base_url}/v2/applications"
+        
+        params = {
+            "date_from": batch_date.strftime("%Y-%m-%d"),
+            "date_to": batch_date.strftime("%Y-%m-%d"),
+            "limit": batch_size,
+            "offset": offset,
+            "include_features": "all",
+        }
+        
+        try:
+            response = self.session.get(
+                endpoint,
+                params=params,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            
+            data = response.json()
+            logger.info(
+                f"Fetched batch: {len(data.get('applications', []))} records, "
+                f"offset={offset}, has_more={data.get('has_more', False)}"
+            )
+            return data
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch batch from vendor API: {e}")
+            raise VendorAPIError(f"API request failed: {e}") from e
+    
+    def fetch_schema(self) -> Dict[str, Any]:
+        """Fetch current schema from upstream vendor for validation."""
+        endpoint = f"{self.base_url}/v2/schema"
+        
+        try:
+            response = self.session.get(endpoint, timeout=self.timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch schema: {e}")
+            raise VendorAPIError(f"Schema fetch failed: {e}") from e
+
+
+class DataIngestor:
+    """Orchestrates data ingestion from upstream vendor to data lake."""
+    
+    def __init__(
+        self,
+        raw_data_path: str = "data/raw",
+        vendor_client: Optional[VendorAPIClient] = None,
+    ):
+        self.raw_data_path = Path(raw_data_path)
+        self.raw_data_path.mkdir(parents=True, exist_ok=True)
+        self.vendor_client = vendor_client or VendorAPIClient()
+        
+        # Track ingestion metadata
+        self.ingestion_metadata: Dict[str, Any] = {}
+        
+        logger.info(f"Initialized DataIngestor with raw path: {self.raw_data_path}")
+    
+    def ingest_daily_batch(
+        self,
+        ingestion_date: Optional[datetime] = None,
+        batch_size: int = 10000,
+    ) -> str:
+        """
+        Ingest a full day of data from upstream vendor.
+        
+        Returns:
+            Path to the saved parquet file.
+        """
+        ingestion_date = ingestion_date or datetime.now(timezone.utc)
+        date_str = ingestion_date.strftime("%Y-%m-%d")
+        
+        logger.info(f"Starting daily ingestion for {date_str}")
+        
+        all_records: List[Dict[str, Any]] = []
+        offset = 0
+        total_records = 0
+        
+        while True:
+            try:
+                batch = self.vendor_client.fetch_batch(
+                    batch_date=ingestion_date,
+                    batch_size=batch_size,
+                    offset=offset,
+                )
+                
+                records = batch.get("applications", [])
+                if not records:
+                    break
+                
+                all_records.extend(records)
+                total_records += len(records)
+                
+                if not batch.get("has_more", False):
+                    break
+                
+                offset += batch_size
+                
+                # Safety limit
+                if total_records > 1_000_000:
+                    logger.warning("Hit safety limit of 1M records, stopping ingestion")
+                    break
+                    
+            except VendorAPIError:
+                logger.error(f"Failed at offset {offset}, saving partial data")
+                break
+        
+        if not all_records:
+            logger.warning(f"No records found for {date_str}")
+            return ""
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(all_records)
+        
+        # Add ingestion metadata
+        df["_ingestion_timestamp"] = datetime.now(timezone.utc).isoformat()
+        df["_ingestion_date"] = date_str
+        df["_ingestion_version"] = "4.2.1"
+        df["_record_hash"] = df.apply(
+            lambda row: hashlib.sha256(
+                json.dumps(row.to_dict(), default=str, sort_keys=True).encode()
+            ).hexdigest()[:16],
+            axis=1,
+        )
+        
+        # Save to parquet with partitioning
+        output_path = self.raw_data_path / f"date={date_str}"
+        output_path.mkdir(parents=True, exist_ok=True)
+        
+        parquet_file = output_path / f"credit_applications_{date_str}.parquet"
+        df.to_parquet(parquet_file, index=False, compression="snappy")
+        
+        # Save ingestion metadata
+        self.ingestion_metadata = {
+            "date": date_str,
+            "total_records": total_records,
+            "file_path": str(parquet_file),
+            "file_size_mb": parquet_file.stat().st_size / (1024 * 1024),
+            "schema_version": batch.get("schema_version", "unknown"),
+            "vendor_api_version": batch.get("api_version", "unknown"),
+            "ingestion_timestamp": datetime.now(timezone.utc).isoformat(),
+            "null_counts": df.isnull().sum().to_dict(),
+            "column_dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
+        }
+        
+        metadata_path = output_path / f"metadata_{date_str}.json"
+        with open(metadata_path, "w") as f:
+            json.dump(self.ingestion_metadata, f, indent=2, default=str)
+        
+        logger.info(
+            f"Ingestion complete: {total_records} records saved to {parquet_file} "
+            f"({self.ingestion_metadata['file_size_mb']:.2f} MB)"
+        )
+        
+        return str(parquet_file)
+    
+    def get_ingestion_metadata(self) -> Dict[str, Any]:
+        """Return metadata from the most recent ingestion."""
+        return self.ingestion_metadata
+    
+    def load_raw_data(self, date_str: str) -> pd.DataFrame:
+        """Load raw data for a specific date."""
+        parquet_file = self.raw_data_path / f"date={date_str}" / f"credit_applications_{date_str}.parquet"
+        
+        if not parquet_file.exists():
+            raise FileNotFoundError(f"No raw data found for date: {date_str}")
+        
+        return pd.read_parquet(parquet_file)
+
+
+class VendorAPIError(Exception):
+    """Custom exception for vendor API failures."""
+    pass
+
+
+class IngestionMetrics:
+    """Collect and expose ingestion metrics for monitoring."""
+    
+    def __init__(self):
+        self.metrics: Dict[str, Any] = {
+            "total_ingestions": 0,
+            "total_records_ingested": 0,
+            "failed_ingestions": 0,
+            "avg_records_per_ingestion": 0,
+            "last_ingestion_timestamp": None,
+        }
+    
+    def record_ingestion(self, record_count: int, success: bool = True):
+        """Record metrics for a single ingestion run."""
+        self.metrics["total_ingestions"] += 1
+        self.metrics["last_ingestion_timestamp"] = datetime.now(timezone.utc).isoformat()
+        
+        if success:
+            self.metrics["total_records_ingested"] += record_count
+            self.metrics["avg_records_per_ingestion"] = (
+                self.metrics["total_records_ingested"] / self.metrics["total_ingestions"]
+            )
+        else:
+            self.metrics["failed_ingestions"] += 1
+    
+    def get_metrics(self) -> Dict[str, Any]:
+        """Return current metrics."""
+        return self.metrics.copy()
+
+
+if __name__ == "__main__":
+    # Example usage
+    ingestor = DataIngestor()
+    file_path = ingestor.ingest_daily_batch()
+    print(f"Ingested data saved to: {file_path}")
+'''
+
+with open(f"{project_root}/src/data_ingestion/ingestor.py", "w") as f:
+    f.write(ingestor_py)
+
+# File 9: src/data_ingestion/cli.py
+cli_ingestion = '''"""CLI for data ingestion operations."""
+
+import typer
+from datetime import datetime, timezone
+from loguru import logger
+
+from .ingestor import DataIngestor
+
+app = typer.Typer(help="CreditScoreV4 Data Ingestion CLI")
+
+
+@app.command()
+def ingest(
+    date: str = typer.Option(None, help="Date to ingest (YYYY-MM-DD, default: today)"),
+    batch_size: int = typer.Option(10000, help="Batch size per API call"),
+    raw_path: str = typer.Option("data/raw", help="Raw data output path"),
+):
+    """Ingest data from upstream vendor for a specific date."""
+    ingestion_date = datetime.strptime(date, "%Y-%m-%d") if date else datetime.now(timezone.utc)
+    
+    ingestor = DataIngestor(raw_data_path=raw_path)
+    file_path = ingestor.ingest_daily_batch(
+        ingestion_date=ingestion_date,
+        batch_size=batch_size,
+    )
+    
+    if file_path:
+        typer.echo(f"✅ Ingestion complete: {file_path}")
+    else:
+        typer.echo("⚠️ No data ingested")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def backfill(
+    start_date: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
+    end_date: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
+    batch_size: int = typer.Option(10000, help="Batch size per API call"),
+):
+    """Backfill data for a date range."""
+    from_date = datetime.strptime(start_date, "%Y-%m-%d")
+    to_date = datetime.strptime(end_date, "%Y-%m-%d")
+    
+    ingestor = DataIngestor()
+    current = from_date
+    
+    while current <= to_date:
+        try:
+            file_path = ingestor.ingest_daily_batch(
+                ingestion_date=current,
+                batch_size=batch_size,
+            )
+            typer.echo(f"✅ {current.strftime('%Y-%m-%d')}: {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to ingest {current.strftime('%Y-%m-%d')}: {e}")
+            typer.echo(f"❌ {current.strftime('%Y-%m-%d')}: FAILED - {e}")
+        
+        current = current + datetime.timedelta(days=1)
+
+
+if __name__ == "__main__":
+    app()
+'''
+
+with open(f"{project_root}/src/data_ingestion/cli.py", "w") as f:
+    f.write(cli_ingestion)
+
+print("✅ Data Ingestion module created")
+
+
+
+# File 10: src/data_validation/__init__.py
+with open(f"{project_root}/src/data_validation/__init__.py", "w") as f:
+    f.write('"""Data Validation Module"""\n')
+
+# File 11: src/data_validation/great_expectations_suite.py
+ge_suite = '''"""
+Great Expectations Suite for CreditScoreV4 Data Quality Gates.
+Implements the key fix for the 22% → <1% NULL rate issue.
+"""
+
+import json
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import great_expectations as gx
+import pandas as pd
+from great_expectations.core.batch import RuntimeBatchRequest
+from great_expectations.core.expectation_suite import ExpectationSuite
+from great_expectations.expectations.core import (
+    ExpectColumnValuesToBeBetween,
+    ExpectColumnValuesToNotBeNull,
+    ExpectTableRowCountToBeBetween,
+    ExpectColumnValuesToBeInSet,
+    ExpectColumnDistinctValuesToBeInSet,
+    ExpectColumnMeanToBeBetween,
+    ExpectColumnStdToBeBetween,
+    ExpectColumnPairValuesToBeEqual,
+)
+from loguru import logger
+
+
+class CreditScoreV4ValidationSuite:
+    """
+    Comprehensive data validation suite for CreditScoreV4.
+    
+    This suite was designed specifically to prevent the incident where
+    an upstream vendor migration caused a 22% NULL rate in device_risk_score,
+    leading to silent median imputation and approval rate inflation.
+    """
+    
+    SUITE_NAME = "creditscorev4_suite"
+    CHECKPOINT_NAME = "creditscorev4_checkpoint"
+    
+    # NULL thresholds - THE KEY FIX
+    NULL_THRESHOLDS = {
+        "global": 0.05,           # 5% max NULL rate globally
+        "device_risk_score": 0.02,  # Was 22% during incident → now <1%
+        "annual_income": 0.01,
+        "debt_to_income_ratio": 0.03,
+        "credit_history_length": 0.03,
+        "employment_length": 0.05,
+        "num_credit_lines": 0.02,
+        "avg_credit_utilization": 0.03,
+        "loan_purpose": 0.01,
+        "home_ownership": 0.01,
+        "verification_status": 0.01,
+        "state": 0.01,
+        "race": 0.01,
+        "gender": 0.01,
+        "age_group": 0.01,
+        "delinquent": 0.00,  # Target must never be NULL
+    }
+    
+    # Expected ranges for numerical features
+    NUMERICAL_RANGES = {
+        "credit_history_length": {"min": 0, "max": 50},
+        "debt_to_income_ratio": {"min": 0.0, "max": 1.0},
+        "annual_income": {"min": 0, "max": 5000000},
+        "device_risk_score": {"min": 0.0, "max": 1.0},
+        "employment_length": {"min": 0, "max": 50},
+        "num_credit_lines": {"min": 0, "max": 50},
+        "avg_credit_utilization": {"min": 0.0, "max": 1.0},
+    }
+    
+    # Expected categorical values
+    CATEGORICAL_VALUES = {
+        "loan_purpose": ["debt_consolidation", "credit_card", "home_improvement", 
+                         "major_purchase", "small_business", "car", "medical", "moving",
+                         "vacation", "house", "wedding", "renewable_energy", "other"],
+        "home_ownership": ["RENT", "MORTGAGE", "OWN", "ANY", "OTHER", "NONE"],
+        "verification_status": ["Verified", "Source Verified", "Not Verified"],
+        "race": ["White", "Black", "Asian", "Hispanic", "Other", "Native American", 
+                 "Pacific Islander"],
+        "gender": ["Male", "Female", "Non-Binary", "Prefer not to say"],
+        "age_group": ["18-25", "26-35", "36-45", "46-55", "55+"],
+    }
+    
+    def __init__(self, context_root_dir: Optional[str] = None):
+        """
+        Initialize the validation suite.
+        
+        Args:
+            context_root_dir: Path to Great Expectations context directory.
+        """
+        self.context_root_dir = context_root_dir or "great_expectations"
+        
+        try:
+            self.context = gx.get_context(
+                context_root_dir=self.context_root_dir,
+                runtime_environment={"plugins_directory": f"{self.context_root_dir}/plugins"},
+            )
+        except Exception:
+            # Create new context if it doesn't exist
+            self.context = gx.get_context(
+                context_root_dir=self.context_root_dir,
+            )
+        
+        logger.info(f"Initialized Great Expectations context at {self.context_root_dir}")
+    
+    def create_or_update_suite(self) -> ExpectationSuite:
+        """Create or update the CreditScoreV4 expectation suite."""
+        try:
+            suite = self.context.get_expectation_suite(self.SUITE_NAME)
+            logger.info(f"Loaded existing suite: {self.SUITE_NAME}")
+        except Exception:
+            suite = self.context.create_expectation_suite(
+                expectation_suite_name=self.SUITE_NAME,
+                overwrite_existing=True,
+            )
+            logger.info(f"Created new suite: {self.SUITE_NAME}")
+        
+        # Clear existing expectations
+        suite.expectations = []
+        
+        # 1. Table-level expectations
+        suite.add_expectation(
+            ExpectTableRowCountToBeBetween(
+                min_value=1000,
+                max_value=10000000,
+                meta={"description": "Ensure table has reasonable row count"},
+            )
+        )
+        
+        # 2. NULL threshold expectations - THE KEY FIX
+        for column, threshold in self.NULL_THRESHOLDS.items():
+            if threshold == 0.00:
+                # Strict no-NULL for critical columns
+                suite.add_expectation(
+                    ExpectColumnValuesToNotBeNull(
+                        column=column,
+                        mostly=1.0,
+                        meta={
+                            "description": f"Critical column {column} must have no NULLs",
+                            "incident_reference": "INC-2024-001",
+                        },
+                    )
+                )
+            else:
+                suite.add_expectation(
+                    ExpectColumnValuesToNotBeNull(
+                        column=column,
+                        mostly=1.0 - threshold,
+                        meta={
+                            "description": f"Column {column} NULL rate must be below {threshold*100}%",
+                            "threshold": threshold,
+                            "incident_reference": "INC-2024-001",
+                        },
+                    )
+                )
+        
+        # 3. Numerical range expectations
+        for column, ranges in self.NUMERICAL_RANGES.items():
+            suite.add_expectation(
+                ExpectColumnValuesToBeBetween(
+                    column=column,
+                    min_value=ranges["min"],
+                    max_value=ranges["max"],
+                    mostly=0.99,
+                    meta={
+                        "description": f"{column} must be within valid range",
+                        "valid_range": ranges,
+                    },
+                )
+            )
+        
+        # 4. Categorical value expectations
+        for column, values in self.CATEGORICAL_VALUES.items():
+            suite.add_expectation(
+                ExpectColumnDistinctValuesToBeInSet(
+                    column=column,
+                    value_set=values,
+                    meta={
+                        "description": f"{column} must contain only known values",
+                        "allowed_values": values,
+                    },
+                )
+            )
+        
+        # 5. Target variable expectation
+        suite.add_expectation(
+            ExpectColumnValuesToBeInSet(
+                column="delinquent",
+                value_set=[0, 1],
+                meta={"description": "Target must be binary (0 or 1)"},
+            )
+        )
+        
+        # 6. Distribution expectations (for key features)
+        suite.add_expectation(
+            ExpectColumnMeanToBeBetween(
+                column="device_risk_score",
+                min_value=0.20,
+                max_value=0.60,
+                meta={
+                    "description": "device_risk_score mean should be stable",
+                    "incident_reference": "INC-2024-001",
+                    "historical_mean": 0.31,
+                    "incident_mean": 0.44,
+                },
+            )
+        )
+        
+        suite.add_expectation(
+            ExpectColumnStdToBeBetween(
+                column="device_risk_score",
+                min_value=0.10,
+                max_value=0.30,
+                meta={"description": "device_risk_score std should be stable"},
+            )
+        )
+        
+        # Save the suite
+        self.context.save_expectation_suite(suite)
+        logger.info(f"Saved suite with {len(suite.expectations)} expectations")
+        
+        return suite
+    
+    def validate_dataframe(
+        self,
+        df: pd.DataFrame,
+        batch_kwargs: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Validate a pandas DataFrame against the CreditScoreV4 suite.
+        
+        Args:
+            df: DataFrame to validate
+            batch_kwargs: Optional batch configuration
+            
+        Returns:
+            Validation results dictionary
+        """
+        suite = self.create_or_update_suite()
+        
+        # Create batch request
+        batch_request = RuntimeBatchRequest(
+            datasource_name="pandas_datasource",
+            data_asset_name="creditscorev4_batch",
+            runtime_parameters={"batch_data": df},
+            batch_identifiers={
+                "timestamp": pd.Timestamp.now().isoformat(),
+                "row_count": str(len(df)),
+            },
+        )
+        
+        # Create checkpoint
+        checkpoint_config = {
+            "name": self.CHECKPOINT_NAME,
+            "config_version": 1.0,
+            "class_name": "SimpleCheckpoint",
+            "run_name_template": "%Y%m%d-%H%M%S",
+            "validations": [
+                {
+                    "batch_request": batch_request,
+                    "expectation_suite_name": self.SUITE_NAME,
+                }
+            ],
+        }
+        
+        checkpoint = self.context.add_or_update_checkpoint(**checkpoint_config)
+        
+        # Run validation
+        checkpoint_result = checkpoint.run()
+        
+        # Extract results
+        results = self._parse_checkpoint_results(checkpoint_result)
+        
+        logger.info(
+            f"Validation complete: {results['success_rate']:.1%} pass rate, "
+            f"{results['failed_expectations']} failed expectations"
+        )
+        
+        return results
+    
+    def _parse_checkpoint_results(self, checkpoint_result) -> Dict[str, Any]:
+        """Parse checkpoint results into a structured dictionary."""
+        validation_results = checkpoint_result.list_validation_results()
+        
+        if not validation_results:
+            return {
+                "success": False,
+                "success_rate": 0.0,
+                "total_expectations": 0,
+                "failed_expectations": 0,
+                "details": [],
+            }
+        
+        result = validation_results[0]
+        statistics = result.statistics
+        
+        details = []
+        for expectation_result in result.results:
+            expectation = expectation_result.expectation_config
+            result_info = expectation_result.result
+            
+            detail = {
+                "expectation_type": expectation.expectation_type,
+                "column": expectation.kwargs.get("column", "N/A"),
+                "success": expectation_result.success,
+                "kwargs": {k: v for k, v in expectation.kwargs.items() if k != "result_format"},
+            }
+            
+            if not expectation_result.success:
+                detail["unexpected_count"] = result_info.get("unexpected_count", "N/A")
+                detail["unexpected_percent"] = result_info.get("unexpected_percent", "N/A")
+                detail["partial_unexpected_list"] = result_info.get("partial_unexpected_list", [])
+            
+            details.append(detail)
+        
+        return {
+            "success": statistics["success_percent"] == 100.0,
+            "success_rate": statistics["success_percent"] / 100.0,
+            "total_expectations": statistics["evaluated_expectations"],
+            "failed_expectations": statistics["unsuccessful_expectations"],
+            "details": details,
+        }
+    
+    def generate_data_quality_report(self, results: Dict[str, Any]) -> str:
+        """Generate a human-readable data quality report."""
+        lines = [
+            "=" * 60,
+            "CREDITSCOREV4 DATA QUALITY REPORT",
+            "=" * 60,
+            f"Success Rate: {results['success_rate']:.1%}",
+            f"Total Expectations: {results['total_expectations']}",
+            f"Failed Expectations: {results['failed_expectations']}",
+            "-" * 60,
+        ]
+        
+        if results['failed_expectations'] > 0:
+            lines.append("\\n❌ FAILED EXPECTATIONS:")
+            for detail in results['details']:
+                if not detail['success']:
+                    lines.append(f"  • {detail['expectation_type']} on '{detail['column']}'")
+                    if 'unexpected_percent' in detail:
+                        lines.append(f"    Unexpected: {detail['unexpected_percent']:.2f}%")
+        
+        lines.append("\\n✅ PASSED EXPECTATIONS:")
+        passed = [d for d in results['details'] if d['success']]
+        for detail in passed[:5]:  # Show first 5
+            lines.append(f"  • {detail['expectation_type']} on '{detail['column']}'")
+        if len(passed) > 5:
+            lines.append(f"  ... and {len(passed) - 5} more")
+        
+        lines.append("=" * 60)
+        
+        return "\\n".join(lines)
+
+
+class NullRateMonitor:
+    """
+    Dedicated monitor for NULL rate tracking.
+    This was the primary detection mechanism that would have caught the incident.
+    """
+    
+    def __init__(self, thresholds: Optional[Dict[str, float]] = None):
+        self.thresholds = thresholds or CreditScoreV4ValidationSuite.NULL_THRESHOLDS
+        self.violations: List[Dict[str, Any]] = []
+    
+    def check_null_rates(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Check NULL rates for all columns against thresholds.
+        
+        Returns:
+            Dictionary with violation details.
+        """
+        null_rates = df.isnull().mean()
+        self.violations = []
+        
+        for column, threshold in self.thresholds.items():
+            if column not in null_rates:
+                continue
+            
+            actual_rate = null_rates[column]
+            if actual_rate > threshold:
+                self.violations.append({
+                    "column": column,
+                    "actual_rate": actual_rate,
+                    "threshold": threshold,
+                    "excess": actual_rate - threshold,
+                    "severity": "critical" if actual_rate > threshold * 2 else "warning",
+                })
+        
+        return {
+            "total_violations": len(self.violations),
+            "violations": self.violations,
+            "null_rates": null_rates.to_dict(),
+            "passed": len(self.violations) == 0,
+        }
+    
+    def get_violations(self) -> List[Dict[str, Any]]:
+        """Return list of current violations."""
+        return self.violations
+
+
+if __name__ == "__main__":
+    # Example: Create suite
+    suite_manager = CreditScoreV4ValidationSuite()
+    suite = suite_manager.create_or_update_suite()
+    print(f"Created suite with {len(suite.expectations)} expectations")
+'''
+
+with open(f"{project_root}/src/data_validation/great_expectations_suite.py", "w") as f:
+    f.write(ge_suite)
+
+print("✅ Data Validation (Great Expectations) created")
+
+
+
+
+
+# File 12: src/data_validation/schema_validator.py
+schema_validator = '''"""
+Schema Drift Detection and Data Contract Validation.
+Detects upstream schema changes that could silently break the pipeline.
+"""
+
+import hashlib
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import pandas as pd
+from loguru import logger
+
+
+class SchemaDriftDetector:
+    """
+    Detects schema drift by comparing current schema against a baseline.
+    
+    This catches the type of incident where upstream vendor migrations
+    change column names, add/remove columns, or alter data types silently.
+    """
+    
+    def __init__(self, baseline_schema_path: Optional[str] = None):
+        self.baseline_schema_path = baseline_schema_path or "data/validation/baseline_schema.json"
+        self.baseline_schema: Optional[Dict[str, Any]] = None
+        
+        if Path(self.baseline_schema_path).exists():
+            with open(self.baseline_schema_path, "r") as f:
+                self.baseline_schema = json.load(f)
+            logger.info(f"Loaded baseline schema from {self.baseline_schema_path}")
+    
+    def extract_schema(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """Extract schema information from a DataFrame."""
+        schema = {
+            "columns": {},
+            "column_order": list(df.columns),
+            "total_columns": len(df.columns),
+            "row_count": len(df),
+            "extracted_at": datetime.now(timezone.utc).isoformat(),
+            "schema_hash": self._compute_schema_hash(df),
+        }
+        
+        for col in df.columns:
+            dtype = str(df[col].dtype)
+            schema["columns"][col] = {
+                "dtype": dtype,
+                "nullable": df[col].isnull().any(),
+                "null_rate": float(df[col].isnull().mean()),
+                "unique_count": int(df[col].nunique()),
+                "sample_values": self._get_sample_values(df[col]),
+            }
+            
+            # Add type-specific stats
+            if pd.api.types.is_numeric_dtype(df[col]):
+                schema["columns"][col].update({
+                    "min": float(df[col].min()) if not df[col].isnull().all() else None,
+                    "max": float(df[col].max()) if not df[col].isnull().all() else None,
+                    "mean": float(df[col].mean()) if not df[col].isnull().all() else None,
+                })
+            elif pd.api.types.is_string_dtype(df[col]):
+                schema["columns"][col].update({
+                    "max_length": int(df[col].astype(str).str.len().max()),
+                    "min_length": int(df[col].astype(str).str.len().min()),
+                })
+        
+        return schema
+    
+    def _compute_schema_hash(self, df: pd.DataFrame) -> str:
+        """Compute a hash of the schema for quick comparison."""
+        schema_info = {
+            "columns": sorted(df.columns.tolist()),
+            "dtypes": {col: str(df[col].dtype) for col in df.columns},
+        }
+        schema_str = json.dumps(schema_info, sort_keys=True)
+        return hashlib.sha256(schema_str.encode()).hexdigest()[:16]
+    
+    def _get_sample_values(self, series: pd.Series, n: int = 5) -> List[Any]:
+        """Get non-null sample values from a series."""
+        non_null = series.dropna().head(n)
+        return [self._serialize_value(v) for v in non_null.tolist()]
+    
+    def _serialize_value(self, value: Any) -> Any:
+        """Serialize a value for JSON compatibility."""
+        if pd.isna(value):
+            return None
+        if isinstance(value, (pd.Timestamp, datetime)):
+            return value.isoformat()
+        if isinstance(value, (int, float, str, bool, type(None))):
+            return value
+        return str(value)
+    
+    def detect_drift(
+        self,
+        df: pd.DataFrame,
+        strict_mode: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Detect schema drift between current data and baseline.
+        
+        Args:
+            df: Current DataFrame to check
+            strict_mode: If True, any schema change is a violation
+            
+        Returns:
+            Drift detection results
+        """
+        current_schema = self.extract_schema(df)
+        
+        if self.baseline_schema is None:
+            logger.warning("No baseline schema found, saving current as baseline")
+            self.save_baseline(current_schema)
+            return {
+                "drift_detected": False,
+                "message": "No baseline schema - saved current as baseline",
+                "violations": [],
+            }
+        
+        violations: List[Dict[str, Any]] = []
+        
+        # Check 1: Column additions
+        baseline_cols = set(self.baseline_schema["columns"].keys())
+        current_cols = set(current_schema["columns"].keys())
+        
+        added_cols = current_cols - baseline_cols
+        if added_cols:
+            violations.append({
+                "type": "columns_added",
+                "severity": "warning" if not strict_mode else "error",
+                "columns": list(added_cols),
+                "message": f"New columns detected: {added_cols}",
+            })
+        
+        # Check 2: Column removals (CRITICAL)
+        removed_cols = baseline_cols - current_cols
+        if removed_cols:
+            violations.append({
+                "type": "columns_removed",
+                "severity": "critical",
+                "columns": list(removed_cols),
+                "message": f"Columns missing: {removed_cols} - THIS IS THE INCIDENT PATTERN",
+            })
+        
+        # Check 3: Data type changes
+        common_cols = baseline_cols & current_cols
+        for col in common_cols:
+            baseline_dtype = self.baseline_schema["columns"][col]["dtype"]
+            current_dtype = current_schema["columns"][col]["dtype"]
+            
+            if baseline_dtype != current_dtype:
+                violations.append({
+                    "type": "dtype_changed",
+                    "severity": "critical",
+                    "column": col,
+                    "expected": baseline_dtype,
+                    "actual": current_dtype,
+                    "message": f"Column '{col}' changed from {baseline_dtype} to {current_dtype}",
+                })
+        
+        # Check 4: NULL rate changes (THE KEY INCIDENT DETECTION)
+        for col in common_cols:
+            baseline_null = self.baseline_schema["columns"][col].get("null_rate", 0)
+            current_null = current_schema["columns"][col].get("null_rate", 0)
+            
+            null_increase = current_null - baseline_null
+            if null_increase > 0.05:  # 5% increase threshold
+                violations.append({
+                    "type": "null_rate_increase",
+                    "severity": "critical",
+                    "column": col,
+                    "baseline_null_rate": baseline_null,
+                    "current_null_rate": current_null,
+                    "increase": null_increase,
+                    "message": (
+                        f"NULL rate for '{col}' increased from {baseline_null:.1%} "
+                        f"to {current_null:.1%} (+{null_increase:.1%}) - "
+                        f"INCIDENT PATTERN DETECTED"
+                    ),
+                })
+        
+        # Check 5: Schema hash comparison
+        if self.baseline_schema.get("schema_hash") != current_schema["schema_hash"]:
+            violations.append({
+                "type": "schema_hash_mismatch",
+                "severity": "warning",
+                "message": "Schema hash mismatch detected",
+                "baseline_hash": self.baseline_schema.get("schema_hash"),
+                "current_hash": current_schema["schema_hash"],
+            })
+        
+        drift_detected = len(violations) > 0
+        critical_violations = [v for v in violations if v["severity"] == "critical"]
+        
+        result = {
+            "drift_detected": drift_detected,
+            "critical_violations": len(critical_violations),
+            "total_violations": len(violations),
+            "violations": violations,
+            "baseline_schema_hash": self.baseline_schema.get("schema_hash"),
+            "current_schema_hash": current_schema["schema_hash"],
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        if drift_detected:
+            logger.warning(
+                f"Schema drift detected: {len(violations)} violations, "
+                f"{len(critical_violations)} critical"
+            )
+            for v in critical_violations:
+                logger.critical(f"CRITICAL: {v['message']}")
+        else:
+            logger.info("No schema drift detected")
+        
+        return result
+    
+    def save_baseline(self, schema: Optional[Dict[str, Any]] = None):
+        """Save current or provided schema as the new baseline."""
+        schema = schema or self.baseline_schema
+        if schema is None:
+            raise ValueError("No schema to save as baseline")
+        
+        Path(self.baseline_schema_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(self.baseline_schema_path, "w") as f:
+            json.dump(schema, f, indent=2, default=str)
+        
+        self.baseline_schema = schema
+        logger.info(f"Saved baseline schema to {self.baseline_schema_path}")
+    
+    def update_baseline_from_dataframe(self, df: pd.DataFrame):
+        """Extract schema from DataFrame and save as baseline."""
+        schema = self.extract_schema(df)
+        self.save_baseline(schema)
+
+
+class DataContractValidator:
+    """
+    Validates data against explicit data contracts.
+    Contracts define expected structure, types, and constraints.
+    """
+    
+    def __init__(self, contracts_path: Optional[str] = None):
+        self.contracts_path = contracts_path or "configs/data_contracts"
+        self.contracts: Dict[str, Dict[str, Any]] = {}
+        self._load_contracts()
+    
+    def _load_contracts(self):
+        """Load data contracts from configuration."""
+        # Default contracts (can be overridden by files)
+        self.contracts["ingestion_contract"] = {
+            "description": "Validates raw data from upstream vendor",
+            "required_columns": [
+                "customer_id", "annual_income", "debt_to_income_ratio",
+                "credit_history_length", "device_risk_score", "loan_purpose",
+                "home_ownership", "verification_status", "delinquent",
+            ],
+            "column_types": {
+                "customer_id": "string",
+                "annual_income": "numeric",
+                "debt_to_income_ratio": "numeric",
+                "credit_history_length": "numeric",
+                "device_risk_score": "numeric",
+                "loan_purpose": "categorical",
+                "home_ownership": "categorical",
+                "verification_status": "categorical",
+                "delinquent": "binary",
+            },
+            "constraints": {
+                "annual_income": {"min": 0, "max": 5000000},
+                "debt_to_income_ratio": {"min": 0, "max": 1},
+                "device_risk_score": {"min": 0, "max": 1},
+                "credit_history_length": {"min": 0, "max": 50},
+                "delinquent": {"allowed": [0, 1]},
+            },
+        }
+        
+        self.contracts["preprocessing_contract"] = {
+            "description": "Validates data after preprocessing",
+            "required_columns": [
+                "customer_id", "annual_income", "debt_to_income_ratio",
+                "credit_history_length", "device_risk_score", "loan_purpose_encoded",
+                "home_ownership_encoded", "verification_status_encoded", "delinquent",
+            ],
+            "no_nulls": True,
+            "no_leakage": True,
+        }
+    
+    def validate_contract(
+        self,
+        df: pd.DataFrame,
+        contract_name: str,
+    ) -> Dict[str, Any]:
+        """
+        Validate a DataFrame against a named contract.
+        
+        Returns:
+            Validation results with pass/fail status and details.
+        """
+        if contract_name not in self.contracts:
+            raise ValueError(f"Unknown contract: {contract_name}")
+        
+        contract = self.contracts[contract_name]
+        violations = []
+        
+        # Check required columns
+        if "required_columns" in contract:
+            missing = set(contract["required_columns"]) - set(df.columns)
+            if missing:
+                violations.append({
+                    "type": "missing_columns",
+                    "severity": "critical",
+                    "columns": list(missing),
+                    "message": f"Missing required columns: {missing}",
+                })
+        
+        # Check column types
+        if "column_types" in contract:
+            for col, expected_type in contract["column_types"].items():
+                if col not in df.columns:
+                    continue
+                
+                actual_type = self._get_type_category(df[col])
+                if actual_type != expected_type:
+                    violations.append({
+                        "type": "type_mismatch",
+                        "severity": "error",
+                        "column": col,
+                        "expected": expected_type,
+                        "actual": actual_type,
+                    })
+        
+        # Check constraints
+        if "constraints" in contract:
+            for col, constraint in contract["constraints"].items():
+                if col not in df.columns:
+                    continue
+                
+                if "min" in constraint or "max" in constraint:
+                    col_min = df[col].min()
+                    col_max = df[col].max()
+                    
+                    if "min" in constraint and col_min < constraint["min"]:
+                        violations.append({
+                            "type": "constraint_violation",
+                            "severity": "error",
+                            "column": col,
+                            "constraint": f"min >= {constraint['min']}",
+                            "actual_min": col_min,
+                        })
+                    
+                    if "max" in constraint and col_max > constraint["max"]:
+                        violations.append({
+                            "type": "constraint_violation",
+                            "severity": "error",
+                            "column": col,
+                            "constraint": f"max <= {constraint['max']}",
+                            "actual_max": col_max,
+                        })
+                
+                if "allowed" in constraint:
+                    invalid = set(df[col].dropna().unique()) - set(constraint["allowed"])
+                    if invalid:
+                        violations.append({
+                            "type": "invalid_values",
+                            "severity": "error",
+                            "column": col,
+                            "allowed": constraint["allowed"],
+                            "invalid_values": list(invalid),
+                        })
+        
+        # Check no nulls
+        if contract.get("no_nulls", False):
+            null_counts = df.isnull().sum()
+            cols_with_nulls = null_counts[null_counts > 0]
+            if not cols_with_nulls.empty:
+                violations.append({
+                    "type": "null_values_present",
+                    "severity": "critical",
+                    "columns": cols_with_nulls.to_dict(),
+                    "message": f"NULL values found in {len(cols_with_nulls)} columns",
+                })
+        
+        passed = len([v for v in violations if v["severity"] == "critical"]) == 0
+        
+        return {
+            "contract_name": contract_name,
+            "passed": passed and len(violations) == 0,
+            "critical_violations": len([v for v in violations if v["severity"] == "critical"]),
+            "total_violations": len(violations),
+            "violations": violations,
+        }
+    
+    def _get_type_category(self, series: pd.Series) -> str:
+        """Categorize a pandas Series into a type category."""
+        if pd.api.types.is_bool_dtype(series):
+            return "binary"
+        elif pd.api.types.is_integer_dtype(series):
+            if series.nunique() <= 2:
+                return "binary"
+            return "numeric"
+        elif pd.api.types.is_float_dtype(series):
+            return "numeric"
+        elif pd.api.types.is_string_dtype(series) or pd.api.types.is_object_dtype(series):
+            if series.nunique() <= 20:
+                return "categorical"
+            return "string"
+        return "unknown"
+
+
+if __name__ == "__main__":
+    # Example usage
+    detector = SchemaDriftDetector()
+    
+    # Simulate creating baseline
+    sample_df = pd.DataFrame({
+        "device_risk_score": [0.3, 0.5, 0.2, None, 0.4],
+        "annual_income": [50000, 75000, 120000, 45000, 90000],
+        "delinquent": [0, 1, 0, 0, 1],
+    })
+    
+    detector.update_baseline_from_dataframe(sample_df)
+    
+    # Simulate incident data (22% NULL in device_risk_score)
+    incident_df = pd.DataFrame({
+        "device_risk_score": [None] * 22 + [0.3] * 78,
+        "annual_income": [50000] * 100,
+        "delinquent": [0] * 100,
+    })
+    
+    result = detector.detect_drift(incident_df)
+    print(json.dumps(result, indent=2, default=str))
+'''
+
+with open(f"{project_root}/src/data_validation/schema_validator.py", "w") as f:
+    f.write(schema_validator)
+
+print("✅ Schema Validator created")
+
+
+
+
+# File 13: src/preprocessing/__init__.py
+with open(f"{project_root}/src/preprocessing/__init__.py", "w") as f:
+    f.write('"""Preprocessing Module"""\n')
+
+# File 14: src/preprocessing/preprocessor.py
+preprocessor = '''"""
+Data Preprocessing Pipeline for CreditScoreV4.
+Handles feature engineering, encoding, scaling, and imputation strategies.
+
+CRITICAL: This module was redesigned after the incident to prevent
+silent median imputation from causing approval inflation.
+"""
+
+import json
+import pickle
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import pandas as pd
+from loguru import logger
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
+
+
+@dataclass
+class PreprocessingConfig:
+    """Configuration for the preprocessing pipeline."""
+    
+    numerical_features: List[str] = field(default_factory=list)
+    categorical_features: List[str] = field(default_factory=list)
+    protected_attributes: List[str] = field(default_factory=list)
+    target_column: str = "delinquent"
+    
+    # Imputation strategy - CHANGED after incident
+    # Was: "median" (silent, caused approval inflation)
+    # Now: "flag_and_report" - explicit handling with monitoring
+    numerical_impute_strategy: str = "flag_and_report"
+    categorical_impute_strategy: str = "flag_and_report"
+    
+    # NULL handling thresholds
+    max_null_rate: float = 0.05  # 5% - fail if exceeded
+    null_rate_warning: float = 0.02  # 2% - warn if exceeded
+    
+    # Feature engineering
+    create_interaction_features: bool = True
+    create_ratio_features: bool = True
+    
+    # Scaling
+    scaler_type: str = "standard"  # standard, robust, minmax
+    
+    # Encoding
+    encoding_type: str = "onehot"  # onehot, target, ordinal
+    max_cardinality: int = 50  # Max unique values for one-hot encoding
+
+
+class NullFlagImputer(BaseEstimator, TransformerMixin):
+    """
+    Custom imputer that adds NULL indicator flags.
+    
+    This prevents silent imputation by making NULL presence explicit
+    in the feature set, allowing the model to learn NULL patterns.
+    """
+    
+    def __init__(self, strategy: str = "median", add_indicator: bool = True):
+        self.strategy = strategy
+        self.add_indicator = add_indicator
+        self.imputer_: Optional[SimpleImputer] = None
+        self.null_indicators_: List[str] = []
+        self.feature_names_in_: List[str] = []
+    
+    def fit(self, X: pd.DataFrame, y=None):
+        self.feature_names_in_ = list(X.columns)
+        
+        self.imputer_ = SimpleImputer(strategy=self.strategy, add_indicator=False)
+        self.imputer_.fit(X)
+        
+        if self.add_indicator:
+            self.null_indicators_ = [f"{col}_is_null" for col in X.columns]
+        
+        return self
+    
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X_transformed = X.copy()
+        
+        # Apply imputation
+        imputed_values = self.imputer_.transform(X_transformed)
+        X_transformed = pd.DataFrame(
+            imputed_values,
+            columns=self.feature_names_in_,
+            index=X_transformed.index,
+        )
+        
+        # Add NULL indicator flags
+        if self.add_indicator:
+            for col in self.feature_names_in_:
+                null_flag = X[col].isnull().astype(int)
+                if null_flag.sum() > 0:  # Only add if there are NULLs
+                    X_transformed[f"{col}_is_null"] = null_flag
+        
+        return X_transformed
+
+
+class FeatureEngineer(BaseEstimator, TransformerMixin):
+    """
+    Creates derived features from raw data.
+    
+    Features added:
+    - income_per_dependent: Income adjusted for household size
+    - credit_utilization_trend: Trend in credit utilization
+    - debt_to_income_bucket: Binned DTI for regulatory reporting
+    - risk_score_composite: Weighted composite of risk signals
+    """
+    
+    def __init__(self, create_interactions: bool = True, create_ratios: bool = True):
+        self.create_interactions = create_interactions
+        self.create_ratios = create_ratios
+        self.derived_features_: List[str] = []
+    
+    def fit(self, X: pd.DataFrame, y=None):
+        return self
+    
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        X_transformed = X.copy()
+        
+        # 1. Income per dependent (if dependents column exists)
+        if "num_dependents" in X_transformed.columns:
+            X_transformed["income_per_dependent"] = (
+                X_transformed["annual_income"] / 
+                X_transformed["num_dependents"].clip(lower=1)
+            )
+            self.derived_features_.append("income_per_dependent")
+        
+        # 2. Credit utilization trend (if historical data exists)
+        if "avg_credit_utilization" in X_transformed.columns:
+            X_transformed["credit_utilization_risk"] = (
+                X_transformed["avg_credit_utilization"] > 0.8
+            ).astype(int)
+            self.derived_features_.append("credit_utilization_risk")
+        
+        # 3. Debt-to-income bucket (regulatory reporting)
+        if "debt_to_income_ratio" in X_transformed.columns:
+            X_transformed["dti_bucket"] = pd.cut(
+                X_transformed["debt_to_income_ratio"],
+                bins=[0, 0.28, 0.36, 0.43, 0.50, 1.0],
+                labels=["excellent", "good", "fair", "poor", "very_poor"],
+                include_lowest=True,
+            )
+            self.derived_features_.append("dti_bucket")
+        
+        # 4. Risk score composite
+        risk_features = ["device_risk_score", "credit_utilization_risk"]
+        available_risk = [f for f in risk_features if f in X_transformed.columns]
+        if available_risk:
+            weights = [1.0 / len(available_risk)] * len(available_risk)
+            X_transformed["risk_score_composite"] = sum(
+                X_transformed[f] * w for f, w in zip(available_risk, weights)
+            )
+            self.derived_features_.append("risk_score_composite")
+        
+        # 5. Interaction features
+        if self.create_interactions:
+            if all(c in X_transformed.columns for c in ["annual_income", "credit_history_length"]):
+                X_transformed["income_x_credit_history"] = (
+                    X_transformed["annual_income"] * X_transformed["credit_history_length"]
+                )
+                self.derived_features_.append("income_x_credit_history")
+            
+            if all(c in X_transformed.columns for c in ["debt_to_income_ratio", "device_risk_score"]):
+                X_transformed["dti_x_device_risk"] = (
+                    X_transformed["debt_to_income_ratio"] * X_transformed["device_risk_score"]
+                )
+                self.derived_features_.append("dti_x_device_risk")
+        
+        # 6. Ratio features
+        if self.create_ratios:
+            if all(c in X_transformed.columns for c in ["annual_income", "num_credit_lines"]):
+                X_transformed["income_per_credit_line"] = (
+                    X_transformed["annual_income"] / X_transformed["num_credit_lines"].clip(lower=1)
+                )
+                self.derived_features_.append("income_per_credit_line")
+        
+        logger.info(f"Engineered {len(self.derived_features_)} new features: {self.derived_features_}")
+        
+        return X_transformed
+
+
+class CreditScoreV4Preprocessor:
+    """
+    Main preprocessing pipeline for CreditScoreV4.
+    
+    Architecture:
+    1. Data quality check (NULL rates, schema)
+    2. Feature engineering
+    3. Imputation with NULL flags
+    4. Encoding
+    5. Scaling
+    6. Protected attribute separation (for fairness)
+    """
+    
+    def __init__(self, config: Optional[PreprocessingConfig] = None):
+        self.config = config or PreprocessingConfig()
+        self.pipeline: Optional[Pipeline] = None
+        self.feature_names_: List[str] = []
+        self.numerical_features_: List[str] = []
+        self.categorical_features_: List[str] = []
+        self.protected_features_: List[str] = []
+        self.target_encoder_: Optional[LabelEncoder] = None
+        self.null_report_: Dict[str, Any] = {}
+        
+        logger.info("Initialized CreditScoreV4Preprocessor")
+    
+    def _check_null_rates(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Check NULL rates and generate report.
+        
+        This is the critical check that would have caught the 22% NULL incident.
+        """
+        null_rates = df.isnull().mean()
+        violations = []
+        warnings = []
+        
+        for col, rate in null_rates.items():
+            if rate > self.config.max_null_rate:
+                violations.append({
+                    "column": col,
+                    "null_rate": rate,
+                    "threshold": self.config.max_null_rate,
+                    "severity": "critical",
+                    "message": (
+                        f"CRITICAL: {col} has {rate:.1%} NULLs (threshold: {self.config.max_null_rate:.1%})"
+                    ),
+                })
+            elif rate > self.config.null_rate_warning:
+                warnings.append({
+                    "column": col,
+                    "null_rate": rate,
+                    "threshold": self.config.null_rate_warning,
+                    "severity": "warning",
+                    "message": (
+                        f"WARNING: {col} has {rate:.1%} NULLs (warning threshold: {self.config.null_rate_warning:.1%})"
+                    ),
+                })
+        
+        self.null_report_ = {
+            "timestamp": pd.Timestamp.now().isoformat(),
+            "total_columns": len(df.columns),
+            "columns_with_nulls": int(null_rates.any()),
+            "max_null_rate": float(null_rates.max()),
+            "violations": violations,
+            "warnings": warnings,
+            "null_rates": null_rates.to_dict(),
+            "passed": len(violations) == 0,
+        }
+        
+        if violations:
+            logger.critical(f"NULL rate violations detected: {len(violations)} critical")
+            for v in violations:
+                logger.critical(v["message"])
+        
+        if warnings:
+            logger.warning(f"NULL rate warnings: {len(warnings)}")
+        
+        return self.null_report_
+    
+    def _build_pipeline(self) -> Pipeline:
+        """Build the sklearn preprocessing pipeline."""
+        
+        # Numerical pipeline
+        numerical_pipeline = Pipeline([
+            ("imputer", NullFlagImputer(strategy="median", add_indicator=True)),
+            ("scaler", StandardScaler()),
+        ])
+        
+        # Categorical pipeline
+        categorical_pipeline = Pipeline([
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
+        ])
+        
+        # Combine
+        preprocessor = ColumnTransformer([
+            ("num", numerical_pipeline, self.numerical_features_),
+            ("cat", categorical_pipeline, self.categorical_features_),
+        ], remainder="drop")
+        
+        # Full pipeline with feature engineering
+        pipeline = Pipeline([
+            ("feature_engineer", FeatureEngineer()),
+            ("preprocessor", preprocessor),
+        ])
+        
+        return pipeline
+    
+    def fit(self, df: pd.DataFrame, y: Optional[pd.Series] = None) -> "CreditScoreV4Preprocessor":
+        """
+        Fit the preprocessing pipeline.
+        
+        Args:
+            df: Raw DataFrame
+            y: Optional target series
+        """
+        logger.info(f"Fitting preprocessor on {len(df)} rows, {len(df.columns)} columns")
+        
+        # 1. Check NULL rates
+        null_report = self._check_null_rates(df)
+        if not null_report["passed"]:
+            logger.error("NULL rate check failed - preprocessing halted")
+            raise ValueError(
+                f"NULL rate violations detected: {len(null_report['violations'])} columns exceed threshold. "
+                f"Review null_report_ for details."
+            )
+        
+        # 2. Identify feature types
+        all_cols = set(df.columns)
+        protected = set(self.config.protected_attributes)
+        target = {self.config.target_column}
+        
+        # Exclude protected and target from model features
+        feature_cols = all_cols - protected - target - {"customer_id", "_record_hash", "_ingestion_timestamp"}
+        
+        self.numerical_features_ = [
+            c for c in feature_cols 
+            if pd.api.types.is_numeric_dtype(df[c]) and c not in self.config.categorical_features
+        ]
+        
+        self.categorical_features_ = [
+            c for c in feature_cols
+            if c in self.config.categorical_features or pd.api.types.is_object_dtype(df[c])
+        ]
+        
+        self.protected_features_ = [c for c in protected if c in df.columns]
+        
+        logger.info(
+            f"Feature breakdown: {len(self.numerical_features_)} numerical, "
+            f"{len(self.categorical_features_)} categorical, "
+            f"{len(self.protected_features_)} protected"
+        )
+        
+        # 3. Build and fit pipeline
+        self.pipeline = self._build_pipeline()
+        
+        # Separate features and target
+        X = df[list(feature_cols)]
+        
+        self.pipeline.fit(X)
+        
+        # Extract feature names after transformation
+        self._extract_feature_names()
+        
+        logger.info(f"Preprocessor fitted. Output features: {len(self.feature_names_)}")
+        
+        return self
+    
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Transform data using the fitted pipeline."""
+        if self.pipeline is None:
+            raise ValueError("Preprocessor not fitted. Call fit() first.")
+        
+        # Check NULL rates
+        null_report = self._check_null_rates(df)
+        if not null_report["passed"]:
+            logger.warning("NULL rate violations in transform - proceeding with flagged data")
+        
+        # Separate features
+        feature_cols = set(df.columns) - set(self.config.protected_attributes) - {self.config.target_column}
+        feature_cols = feature_cols - {"customer_id", "_record_hash", "_ingestion_timestamp"}
+        
+        X = df[list(feature_cols)]
+        
+        # Transform
+        X_transformed = self.pipeline.transform(X)
+        
+        # Convert to DataFrame
+        result = pd.DataFrame(
+            X_transformed,
+            columns=self.feature_names_,
+            index=df.index,
+        )
+        
+        # Add back protected attributes (for fairness monitoring)
+        for col in self.protected_features_:
+            if col in df.columns:
+                result[col] = df[col].values
+        
+        # Add target if present
+        if self.config.target_column in df.columns:
+            result[self.config.target_column] = df[self.config.target_column].values
+        
+        return result
+    
+    def fit_transform(self, df: pd.DataFrame, y: Optional[pd.Series] = None) -> pd.DataFrame:
+        """Fit and transform in one step."""
+        self.fit(df, y)
+        return self.transform(df)
+    
+    def _extract_feature_names(self):
+        """Extract feature names after transformation."""
+        feature_engineer = self.pipeline.named_steps["feature_engineer"]
+        preprocessor = self.pipeline.named_steps["preprocessor"]
+        
+        # Get engineered feature names
+        engineered_features = list(feature_engineer.derived_features_)
+        
+        # Get preprocessor feature names
+        num_features = preprocessor.transformers_[0][2]  # numerical
+        cat_features = preprocessor.transformers_[1][2]  # categorical
+        
+        # Get one-hot encoded names
+        cat_encoder = preprocessor.named_transformers_["cat"].named_steps["encoder"]
+        cat_feature_names = list(cat_encoder.get_feature_names_out(cat_features))
+        
+        # Add null indicator features from numerical imputer
+        num_imputer = preprocessor.named_transformers_["num"].named_steps["imputer"]
+        null_indicators = num_imputer.null_indicators_
+        
+        self.feature_names_ = num_features + null_indicators + cat_feature_names + engineered_features
+    
+    def save(self, path: str):
+        """Save the fitted preprocessor."""
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "wb") as f:
+            pickle.dump({
+                "pipeline": self.pipeline,
+                "config": self.config,
+                "feature_names": self.feature_names_,
+                "numerical_features": self.numerical_features_,
+                "categorical_features": self.categorical_features_,
+                "protected_features": self.protected_features_,
+                "null_report": self.null_report_,
+            }, f)
+        logger.info(f"Saved preprocessor to {path}")
+    
+    @classmethod
+    def load(cls, path: str) -> "CreditScoreV4Preprocessor":
+        """Load a fitted preprocessor."""
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        
+        preprocessor = cls(config=data["config"])
+        preprocessor.pipeline = data["pipeline"]
+        preprocessor.feature_names_ = data["feature_names"]
+        preprocessor.numerical_features_ = data["numerical_features"]
+        preprocessor.categorical_features_ = data["categorical_features"]
+        preprocessor.protected_features_ = data["protected_features"]
+        preprocessor.null_report_ = data["null_report"]
+        
+        logger.info(f"Loaded preprocessor from {path} with {len(preprocessor.feature_names_)} features")
+        return preprocessor
+    
+    def get_feature_importance_template(self) -> Dict[str, Any]:
+        """Return template for feature importance tracking."""
+        return {
+            "feature_names": self.feature_names_,
+            "numerical_features": self.numerical_features_,
+            "categorical_features": self.categorical_features_,
+            "protected_features": self.protected_features_,
+            "derived_features": self.pipeline.named_steps["feature_engineer"].derived_features_,
+        }
+
+
+if __name__ == "__main__":
+    # Example usage
+    sample_data = pd.DataFrame({
+        "annual_income": [50000, 75000, None, 120000, 45000],
+        "debt_to_income_ratio": [0.3, 0.4, 0.5, None, 0.2],
+        "credit_history_length": [5, 10, 3, 8, 2],
+        "device_risk_score": [0.3, 0.5, 0.2, 0.4, None],
+        "loan_purpose": ["debt_consolidation", "credit_card", "home_improvement", "car", "medical"],
+        "home_ownership": ["RENT", "MORTGAGE", "OWN", "RENT", "MORTGAGE"],
+        "race": ["White", "Black", "Asian", "Hispanic", "White"],
+        "gender": ["Male", "Female", "Male", "Female", "Male"],
+        "delinquent": [0, 1, 0, 0, 1],
+    })
+    
+    config = PreprocessingConfig(
+        numerical_features=["annual_income", "debt_to_income_ratio", "credit_history_length", "device_risk_score"],
+        categorical_features=["loan_purpose", "home_ownership"],
+        protected_attributes=["race", "gender"],
+    )
+    
+    preprocessor = CreditScoreV4Preprocessor(config)
+    
+    try:
+        transformed = preprocessor.fit_transform(sample_data)
+        print(f"Transformed shape: {transformed.shape}")
+        print(f"Features: {transformed.columns.tolist()}")
+    except ValueError as e:
+        print(f"Expected error (NULL rate violation): {e}")
+        print(f"Null report: {preprocessor.null_report_}")
+'''
+
+with open(f"{project_root}/src/preprocessing/preprocessor.py", "w") as f:
+    f.write(preprocessor)
+
+print("✅ Preprocessing module created")
+
+
+
+# File 15: src/model_training/__init__.py
+with open(f"{project_root}/src/model_training/__init__.py", "w") as f:
+    f.write('"""Model Training Module"""\n')
+
+# File 16: src/model_training/trainer.py
+trainer = '''"""
+Model Training Pipeline for CreditScoreV4.
+Implements XGBoost training with hyperparameter tuning, cross-validation,
+and MLflow tracking.
+"""
+
+import json
+import os
+import pickle
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import mlflow
+import mlflow.xgboost
+import numpy as np
+import pandas as pd
+import xgboost as xgb
+from loguru import logger
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
+)
+from sklearn.model_selection import StratifiedKFold, train_test_split
+
+
+@dataclass
+class ModelConfig:
+    """Configuration for model training."""
+    
+    model_type: str = "xgboost"
+    
+    # XGBoost parameters
+    xgboost_params: Dict[str, Any] = field(default_factory=lambda: {
+        "objective": "binary:logistic",
+        "eval_metric": "auc",
+        "max_depth": 6,
+        "learning_rate": 0.05,
+        "n_estimators": 500,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 3,
+        "gamma": 0.1,
+        "reg_alpha": 0.1,
+        "reg_lambda": 1.0,
+        "random_state": 42,
+        "n_jobs": -1,
+        "early_stopping_rounds": 50,
+    })
+    
+    # Validation
+    test_size: float = 0.2
+    n_splits: int = 5
+    random_state: int = 42
+    
+    # Thresholds
+    min_auc: float = 0.78
+    min_precision: float = 0.65
+    min_recall: float = 0.70
+    
+    # MLflow
+    experiment_name: str = "creditscorev4_experiment"
+    tracking_uri: str = "http://localhost:5000"
+    
+    # Fairness
+    max_fairness_violation: float = 0.05
+
+
+class ModelMetrics:
+    """Compute and store comprehensive model metrics."""
+    
+    def __init__(self):
+        self.metrics: Dict[str, float] = {}
+        self.thresholds: Dict[str, float] = {}
+        self.confusion_matrix: Optional[np.ndarray] = None
+        self.roc_curve: Optional[Tuple[np.ndarray, np.ndarray, np.ndarray]] = None
+    
+    def compute(
+        self,
+        y_true: np.ndarray,
+        y_pred_proba: np.ndarray,
+        y_pred: Optional[np.ndarray] = None,
+    ) -> Dict[str, float]:
+        """Compute all metrics from predictions."""
+        if y_pred is None:
+            y_pred = (y_pred_proba >= 0.5).astype(int)
+        
+        self.metrics = {
+            "auc": roc_auc_score(y_true, y_pred_proba),
+            "accuracy": accuracy_score(y_true, y_pred),
+            "precision": precision_score(y_true, y_pred, zero_division=0),
+            "recall": recall_score(y_true, y_pred, zero_division=0),
+            "f1": f1_score(y_true, y_pred, zero_division=0),
+            "average_precision": average_precision_score(y_true, y_pred_proba),
+        }
+        
+        self.confusion_matrix = confusion_matrix(y_true, y_pred)
+        self.roc_curve = roc_curve(y_true, y_pred_proba)
+        
+        # Find optimal threshold
+        fpr, tpr, thresholds = self.roc_curve
+        j_scores = tpr - fpr
+        optimal_idx = np.argmax(j_scores)
+        self.thresholds["optimal"] = thresholds[optimal_idx]
+        self.thresholds["default"] = 0.5
+        
+        return self.metrics
+    
+    def get_classification_report(self) -> str:
+        """Generate human-readable classification report."""
+        lines = [
+            "=" * 50,
+            "MODEL PERFORMANCE METRICS",
+            "=" * 50,
+            f"AUC:              {self.metrics.get('auc', 0):.4f}",
+            f"Accuracy:         {self.metrics.get('accuracy', 0):.4f}",
+            f"Precision:        {self.metrics.get('precision', 0):.4f}",
+            f"Recall:           {self.metrics.get('recall', 0):.4f}",
+            f"F1-Score:         {self.metrics.get('f1', 0):.4f}",
+            f"Avg Precision:    {self.metrics.get('average_precision', 0):.4f}",
+            "-" * 50,
+            "Confusion Matrix:",
+        ]
+        
+        if self.confusion_matrix is not None:
+            cm = self.confusion_matrix
+            lines.extend([
+                f"                 Predicted",
+                f"                 0      1",
+                f"Actual    0    {cm[0,0]:5d}  {cm[0,1]:5d}",
+                f"          1    {cm[1,0]:5d}  {cm[1,1]:5d}",
+            ])
+        
+        lines.append("=" * 50)
+        return "\\n".join(lines)
+    
+    def meets_thresholds(self, config: ModelConfig) -> Tuple[bool, List[str]]:
+        """Check if metrics meet minimum thresholds."""
+        failures = []
+        
+        if self.metrics.get("auc", 0) < config.min_auc:
+            failures.append(f"AUC {self.metrics['auc']:.4f} < {config.min_auc}")
+        
+        if self.metrics.get("precision", 0) < config.min_precision:
+            failures.append(f"Precision {self.metrics['precision']:.4f} < {config.min_precision}")
+        
+        if self.metrics.get("recall", 0) < config.min_recall:
+            failures.append(f"Recall {self.metrics['recall']:.4f} < {config.min_recall}")
+        
+        return len(failures) == 0, failures
+
+
+class CreditScoreV4Trainer:
+    """
+    Model trainer for CreditScoreV4 with MLflow integration.
+    
+    Features:
+    - Stratified K-Fold cross-validation
+    - Hyperparameter tuning support
+    - MLflow experiment tracking
+    - Model artifact logging
+    - Threshold-based gating
+    """
+    
+    def __init__(self, config: Optional[ModelConfig] = None):
+        self.config = config or ModelConfig()
+        self.model: Optional[xgb.XGBClassifier] = None
+        self.metrics: Optional[ModelMetrics] = None
+        self.cv_results: List[Dict[str, Any]] = []
+        self.feature_names: List[str] = []
+        self.feature_importance: Optional[pd.DataFrame] = None
+        
+        # Setup MLflow
+        mlflow.set_tracking_uri(self.config.tracking_uri)
+        mlflow.set_experiment(self.config.experiment_name)
+        
+        logger.info(f"Initialized trainer with experiment: {self.config.experiment_name}")
+    
+    def prepare_data(
+        self,
+        df: pd.DataFrame,
+        feature_columns: Optional[List[str]] = None,
+        target_column: str = "delinquent",
+    ) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+        """
+        Prepare train/test split.
+        
+        Args:
+            df: Preprocessed DataFrame
+            feature_columns: List of feature columns (auto-detected if None)
+            target_column: Name of target column
+            
+        Returns:
+            X_train, y_train, X_test, y_test
+        """
+        # Auto-detect features (exclude protected attributes and metadata)
+        if feature_columns is None:
+            exclude = {target_column, "race", "gender", "age_group", "customer_id"}
+            feature_columns = [c for c in df.columns if c not in exclude]
+        
+        self.feature_names = feature_columns
+        
+        X = df[feature_columns]
+        y = df[target_column]
+        
+        # Stratified split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y,
+            test_size=self.config.test_size,
+            random_state=self.config.random_state,
+            stratify=y,
+        )
+        
+        logger.info(
+            f"Data split: train={len(X_train)}, test={len(X_test)}, "
+            f"positive_rate={y.mean():.3f}"
+        )
+        
+        return X_train, y_train, X_test, y_test
+    
+    def train(
+        self,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        X_val: Optional[pd.DataFrame] = None,
+        y_val: Optional[pd.Series] = None,
+    ) -> xgb.XGBClassifier:
+        """
+        Train the XGBoost model.
+        
+        Args:
+            X_train: Training features
+            y_train: Training labels
+            X_val: Validation features (optional)
+            y_val: Validation labels (optional)
+            
+        Returns:
+            Trained XGBoost classifier
+        """
+        logger.info(f"Training XGBoost model on {len(X_train)} samples")
+        
+        # Calculate scale_pos_weight for imbalanced data
+        pos_ratio = y_train.mean()
+        scale_pos_weight = (1 - pos_ratio) / pos_ratio if pos_ratio > 0 else 1.0
+        
+        params = self.config.xgboost_params.copy()
+        params["scale_pos_weight"] = scale_pos_weight
+        
+        # Remove early_stopping_rounds from params (passed to fit instead)
+        early_stopping = params.pop("early_stopping_rounds", 50)
+        
+        self.model = xgb.XGBClassifier(**params)
+        
+        # Prepare eval set
+        eval_set = [(X_train, y_train)]
+        if X_val is not None and y_val is not None:
+            eval_set.append((X_val, y_val))
+        
+        # Train with early stopping
+        fit_params = {
+            "eval_set": eval_set,
+            "verbose": False,
+        }
+        
+        if len(eval_set) > 1:
+            fit_params["early_stopping_rounds"] = early_stopping
+        
+        self.model.fit(X_train, y_train, **fit_params)
+        
+        logger.info(
+            f"Training complete. Best iteration: {self.model.best_iteration}, "
+            f"Best score: {self.model.best_score:.4f}"
+        )
+        
+        return self.model
+    
+    def evaluate(
+        self,
+        X_test: pd.DataFrame,
+        y_test: pd.Series,
+    ) -> ModelMetrics:
+        """
+        Evaluate model on test set.
+        
+        Args:
+            X_test: Test features
+            y_test: Test labels
+            
+        Returns:
+            ModelMetrics object
+        """
+        if self.model is None:
+            raise ValueError("Model not trained. Call train() first.")
+        
+        y_pred_proba = self.model.predict_proba(X_test)[:, 1]
+        y_pred = self.model.predict(X_test)
+        
+        self.metrics = ModelMetrics()
+        self.metrics.compute(y_test.values, y_pred_proba, y_pred)
+        
+        # Compute feature importance
+        importance = self.model.feature_importances_
+        self.feature_importance = pd.DataFrame({
+            "feature": self.feature_names,
+            "importance": importance,
+        }).sort_values("importance", ascending=False)
+        
+        logger.info(f"Evaluation complete: AUC={self.metrics.metrics['auc']:.4f}")
+        logger.info(f"\\n{self.metrics.get_classification_report()}")
+        
+        return self.metrics
+    
+    def cross_validate(
+        self,
+        X: pd.DataFrame,
+        y: pd.Series,
+    ) -> Dict[str, Any]:
+        """
+        Perform stratified K-Fold cross-validation.
+        
+        Returns:
+            Dictionary with CV results
+        """
+        logger.info(f"Starting {self.config.n_splits}-fold cross-validation")
+        
+        skf = StratifiedKFold(
+            n_splits=self.config.n_splits,
+            shuffle=True,
+            random_state=self.config.random_state,
+        )
+        
+        cv_scores = []
+        fold_metrics = []
+        
+        for fold, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+            logger.info(f"Training fold {fold + 1}/{self.config.n_splits}")
+            
+            X_train_fold = X.iloc[train_idx]
+            y_train_fold = y.iloc[train_idx]
+            X_val_fold = X.iloc[val_idx]
+            y_val_fold = y.iloc[val_idx]
+            
+            # Train
+            fold_model = xgb.XGBClassifier(**{
+                k: v for k, v in self.config.xgboost_params.items() 
+                if k != "early_stopping_rounds"
+            })
+            
+            fold_model.fit(
+                X_train_fold, y_train_fold,
+                eval_set=[(X_val_fold, y_val_fold)],
+                early_stopping_rounds=50,
+                verbose=False,
+            )
+            
+            # Evaluate
+            y_pred_proba = fold_model.predict_proba(X_val_fold)[:, 1]
+            fold_auc = roc_auc_score(y_val_fold, y_pred_proba)
+            
+            cv_scores.append(fold_auc)
+            fold_metrics.append({
+                "fold": fold + 1,
+                "auc": fold_auc,
+                "train_size": len(train_idx),
+                "val_size": len(val_idx),
+            })
+        
+        self.cv_results = fold_metrics
+        
+        cv_summary = {
+            "mean_auc": float(np.mean(cv_scores)),
+            "std_auc": float(np.std(cv_scores)),
+            "min_auc": float(np.min(cv_scores)),
+            "max_auc": float(np.max(cv_scores)),
+            "folds": fold_metrics,
+        }
+        
+        logger.info(
+            f"CV complete: {cv_summary['mean_auc']:.4f} (+/- {cv_summary['std_auc']:.4f})"
+        )
+        
+        return cv_summary
+    
+    def log_to_mlflow(
+        self,
+        model_name: str = "creditscorev4",
+        params: Optional[Dict[str, Any]] = None,
+        artifacts: Optional[Dict[str, str]] = None,
+    ) -> str:
+        """
+        Log model and metrics to MLflow.
+        
+        Returns:
+            MLflow run ID
+        """
+        with mlflow.start_run() as run:
+            # Log parameters
+            if params:
+                mlflow.log_params(params)
+            mlflow.log_params(self.config.xgboost_params)
+            
+            # Log metrics
+            if self.metrics:
+                mlflow.log_metrics(self.metrics.metrics)
+            
+            # Log CV results
+            if self.cv_results:
+                cv_summary = self.cross_validate_summary()
+                mlflow.log_metrics({
+                    "cv_mean_auc": cv_summary["mean_auc"],
+                    "cv_std_auc": cv_summary["std_auc"],
+                })
+            
+            # Log feature importance
+            if self.feature_importance is not None:
+                importance_path = "/tmp/feature_importance.csv"
+                self.feature_importance.to_csv(importance_path, index=False)
+                mlflow.log_artifact(importance_path, "feature_importance")
+            
+            # Log model
+            if self.model is not None:
+                mlflow.xgboost.log_model(
+                    self.model,
+                    artifact_path="model",
+                    registered_model_name=model_name,
+                )
+            
+            # Log additional artifacts
+            if artifacts:
+                for name, path in artifacts.items():
+                    mlflow.log_artifact(path, name)
+            
+            logger.info(f"Logged to MLflow run: {run.info.run_id}")
+            return run.info.run_id
+    
+    def cross_validate_summary(self) -> Dict[str, float]:
+        """Summarize cross-validation results."""
+        if not self.cv_results:
+            return {}
+        
+        aucs = [f["auc"] for f in self.cv_results]
+        return {
+            "mean_auc": float(np.mean(aucs)),
+            "std_auc": float(np.std(aucs)),
+            "min_auc": float(np.min(aucs)),
+            "max_auc": float(np.max(aucs)),
+        }
+    
+    def save_model(self, path: str):
+        """Save trained model to disk."""
+        if self.model is None:
+            raise ValueError("No model to save")
+        
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        
+        model_data = {
+            "model": self.model,
+            "config": self.config,
+            "feature_names": self.feature_names,
+            "feature_importance": self.feature_importance,
+            "metrics": self.metrics.metrics if self.metrics else {},
+            "cv_results": self.cv_results,
+        }
+        
+        with open(path, "wb") as f:
+            pickle.dump(model_data, f)
+        
+        logger.info(f"Saved model to {path}")
+    
+    @classmethod
+    def load_model(cls, path: str) -> Tuple[xgb.XGBClassifier, Dict[str, Any]]:
+        """Load trained model from disk."""
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        
+        logger.info(f"Loaded model from {path}")
+        return data["model"], data
+
+
+if __name__ == "__main__":
+    # Example usage with synthetic data
+    np.random.seed(42)
+    n_samples = 10000
+    
+    synthetic_data = pd.DataFrame({
+        "feature_1": np.random.randn(n_samples),
+        "feature_2": np.random.randn(n_samples),
+        "feature_3": np.random.randn(n_samples),
+        "delinquent": np.random.binomial(1, 0.15, n_samples),
+    })
+    
+    trainer = CreditScoreV4Trainer()
+    X_train, y_train, X_test, y_test = trainer.prepare_data(synthetic_data)
+    
+    # Cross-validate
+    cv_results = trainer.cross_validate(
+        pd.concat([X_train, X_test]),
+        pd.concat([y_train, y_test]),
+    )
+    
+    # Train final model
+    trainer.train(X_train, y_train, X_test, y_test)
+    
+    # Evaluate
+    metrics = trainer.evaluate(X_test, y_test)
+    print(metrics.get_classification_report())
+'''
+
+with open(f"{project_root}/src/model_training/trainer.py", "w") as f:
+    f.write(trainer)
+
+print("✅ Model Training module created")
+
+
+
+# File 17: src/drift_detection/__init__.py
+with open(f"{project_root}/src/drift_detection/__init__.py", "w") as f:
+    f.write('"""Drift Detection Module"""\n')
+
+# File 18: src/drift_detection/psi_calculator.py
+psi_module = '''"""
+Population Stability Index (PSI) Calculator for CreditScoreV4.
+Implements feature-level and score-level PSI monitoring with automated triggers.
+
+PSI Thresholds:
+- < 0.1: No significant change (green)
+- 0.1 - 0.2: Moderate change (yellow/warning)
+- > 0.2: Significant change (red/critical)
+"""
+
+import json
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import pandas as pd
+from scipy import stats
+from loguru import logger
+
+
+@dataclass
+class PSIDriftConfig:
+    """Configuration for PSI drift detection."""
+    
+    # PSI thresholds
+    warning_threshold: float = 0.1
+    critical_threshold: float = 0.2
+    
+    # Binning strategy
+    bin_strategy: str = "quantile"  # quantile, fixed
+    num_bins: int = 10
+    
+    # Features to monitor
+    features_to_monitor: List[str] = field(default_factory=lambda: [
+        "device_risk_score",
+        "debt_to_income_ratio",
+        "annual_income",
+        "credit_history_length",
+    ])
+    
+    # Score monitoring
+    monitor_score: bool = True
+    score_column: str = "predicted_score"
+    
+    # KS test
+    ks_test_enabled: bool = True
+    ks_alpha: float = 0.05
+    
+    # Reporting
+    report_path: str = "data/validation/drift_reports"
+
+
+class PSICalculator:
+    """
+    Population Stability Index calculator.
+    
+    PSI measures the shift in distribution between a baseline (reference)
+    and current dataset. It was critical in detecting the device_risk_score
+    distribution shift from 0.31 to 0.44 mean during the incident.
+    """
+    
+    def __init__(self, config: Optional[PSIDriftConfig] = None):
+        self.config = config or PSIDriftConfig()
+        self.baseline_distributions: Dict[str, Dict[str, Any]] = {}
+        self.baseline_bins: Dict[str, np.ndarray] = {}
+    
+    def _create_bins(
+        self,
+        data: np.ndarray,
+        strategy: str = "quantile",
+        num_bins: int = 10,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Create bins for PSI calculation.
+        
+        Returns:
+            Tuple of (bin_edges, bin_counts)
+        """
+        data = data[~np.isnan(data)]
+        
+        if strategy == "quantile":
+            # Use quantile-based bins (equal frequency)
+            quantiles = np.linspace(0, 1, num_bins + 1)
+            bin_edges = np.quantile(data, quantiles)
+        else:
+            # Use fixed-width bins
+            min_val, max_val = data.min(), data.max()
+            bin_edges = np.linspace(min_val, max_val, num_bins + 1)
+        
+        # Ensure unique edges
+        bin_edges = np.unique(bin_edges)
+        if len(bin_edges) < 3:
+            # Fallback for very concentrated data
+            bin_edges = np.array([data.min(), data.mean(), data.max()])
+        
+        # Calculate counts
+        counts, _ = np.histogram(data, bins=bin_edges)
+        
+        # Handle empty bins by merging
+        counts = counts.astype(float)
+        counts[counts == 0] = 0.0001  # Small epsilon to avoid division by zero
+        
+        proportions = counts / counts.sum()
+        
+        return bin_edges, proportions
+    
+    def fit_baseline(self, df: pd.DataFrame, features: Optional[List[str]] = None):
+        """
+        Fit baseline distributions from reference data.
+        
+        Args:
+            df: Reference DataFrame
+            features: List of features to monitor (uses config default if None)
+        """
+        features = features or self.config.features_to_monitor
+        
+        logger.info(f"Fitting baseline distributions for {len(features)} features")
+        
+        for feature in features:
+            if feature not in df.columns:
+                logger.warning(f"Feature {feature} not found in baseline data")
+                continue
+            
+            data = df[feature].dropna().values
+            
+            if len(data) == 0:
+                logger.warning(f"No valid data for feature {feature}")
+                continue
+            
+            bin_edges, proportions = self._create_bins(
+                data,
+                strategy=self.config.bin_strategy,
+                num_bins=self.config.num_bins,
+            )
+            
+            self.baseline_bins[feature] = bin_edges
+            self.baseline_distributions[feature] = {
+                "bin_edges": bin_edges.tolist(),
+                "proportions": proportions.tolist(),
+                "mean": float(np.mean(data)),
+                "std": float(np.std(data)),
+                "median": float(np.median(data)),
+                "min": float(np.min(data)),
+                "max": float(np.max(data)),
+                "n_samples": len(data),
+                "fitted_at": datetime.now(timezone.utc).isoformat(),
+            }
+            
+            logger.info(
+                f"Baseline for {feature}: mean={self.baseline_distributions[feature]['mean']:.4f}, "
+                f"std={self.baseline_distributions[feature]['std']:.4f}"
+            )
+    
+    def calculate_psi(
+        self,
+        baseline_proportions: np.ndarray,
+        current_proportions: np.ndarray,
+    ) -> float:
+        """
+        Calculate PSI between two distributions.
+        
+        PSI = sum((Actual% - Expected%) * ln(Actual% / Expected%))
+        
+        Args:
+            baseline_proportions: Expected distribution proportions
+            current_proportions: Actual distribution proportions
+            
+        Returns:
+            PSI value
+        """
+        # Ensure same length
+        min_len = min(len(baseline_proportions), len(current_proportions))
+        baseline_proportions = baseline_proportions[:min_len]
+        current_proportions = current_proportions[:min_len]
+        
+        # Add epsilon to avoid log(0)
+        epsilon = 0.0001
+        baseline_proportions = np.maximum(baseline_proportions, epsilon)
+        current_proportions = np.maximum(current_proportions, epsilon)
+        
+        # Normalize to ensure proportions sum to 1
+        baseline_proportions = baseline_proportions / baseline_proportions.sum()
+        current_proportions = current_proportions / current_proportions.sum()
+        
+        # Calculate PSI
+        psi_values = (current_proportions - baseline_proportions) * np.log(
+            current_proportions / baseline_proportions
+        )
+        psi = float(np.sum(psi_values))
+        
+        return psi
+    
+    def detect_feature_drift(
+        self,
+        df: pd.DataFrame,
+        feature: str,
+    ) -> Dict[str, Any]:
+        """
+        Detect drift for a single feature.
+        
+        Args:
+            df: Current DataFrame
+            feature: Feature name to check
+            
+        Returns:
+            Drift detection results
+        """
+        if feature not in self.baseline_distributions:
+            raise ValueError(f"No baseline for feature {feature}. Call fit_baseline() first.")
+        
+        data = df[feature].dropna().values
+        
+        if len(data) == 0:
+            return {
+                "feature": feature,
+                "drift_detected": True,
+                "psi": float("inf"),
+                "status": "error",
+                "message": "No valid data in current dataset",
+            }
+        
+        # Use baseline bins
+        bin_edges = self.baseline_bins[feature]
+        counts, _ = np.histogram(data, bins=bin_edges)
+        counts = counts.astype(float)
+        counts[counts == 0] = 0.0001
+        current_proportions = counts / counts.sum()
+        
+        baseline_proportions = np.array(self.baseline_distributions[feature]["proportions"])
+        
+        # Calculate PSI
+        psi = self.calculate_psi(baseline_proportions, current_proportions)
+        
+        # Determine status
+        if psi > self.config.critical_threshold:
+            status = "critical"
+        elif psi > self.config.warning_threshold:
+            status = "warning"
+        else:
+            status = "stable"
+        
+        # Calculate additional statistics
+        baseline_stats = self.baseline_distributions[feature]
+        current_mean = float(np.mean(data))
+        current_std = float(np.std(data))
+        
+        result = {
+            "feature": feature,
+            "drift_detected": status != "stable",
+            "psi": psi,
+            "status": status,
+            "baseline_stats": {
+                "mean": baseline_stats["mean"],
+                "std": baseline_stats["std"],
+                "median": baseline_stats["median"],
+            },
+            "current_stats": {
+                "mean": current_mean,
+                "std": current_std,
+                "median": float(np.median(data)),
+            },
+            "mean_shift": current_mean - baseline_stats["mean"],
+            "std_shift": current_std - baseline_stats["std"],
+            "n_samples": len(data),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        if status != "stable":
+            logger.warning(
+                f"Drift detected in {feature}: PSI={psi:.4f} ({status}), "
+                f"mean shifted from {baseline_stats['mean']:.4f} to {current_mean:.4f}"
+            )
+        
+        return result
+    
+    def detect_all_drift(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Detect drift for all monitored features.
+        
+        Returns:
+            Comprehensive drift report
+        """
+        results = []
+        critical_count = 0
+        warning_count = 0
+        
+        for feature in self.config.features_to_monitor:
+            if feature not in self.baseline_distributions:
+                logger.warning(f"Skipping {feature}: no baseline")
+                continue
+            
+            try:
+                result = self.detect_feature_drift(df, feature)
+                results.append(result)
+                
+                if result["status"] == "critical":
+                    critical_count += 1
+                elif result["status"] == "warning":
+                    warning_count += 1
+            except Exception as e:
+                logger.error(f"Error detecting drift for {feature}: {e}")
+                results.append({
+                    "feature": feature,
+                    "drift_detected": True,
+                    "status": "error",
+                    "message": str(e),
+                })
+        
+        overall_status = "stable"
+        if critical_count > 0:
+            overall_status = "critical"
+        elif warning_count > 0:
+            overall_status = "warning"
+        
+        report = {
+            "overall_status": overall_status,
+            "drift_detected": overall_status != "stable",
+            "critical_features": critical_count,
+            "warning_features": warning_count,
+            "stable_features": len(results) - critical_count - warning_count,
+            "total_features": len(results),
+            "thresholds": {
+                "warning": self.config.warning_threshold,
+                "critical": self.config.critical_threshold,
+            },
+            "feature_results": results,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        logger.info(
+            f"Drift detection complete: {critical_count} critical, "
+            f"{warning_count} warning, {report['stable_features']} stable"
+        )
+        
+        return report
+    
+    def detect_score_drift(
+        self,
+        baseline_scores: np.ndarray,
+        current_scores: np.ndarray,
+    ) -> Dict[str, Any]:
+        """
+        Detect drift at the model score level.
+        
+        This is useful for overall model output drift detection.
+        """
+        # Create bins from baseline scores
+        bin_edges, baseline_props = self._create_bins(
+            baseline_scores,
+            strategy=self.config.bin_strategy,
+            num_bins=self.config.num_bins,
+        )
+        
+        # Calculate current proportions using same bins
+        counts, _ = np.histogram(current_scores, bins=bin_edges)
+        counts = counts.astype(float)
+        counts[counts == 0] = 0.0001
+        current_props = counts / counts.sum()
+        
+        psi = self.calculate_psi(baseline_props, current_props)
+        
+        # KS test
+        ks_stat, ks_pvalue = stats.ks_2samp(baseline_scores, current_scores)
+        
+        status = "stable"
+        if psi > self.config.critical_threshold:
+            status = "critical"
+        elif psi > self.config.warning_threshold:
+            status = "warning"
+        
+        return {
+            "level": "score",
+            "drift_detected": status != "stable",
+            "psi": psi,
+            "status": status,
+            "ks_statistic": float(ks_stat),
+            "ks_pvalue": float(ks_pvalue),
+            "ks_significant": ks_pvalue < self.config.ks_alpha,
+            "baseline_mean": float(np.mean(baseline_scores)),
+            "current_mean": float(np.mean(current_scores)),
+            "mean_shift": float(np.mean(current_scores) - np.mean(baseline_scores)),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    
+    def save_report(self, report: Dict[str, Any], filename: Optional[str] = None):
+        """Save drift report to file."""
+        Path(self.config.report_path).mkdir(parents=True, exist_ok=True)
+        
+        if filename is None:
+            filename = f"drift_report_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+        
+        filepath = Path(self.config.report_path) / filename
+        with open(filepath, "w") as f:
+            json.dump(report, f, indent=2, default=str)
+        
+        logger.info(f"Saved drift report to {filepath}")
+        return str(filepath)
+    
+    def save_baseline(self, path: str):
+        """Save baseline distributions to file."""
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            json.dump({
+                "distributions": self.baseline_distributions,
+                "config": {
+                    "bin_strategy": self.config.bin_strategy,
+                    "num_bins": self.config.num_bins,
+                    "warning_threshold": self.config.warning_threshold,
+                    "critical_threshold": self.config.critical_threshold,
+                },
+                "saved_at": datetime.now(timezone.utc).isoformat(),
+            }, f, indent=2, default=str)
+        
+        logger.info(f"Saved baseline to {path}")
+    
+    @classmethod
+    def load_baseline(cls, path: str) -> "PSICalculator":
+        """Load baseline distributions from file."""
+        with open(path, "r") as f:
+            data = json.load(f)
+        
+        config = PSIDriftConfig(**data["config"])
+        calculator = cls(config)
+        calculator.baseline_distributions = data["distributions"]
+        
+        # Reconstruct bins
+        for feature, dist in calculator.baseline_distributions.items():
+            calculator.baseline_bins[feature] = np.array(dist["bin_edges"])
+        
+        logger.info(f"Loaded baseline from {path} with {len(calculator.baseline_distributions)} features")
+        return calculator
+
+
+if __name__ == "__main__":
+    # Example: Simulate the incident
+    np.random.seed(42)
+    
+    # Baseline: device_risk_score ~ N(0.31, 0.15)
+    baseline_df = pd.DataFrame({
+        "device_risk_score": np.random.normal(0.31, 0.15, 10000).clip(0, 1),
+        "debt_to_income_ratio": np.random.beta(2, 5, 10000),
+    })
+    
+    # Current: device_risk_score shifted to N(0.44, 0.15) - THE INCIDENT
+    current_df = pd.DataFrame({
+        "device_risk_score": np.random.normal(0.44, 0.15, 10000).clip(0, 1),
+        "debt_to_income_ratio": np.random.beta(2, 5, 10000),
+    })
+    
+    calculator = PSICalculator()
+    calculator.fit_baseline(baseline_df)
+    
+    report = calculator.detect_all_drift(current_df)
+    print(json.dumps(report, indent=2, default=str))
+'''
+
+with open(f"{project_root}/src/drift_detection/psi_calculator.py", "w") as f:
+    f.write(psi_module)
+
+print("✅ Drift Detection (PSI) module created")
+
+
+
+# File 19: src/fairness_monitoring/__init__.py
+with open(f"{project_root}/src/fairness_monitoring/__init__.py", "w") as f:
+    f.write('"""Fairness Monitoring Module"""\n')
+
+# File 20: src/fairness_monitoring/fairness_metrics.py
+fairness_module = '''"""
+Fairness Monitoring Framework for CreditScoreV4.
+Implements Demographic Parity, Equal Opportunity, Disparate Impact (4/5ths rule),
+and Equalized Odds with automated compliance checking.
+
+Regulatory Context:
+- ECOA (Equal Credit Opportunity Act)
+- Fair Lending regulations
+- 4/5ths rule compliance (Disparate Impact Ratio >= 0.80)
+"""
+
+import json
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+import pandas as pd
+from loguru import logger
+
+
+@dataclass
+class FairnessConfig:
+    """Configuration for fairness monitoring."""
+    
+    # Protected attributes
+    protected_attributes: List[str] = field(default_factory=lambda: ["race", "gender", "age_group"])
+    
+    # Fairness thresholds
+    demographic_parity_threshold: float = 0.05  # Max 5pp difference
+    equal_opportunity_threshold: float = 0.05
+    equalized_odds_threshold: float = 0.05
+    disparate_impact_threshold: float = 0.80  # 4/5ths rule
+    calibration_threshold: float = 0.05
+    
+    # Reference group (for ratio calculations)
+    reference_groups: Dict[str, str] = field(default_factory=lambda: {
+        "race": "White",
+        "gender": "Male",
+        "age_group": "26-35",
+    })
+    
+    # Reporting
+    report_path: str = "data/validation/fairness_reports"
+    
+    # Approval threshold
+    approval_threshold: float = 0.5
+
+
+class FairnessMetricsCalculator:
+    """
+    Calculate fairness metrics for credit scoring models.
+    
+    The 11pp minority approval rate drop during the incident would have been
+caught by the Demographic Parity and Disparate Impact metrics.
+    """
+    
+    def __init__(self, config: Optional[FairnessConfig] = None):
+        self.config = config or FairnessConfig()
+        self.results: Dict[str, Any] = {}
+    
+    def _get_group_mask(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        group_value: Any,
+    ) -> pd.Series:
+        """Get boolean mask for a specific group."""
+        return df[attribute] == group_value
+    
+    def _get_group_stats(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        group_value: Any,
+        score_col: str = "predicted_score",
+        target_col: str = "delinquent",
+    ) -> Dict[str, float]:
+        """Calculate statistics for a specific group."""
+        mask = self._get_group_mask(df, attribute, group_value)
+        group_df = df[mask]
+        
+        if len(group_df) == 0:
+            return {
+                "count": 0,
+                "positive_rate": 0.0,
+                "approval_rate": 0.0,
+                "default_rate": 0.0,
+                "mean_score": 0.0,
+            }
+        
+        scores = group_df[score_col].values
+        targets = group_df[target_col].values
+        
+        approvals = scores >= self.config.approval_threshold
+        
+        return {
+            "count": len(group_df),
+            "positive_rate": float(targets.mean()),
+            "approval_rate": float(approvals.mean()),
+            "default_rate": float(targets[approvals].mean()) if approvals.sum() > 0 else 0.0,
+            "mean_score": float(scores.mean()),
+            "median_score": float(np.median(scores)),
+        }
+    
+    def demographic_parity(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        score_col: str = "predicted_score",
+    ) -> Dict[str, Any]:
+        """
+        Calculate Demographic Parity.
+        
+        Demographic Parity: P(Ŷ=1 | A=a) should be equal across groups.
+        Measures: Difference in approval rates between groups.
+        """
+        groups = df[attribute].unique()
+        approval_rates = {}
+        
+        for group in groups:
+            stats = self._get_group_stats(df, attribute, group, score_col)
+            approval_rates[group] = stats["approval_rate"]
+        
+        # Calculate max difference from reference
+        reference_group = self.config.reference_groups.get(attribute)
+        if reference_group and reference_group in approval_rates:
+            ref_rate = approval_rates[reference_group]
+            differences = {
+                group: abs(rate - ref_rate)
+                for group, rate in approval_rates.items()
+                if group != reference_group
+            }
+            max_diff = max(differences.values()) if differences else 0.0
+        else:
+            # Use overall mean as reference
+            mean_rate = np.mean(list(approval_rates.values()))
+            differences = {
+                group: abs(rate - mean_rate)
+                for group, rate in approval_rates.items()
+            }
+            max_diff = max(differences.values()) if differences else 0.0
+        
+        violation = max_diff > self.config.demographic_parity_threshold
+        
+        return {
+            "metric": "demographic_parity",
+            "attribute": attribute,
+            "approval_rates": approval_rates,
+            "max_difference": max_diff,
+            "threshold": self.config.demographic_parity_threshold,
+            "violation": violation,
+            "status": "violation" if violation else "pass",
+            "details": differences,
+        }
+    
+    def equal_opportunity(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        score_col: str = "predicted_score",
+        target_col: str = "delinquent",
+    ) -> Dict[str, Any]:
+        """
+        Calculate Equal Opportunity Difference.
+        
+        Equal Opportunity: P(Ŷ=1 | Y=1, A=a) should be equal across groups.
+        Measures: Difference in True Positive Rates (TPR) between groups.
+        """
+        groups = df[attribute].unique()
+        tpr_by_group = {}
+        
+        for group in groups:
+            mask = self._get_group_mask(df, attribute, group)
+            group_df = df[mask]
+            
+            # Filter to positive class (actual defaults)
+            positive_mask = group_df[target_col] == 1
+            if positive_mask.sum() == 0:
+                tpr_by_group[group] = 0.0
+                continue
+            
+            positive_df = group_df[positive_mask]
+            scores = positive_df[score_col].values
+            
+            # TPR = P(approved | actual default) - but in credit, we want to catch defaults
+            # Actually for credit: TPR = P(rejected | actual default) = recall for positive class
+            # But usually we frame as: P(approved | good borrower) - so let's use that
+            
+            # For credit scoring, equal opportunity means:
+            # Among people who actually repay (Y=0), approval rates should be equal
+            good_borrowers = group_df[target_col] == 0
+            if good_borrowers.sum() == 0:
+                tpr_by_group[group] = 0.0
+                continue
+            
+            good_scores = group_df.loc[good_borrowers, score_col].values
+            tpr_by_group[group] = float((good_scores >= self.config.approval_threshold).mean())
+        
+        # Calculate differences
+        reference_group = self.config.reference_groups.get(attribute)
+        if reference_group and reference_group in tpr_by_group:
+            ref_tpr = tpr_by_group[reference_group]
+            differences = {
+                group: abs(tpr - ref_tpr)
+                for group, tpr in tpr_by_group.items()
+                if group != reference_group
+            }
+            max_diff = max(differences.values()) if differences else 0.0
+        else:
+            mean_tpr = np.mean(list(tpr_by_group.values()))
+            differences = {
+                group: abs(tpr - mean_tpr)
+                for group, tpr in tpr_by_group.items()
+            }
+            max_diff = max(differences.values()) if differences else 0.0
+        
+        violation = max_diff > self.config.equal_opportunity_threshold
+        
+        return {
+            "metric": "equal_opportunity",
+            "attribute": attribute,
+            "tpr_by_group": tpr_by_group,
+            "max_difference": max_diff,
+            "threshold": self.config.equal_opportunity_threshold,
+            "violation": violation,
+            "status": "violation" if violation else "pass",
+            "details": differences,
+        }
+    
+    def disparate_impact(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        score_col: str = "predicted_score",
+    ) -> Dict[str, Any]:
+        """
+        Calculate Disparate Impact Ratio (4/5ths rule).
+        
+        Disparate Impact: Approval rate ratio between groups should be >= 0.80.
+        This is the primary legal standard for fair lending.
+        """
+        groups = df[attribute].unique()
+        approval_rates = {}
+        
+        for group in groups:
+            stats = self._get_group_stats(df, attribute, group, score_col)
+            approval_rates[group] = stats["approval_rate"]
+        
+        # Calculate ratios relative to reference group
+        reference_group = self.config.reference_groups.get(attribute)
+        if reference_group and reference_group in approval_rates:
+            ref_rate = approval_rates[reference_group]
+            
+            if ref_rate == 0:
+                ratios = {group: 0.0 for group in groups if group != reference_group}
+            else:
+                ratios = {
+                    group: rate / ref_rate
+                    for group, rate in approval_rates.items()
+                    if group != reference_group
+                }
+            
+            min_ratio = min(ratios.values()) if ratios else 1.0
+        else:
+            # Use maximum approval rate as reference
+            max_rate = max(approval_rates.values())
+            if max_rate == 0:
+                ratios = {group: 0.0 for group in groups}
+            else:
+                ratios = {
+                    group: rate / max_rate
+                    for group, rate in approval_rates.items()
+                }
+            min_ratio = min(ratios.values()) if ratios else 1.0
+        
+        violation = min_ratio < self.config.disparate_impact_threshold
+        
+        return {
+            "metric": "disparate_impact",
+            "attribute": attribute,
+            "approval_rates": approval_rates,
+            "ratios": ratios,
+            "min_ratio": min_ratio,
+            "threshold": self.config.disparate_impact_threshold,
+            "violation": violation,
+            "status": "violation" if violation else "pass",
+            "legal_standard": "4/5ths rule (ratio >= 0.80)",
+        }
+    
+    def equalized_odds(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        score_col: str = "predicted_score",
+        target_col: str = "delinquent",
+    ) -> Dict[str, Any]:
+        """
+        Calculate Equalized Odds.
+        
+        Equalized Odds: Both TPR and FPR should be equal across groups.
+        """
+        groups = df[attribute].unique()
+        tpr_by_group = {}
+        fpr_by_group = {}
+        
+        for group in groups:
+            mask = self._get_group_mask(df, attribute, group)
+            group_df = df[mask]
+            
+            scores = group_df[score_col].values
+            targets = group_df[target_col].values
+            predictions = scores >= self.config.approval_threshold
+            
+            # TPR (True Positive Rate) - among actual positives
+            actual_positives = targets == 1
+            if actual_positives.sum() > 0:
+                tpr_by_group[group] = float(
+                    predictions[actual_positives].mean()
+                )
+            else:
+                tpr_by_group[group] = 0.0
+            
+            # FPR (False Positive Rate) - among actual negatives
+            actual_negatives = targets == 0
+            if actual_negatives.sum() > 0:
+                fpr_by_group[group] = float(
+                    predictions[actual_negatives].mean()
+                )
+            else:
+                fpr_by_group[group] = 0.0
+        
+        # Calculate max differences
+        reference_group = self.config.reference_groups.get(attribute)
+        if reference_group and reference_group in tpr_by_group:
+            ref_tpr = tpr_by_group[reference_group]
+            ref_fpr = fpr_by_group[reference_group]
+            
+            tpr_diffs = {
+                group: abs(tpr - ref_tpr)
+                for group, tpr in tpr_by_group.items()
+                if group != reference_group
+            }
+            fpr_diffs = {
+                group: abs(fpr - ref_fpr)
+                for group, fpr in fpr_by_group.items()
+                if group != reference_group
+            }
+            
+            max_tpr_diff = max(tpr_diffs.values()) if tpr_diffs else 0.0
+            max_fpr_diff = max(fpr_diffs.values()) if fpr_diffs else 0.0
+        else:
+            mean_tpr = np.mean(list(tpr_by_group.values()))
+            mean_fpr = np.mean(list(fpr_by_group.values()))
+            
+            tpr_diffs = {group: abs(tpr - mean_tpr) for group, tpr in tpr_by_group.items()}
+            fpr_diffs = {group: abs(fpr - mean_fpr) for group, fpr in fpr_by_group.items()}
+            
+            max_tpr_diff = max(tpr_diffs.values()) if tpr_diffs else 0.0
+            max_fpr_diff = max(fpr_diffs.values()) if fpr_diffs else 0.0
+        
+        max_diff = max(max_tpr_diff, max_fpr_diff)
+        violation = max_diff > self.config.equalized_odds_threshold
+        
+        return {
+            "metric": "equalized_odds",
+            "attribute": attribute,
+            "tpr_by_group": tpr_by_group,
+            "fpr_by_group": fpr_by_group,
+            "max_tpr_difference": max_tpr_diff,
+            "max_fpr_difference": max_fpr_diff,
+            "max_difference": max_diff,
+            "threshold": self.config.equalized_odds_threshold,
+            "violation": violation,
+            "status": "violation" if violation else "pass",
+        }
+    
+    def calibration_by_group(
+        self,
+        df: pd.DataFrame,
+        attribute: str,
+        score_col: str = "predicted_score",
+        target_col: str = "delinquent",
+        n_bins: int = 10,
+    ) -> Dict[str, Any]:
+        """
+        Check calibration within each group.
+        
+        Calibration: Predicted probability should match actual default rate.
+        """
+        groups = df[attribute].unique()
+        calibration_by_group = {}
+        
+        for group in groups:
+            mask = self._get_group_mask(df, attribute, group)
+            group_df = df[mask]
+            
+            if len(group_df) < n_bins:
+                calibration_by_group[group] = {"error": "Insufficient data"}
+                continue
+            
+            scores = group_df[score_col].values
+            targets = group_df[target_col].values
+            
+            # Create score bins
+            score_bins = pd.qcut(scores, q=n_bins, duplicates="drop")
+            
+            calibration_data = []
+            for bin_name, bin_df in group_df.groupby(score_bins):
+                if len(bin_df) == 0:
+                    continue
+                
+                mean_score = bin_df[score_col].mean()
+                actual_rate = bin_df[target_col].mean()
+                
+                calibration_data.append({
+                    "bin": str(bin_name),
+                    "mean_predicted": float(mean_score),
+                    "actual_rate": float(actual_rate),
+                    "count": len(bin_df),
+                    "error": float(abs(mean_score - actual_rate)),
+                })
+            
+            # Calculate max calibration error
+            max_error = max(d["error"] for d in calibration_data) if calibration_data else 0.0
+            
+            calibration_by_group[group] = {
+                "max_calibration_error": max_error,
+                "bins": calibration_data,
+            }
+        
+        # Check if any group exceeds threshold
+        max_errors = [
+            data["max_calibration_error"]
+            for data in calibration_by_group.values()
+            if "max_calibration_error" in data
+        ]
+        overall_max_error = max(max_errors) if max_errors else 0.0
+        
+        violation = overall_max_error > self.config.calibration_threshold
+        
+        return {
+            "metric": "calibration",
+            "attribute": attribute,
+            "calibration_by_group": calibration_by_group,
+            "max_calibration_error": overall_max_error,
+            "threshold": self.config.calibration_threshold,
+            "violation": violation,
+            "status": "violation" if violation else "pass",
+        }
+    
+    def compute_all_metrics(
+        self,
+        df: pd.DataFrame,
+        score_col: str = "predicted_score",
+        target_col: str = "delinquent",
+    ) -> Dict[str, Any]:
+        """
+        Compute all fairness metrics for all protected attributes.
+        
+        Returns:
+            Comprehensive fairness report
+        """
+        all_results = []
+        violations = []
+        
+        for attribute in self.config.protected_attributes:
+            if attribute not in df.columns:
+                logger.warning(f"Protected attribute {attribute} not found in data")
+                continue
+            
+            logger.info(f"Computing fairness metrics for {attribute}")
+            
+            # Compute each metric
+            dp = self.demographic_parity(df, attribute, score_col)
+            eo = self.equal_opportunity(df, attribute, score_col, target_col)
+            di = self.disparate_impact(df, attribute, score_col)
+            eq_odds = self.equalized_odds(df, attribute, score_col, target_col)
+            cal = self.calibration_by_group(df, attribute, score_col, target_col)
+            
+            attribute_results = {
+                "attribute": attribute,
+                "metrics": {
+                    "demographic_parity": dp,
+                    "equal_opportunity": eo,
+                    "disparate_impact": di,
+                    "equalized_odds": eq_odds,
+                    "calibration": cal,
+                },
+            }
+            
+            all_results.append(attribute_results)
+            
+            # Collect violations
+            for metric_name, metric_result in attribute_results["metrics"].items():
+                if metric_result.get("violation", False):
+                    violations.append({
+                        "attribute": attribute,
+                        "metric": metric_name,
+                        "severity": "critical" if metric_name == "disparate_impact" else "warning",
+                        "details": metric_result,
+                    })
+        
+        overall_status = "pass"
+        if any(v["severity"] == "critical" for v in violations):
+            overall_status = "critical"
+        elif violations:
+            overall_status = "warning"
+        
+        report = {
+            "overall_status": overall_status,
+            "violations_detected": len(violations),
+            "critical_violations": len([v for v in violations if v["severity"] == "critical"]),
+            "warning_violations": len([v for v in violations if v["severity"] == "warning"]),
+            "violations": violations,
+            "results": all_results,
+            "thresholds": {
+                "demographic_parity": self.config.demographic_parity_threshold,
+                "equal_opportunity": self.config.equal_opportunity_threshold,
+                "disparate_impact": self.config.disparate_impact_threshold,
+                "equalized_odds": self.config.equalized_odds_threshold,
+                "calibration": self.config.calibration_threshold,
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        
+        logger.info(
+            f"Fairness audit complete: {len(violations)} violations "
+            f"({report['critical_violations']} critical, {report['warning_violations']} warning)"
+        )
+        
+        self.results = report
+        return report
+    
+    def save_report(self, report: Optional[Dict[str, Any]] = None, filename: Optional[str] = None):
+        """Save fairness report to file."""
+        report = report or self.results
+        
+        Path(self.config.report_path).mkdir(parents=True, exist_ok=True)
+        
+        if filename is None:
+            filename = f"fairness_report_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+        
+        filepath = Path(self.config.report_path) / filename
+        with open(filepath, "w") as f:
+            json.dump(report, f, indent=2, default=str)
+        
+        logger.info(f"Saved fairness report to {filepath}")
+        return str(filepath)
+    
+    def generate_compliance_summary(self, report: Optional[Dict[str, Any]] = None) -> str:
+        """Generate human-readable compliance summary."""
+        report = report or self.results
+        
+        lines = [
+            "=" * 60,
+            "FAIRNESS COMPLIANCE REPORT",
+            "=" * 60,
+            f"Overall Status: {report['overall_status'].upper()}",
+            f"Violations: {report['violations_detected']} "
+            f"({report['critical_violations']} critical, {report['warning_violations']} warning)",
+            "-" * 60,
+        ]
+        
+        for result in report.get("results", []):
+            attr = result["attribute"]
+            lines.append(f"\\n{attr.upper()}:")
+            
+            for metric_name, metric_result in result["metrics"].items():
+                status = "❌" if metric_result.get("violation") else "✅"
+                lines.append(f"  {status} {metric_name}: {metric_result.get('status', 'unknown')}")
+                
+                if metric_name == "disparate_impact":
+                    lines.append(f"     Min Ratio: {metric_result.get('min_ratio', 'N/A'):.3f} "
+                               f"(threshold: {metric_result.get('threshold', 'N/A')})")
+                elif metric_name == "demographic_parity":
+                    lines.append(f"     Max Diff: {metric_result.get('max_difference', 'N/A'):.3f} "
+                               f"(threshold: {metric_result.get('threshold', 'N/A')})")
+        
+        if report["violations"]:
+            lines.append("\\n" + "-" * 60)
+            lines.append("VIOLATIONS:")
+            for v in report["violations"]:
+                lines.append(
+                    f"  [{v['severity'].upper()}] {v['attribute']} - {v['metric']}"
+                )
+        
+        lines.append("=" * 60)
+        
+        return "\\n".join(lines)
+
+
+if __name__ == "__main__":
+    # Example: Simulate the 11pp minority approval rate drop
+    np.random.seed(42)
+    n = 10000
+    
+    # Simulate biased predictions
+    df = pd.DataFrame({
+        "race": np.random.choice(["White", "Black", "Asian", "Hispanic"], n),
+        "predicted_score": np.random.uniform(0, 1, n),
+        "delinquent": np.random.binomial(1, 0.15, n),
+    })
+    
+    # Introduce bias: lower scores for minority groups
+    minority_mask = df["race"].isin(["Black", "Hispanic"])
+    df.loc[minority_mask, "predicted_score"] *= 0.85  # Reduce scores by 15%
+    
+    calculator = FairnessMetricsCalculator()
+    report = calculator.compute_all_metrics(df)
+    
+    print(calculator.generate_compliance_summary(report))
+'''
+
+with open(f"{project_root}/src/fairness_monitoring/fairness_metrics.py", "w") as f:
+    f.write(fairness_module)
+
+print("✅ Fairness Monitoring module created")
+
+
+
+# src/deployment/shadow_canary.py
+"""
+Shadow and Canary Deployment Manager for CreditScoreV4.
+
+Implements safe model rollout:
+1. Shadow (0% traffic, logs predictions) → 7-14 days
+2. Canary 10% → 24 hours → validate
+3. Canary 50% → 48 hours → validate
+4. Canary 100% → 72 hours → validate
+5. Full production or auto-rollback
+"""
+
+import json
+import time
+from dataclasses import dataclass, field
+from datetime import datetime, timezone, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Callable
+
+import numpy as np
+import pandas as pd
+from loguru import logger
+
+
+class DeploymentStage(Enum):
+    SHADOW = "shadow"
+    CANARY_10 = "canary_10"
+    CANARY_50 = "canary_50"
+    CANARY_100 = "canary_100"
+    PRODUCTION = "production"
+    ROLLED_BACK = "rolled_back"
+
+
+@dataclass
+class DeploymentConfig:
+    """Configuration for safe deployment."""
+    
+    # Stage durations
+    shadow_duration_days: int = 14
+    canary_10_duration_hours: int = 24
+    canary_50_duration_hours: int = 48
+    canary_100_duration_hours: int = 72
+    
+    # Traffic splits
+    shadow_traffic_split: float = 0.0
+    canary_10_traffic_split: float = 0.10
+    canary_50_traffic_split: float = 0.50
+    canary_100_traffic_split: float = 1.00
+    
+    # Success criteria
+    max_auc_degradation: float = 0.02  # For canary_10
+    max_auc_degradation_50: float = 0.01  # For canary_50
+    max_auc_degradation_100: float = 0.005  # For canary_100
+    
+    # Auto-rollback triggers
+    auto_rollback_auc_threshold: float = 0.76
+    auto_rollback_fairness_threshold: float = 0.80
+    auto_rollback_error_rate: float = 0.05
+    
+    # Model registry
+    model_name: str = "creditscorev4"
+    production_model_version: Optional[str] = None
+    candidate_model_version: Optional[str] = None
+
+
+class DeploymentManager:
+    """
+    Manages safe model deployment through shadow and canary stages.
+    
+    During the incident, this would have prevented the degraded model
+    from reaching full production traffic.
+    """
+    
+    def __init__(self, config: Optional[DeploymentConfig] = None):
+        self.config = config or DeploymentConfig()
+        self.current_stage: DeploymentStage = DeploymentStage.SHADOW
+        self.stage_start_time: Optional[datetime] = None
+        self.metrics_history: List[Dict[str, Any]] = []
+        self.deployment_log: List[Dict[str, Any]] = []
+    
+    def start_shadow_deployment(self, model_version: str):
+        """Begin shadow deployment of candidate model."""
+        self.config.candidate_model_version = model_version
+        self.current_stage = DeploymentStage.SHADOW
+        self.stage_start_time = datetime.now(timezone.utc)
+        
+        self._log_event("shadow_started", {
+            "model_version": model_version,
+            "duration_days": self.config.shadow_duration_days,
+        })
+        
+        logger.info(f"Started shadow deployment for model {model_version}")
+    
+    def evaluate_shadow_metrics(self, metrics: Dict[str, Any]) -> bool:
+        """
+        Evaluate shadow deployment metrics.
+        
+        In shadow mode, we compare predictions without affecting users.
+        """
+        self.metrics_history.append({
+            "stage": "shadow",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metrics": metrics,
+        })
+        
+        # Shadow deployment: log and compare, don't block
+        auc = metrics.get("auc", 0)
+        fairness_di = metrics.get("disparate_impact", 1.0)
+        
+        passed = auc >= 0.78 and fairness_di >= 0.80
+        
+        self._log_event("shadow_evaluation", {
+            "passed": passed,
+            "auc": auc,
+            "disparate_impact": fairness_di,
+        })
+        
+        return passed
+    
+    def promote_to_canary(self, stage: DeploymentStage = DeploymentStage.CANARY_10):
+        """Promote from shadow to canary stage."""
+        if self.current_stage != DeploymentStage.SHADOW:
+            raise ValueError(f"Cannot promote from {self.current_stage.value}")
+        
+        self.current_stage = stage
+        self.stage_start_time = datetime.now(timezone.utc)
+        
+        traffic_split = {
+            DeploymentStage.CANARY_10: self.config.canary_10_traffic_split,
+            DeploymentStage.CANARY_50: self.config.canary_50_traffic_split,
+            DeploymentStage.CANARY_100: self.config.canary_100_traffic_split,
+        }.get(stage, 0)
+        
+        self._log_event("canary_started", {
+            "stage": stage.value,
+            "traffic_split": traffic_split,
+            "model_version": self.config.candidate_model_version,
+        })
+        
+        logger.info(f"Promoted to {stage.value} with {traffic_split*100}% traffic")
+    
+    def evaluate_canary_metrics(self, metrics: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Evaluate canary deployment metrics and determine next action.
+        
+        Returns:
+            Dict with 'action' (promote/rollback/hold) and 'reason'.
+        """
+        self.metrics_history.append({
+            "stage": self.current_stage.value,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metrics": metrics,
+        })
+        
+        auc = metrics.get("auc", 0)
+        fairness_di = metrics.get("disparate_impact", 1.0)
+        error_rate = metrics.get("error_rate", 0)
+        
+        # Check auto-rollback triggers
+        if auc < self.config.auto_rollback_auc_threshold:
+            return self._trigger_rollback(f"AUC {auc} below threshold {self.config.auto_rollback_auc_threshold}")
+        
+        if fairness_di < self.config.auto_rollback_fairness_threshold:
+            return self._trigger_rollback(f"Disparate Impact {fairness_di} below threshold {self.config.auto_rollback_fairness_threshold}")
+        
+        if error_rate > self.config.auto_rollback_error_rate:
+            return self._trigger_rollback(f"Error rate {error_rate} above threshold {self.config.auto_rollback_error_rate}")
+        
+        # Check stage-specific criteria
+        stage_duration = datetime.now(timezone.utc) - self.stage_start_time
+        
+        if self.current_stage == DeploymentStage.CANARY_10:
+            # Check AUC degradation
+            auc_degradation = metrics.get("auc_degradation", 0)
+            if auc_degradation > self.config.max_auc_degradation:
+                return self._trigger_rollback(f"AUC degradation {auc_degradation} exceeds {self.config.max_auc_degradation}")
+            
+            # Check minimum duration
+            if stage_duration >= timedelta(hours=self.config.canary_10_duration_hours):
+                return {"action": "promote", "reason": "Canary 10% passed, promote to 50%", "next_stage": DeploymentStage.CANARY_50.value}
+            
+            return {"action": "hold", "reason": f"Canary 10% running ({stage_duration.total_seconds()/3600:.1f}h elapsed)"}
+        
+        elif self.current_stage == DeploymentStage.CANARY_50:
+            auc_degradation = metrics.get("auc_degradation", 0)
+            if auc_degradation > self.config.max_auc_degradation_50:
+                return self._trigger_rollback(f"AUC degradation {auc_degradation} exceeds {self.config.max_auc_degradation_50}")
+            
+            if stage_duration >= timedelta(hours=self.config.canary_50_duration_hours):
+                return {"action": "promote", "reason": "Canary 50% passed, promote to 100%", "next_stage": DeploymentStage.CANARY_100.value}
+            
+            return {"action": "hold", "reason": f"Canary 50% running ({stage_duration.total_seconds()/3600:.1f}h elapsed)"}
+        
+        elif self.current_stage == DeploymentStage.CANARY_100:
+            auc_degradation = metrics.get("auc_degradation", 0)
+            if auc_degradation > self.config.max_auc_degradation_100:
+                return self._trigger_rollback(f"AUC degradation {auc_degradation} exceeds {self.config.max_auc_degradation_100}")
+            
+            if stage_duration >= timedelta(hours=self.config.canary_100_duration_hours):
+                return {"action": "promote", "reason": "Canary 100% passed, promote to production", "next_stage": DeploymentStage.PRODUCTION.value}
+            
+            return {"action": "hold", "reason": f"Canary 100% running ({stage_duration.total_seconds()/3600:.1f}h elapsed)"}
+        
+        return {"action": "unknown", "reason": f"Unknown stage: {self.current_stage.value}"}
+    
+    def _trigger_rollback(self, reason: str) -> Dict[str, Any]:
+        """Trigger automatic rollback."""
+        self.current_stage = DeploymentStage.ROLLED_BACK
+        self._log_event("rollback_triggered", {"reason": reason})
+        
+        logger.critical(f"AUTO-ROLLBACK TRIGGERED: {reason}")
+        
+        return {
+            "action": "rollback",
+            "reason": reason,
+            "previous_production_version": self.config.production_model_version,
+        }
+    
+    def promote_to_production(self):
+        """Complete deployment to production."""
+        self.config.production_model_version = self.config.candidate_model_version
+        self.current_stage = DeploymentStage.PRODUCTION
+        
+        self._log_event("production_promotion", {
+            "model_version": self.config.candidate_model_version,
+        })
+        
+        logger.info(f"Model {self.config.candidate_model_version} promoted to production")
+    
+    def _log_event(self, event_type: str, details: Dict[str, Any]):
+        """Log deployment event."""
+        self.deployment_log.append({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event_type": event_type,
+            "stage": self.current_stage.value,
+            "details": details,
+        })
+    
+    def get_deployment_status(self) -> Dict[str, Any]:
+        """Get current deployment status."""
+        stage_duration = (
+            datetime.now(timezone.utc) - self.stage_start_time
+            if self.stage_start_time else timedelta(0)
+        )
+        
+        return {
+            "current_stage": self.current_stage.value,
+            "candidate_version": self.config.candidate_model_version,
+            "production_version": self.config.production_model_version,
+            "stage_duration_hours": stage_duration.total_seconds() / 3600,
+            "metrics_history_count": len(self.metrics_history),
+            "recent_events": self.deployment_log[-5:],
+        }
+    
+    def save_state(self, path: str):
+        """Save deployment state to file."""
+        state = {
+            "config": {
+                "model_name": self.config.model_name,
+                "production_version": self.config.production_model_version,
+                "candidate_version": self.config.candidate_model_version,
+            },
+            "current_stage": self.current_stage.value,
+            "stage_start_time": self.stage_start_time.isoformat() if self.stage_start_time else None,
+            "metrics_history": self.metrics_history,
+            "deployment_log": self.deployment_log,
+        }
+        
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(state, f, indent=2, default=str)
+        
+        logger.info(f"Saved deployment state to {path}")
+    
+    @classmethod
+    def load_state(cls, path: str) -> "DeploymentManager":
+        """Load deployment state from file."""
+        with open(path, "r") as f:
+            state = json.load(f)
+        
+        config = DeploymentConfig(
+            model_name=state["config"]["model_name"],
+            production_model_version=state["config"].get("production_version"),
+            candidate_model_version=state["config"].get("candidate_version"),
+        )
+        
+        manager = cls(config)
+        manager.current_stage = DeploymentStage(state["current_stage"])
+        manager.stage_start_time = (
+            datetime.fromisoformat(state["stage_start_time"])
+            if state["stage_start_time"] else None
+        )
+        manager.metrics_history = state.get("metrics_history", [])
+        manager.deployment_log = state.get("deployment_log", [])
+        
+        return manager
+
+
+
+
+# src/shap_analysis/bias_explainer.py
+"""
+SHAP-based Bias Attribution for CreditScoreV4.
+Identifies which features contribute most to unfair predictions across groups.
+"""
+
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
+import shap
+from loguru import logger
+
+
+class SHAPBiasAttributor:
+    """
+    Uses SHAP values to attribute bias to specific features.
+    
+    When the 11pp minority approval rate drop occurred, this would have
+    identified that device_risk_score (with its shifted distribution)
+    was the primary driver of disparate impact.
+    """
+    
+    def __init__(self, model, feature_names: List[str]):
+        self.model = model
+        self.feature_names = feature_names
+        self.explainer = None
+        self.shap_values = None
+    
+    def fit_explainer(self, X_background: pd.DataFrame):
+        """Initialize SHAP TreeExplainer with background data."""
+        self.explainer = shap.TreeExplainer(self.model)
+        logger.info("SHAP TreeExplainer initialized")
+    
+    def explain(self, X: pd.DataFrame) -> np.ndarray:
+        """Generate SHAP values for predictions."""
+        if self.explainer is None:
+            self.fit_explainer(X.sample(min(100, len(X))))
+        
+        self.shap_values = self.explainer.shap_values(X)
+        logger.info(f"Generated SHAP values: shape {np.array(self.shap_values).shape}")
+        return self.shap_values
+    
+    def attribute_bias_by_group(
+        self,
+        X: pd.DataFrame,
+        protected_attribute: str,
+        protected_values: List[str],
+    ) -> Dict[str, Any]:
+        """
+        Attribute bias to features by comparing SHAP distributions across groups.
+        
+        Returns:
+            Dictionary with bias attribution per feature per group.
+        """
+        if self.shap_values is None:
+            self.explain(X)
+        
+        results = {}
+        
+        for value in protected_values:
+            mask = X[protected_attribute] == value
+            group_shap = np.array(self.shap_values)[mask.values]
+            group_features = X[mask]
+            
+            # Mean absolute SHAP per feature
+            mean_abs_shap = np.abs(group_shap).mean(axis=0)
+            
+            # Feature ranking by importance
+            feature_importance = pd.DataFrame({
+                "feature": self.feature_names[:len(mean_abs_shap)],
+                "mean_abs_shap": mean_abs_shap,
+            }).sort_values("mean_abs_shap", ascending=False)
+            
+            results[value] = {
+                "group_size": int(mask.sum()),
+                "top_biased_features": feature_importance.head(10).to_dict("records"),
+                "mean_prediction": float(self.model.predict_proba(group_features)[:, 1].mean()),
+            }
+        
+        # Compare groups to identify bias drivers
+        reference = protected_values[0]
+        comparison = {}
+        
+        for value in protected_values[1:]:
+            ref_shap = np.abs(np.array(self.shap_values)[X[protected_attribute] == reference].mean(axis=0))
+            comp_shap = np.abs(np.array(self.shap_values)[X[protected_attribute] == value].mean(axis=0))
+            
+            # Features with largest difference in SHAP contribution
+            diff = np.abs(ref_shap - comp_shap)
+            diff_df = pd.DataFrame({
+                "feature": self.feature_names[:len(diff)],
+                "shap_difference": diff,
+            }).sort_values("shap_difference", ascending=False)
+            
+            comparison[f"{reference}_vs_{value}"] = {
+                "top_bias_drivers": diff_df.head(10).to_dict("records"),
+                "max_difference": float(diff.max()),
+            }
+        
+        return {
+            "protected_attribute": protected_attribute,
+            "group_analysis": results,
+            "group_comparisons": comparison,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    
+    def generate_bias_report(self, attribution: Dict[str, Any]) -> str:
+        """Generate human-readable bias attribution report."""
+        lines = [
+            "=" * 60,
+            "SHAP BIAS ATTRIBUTION REPORT",
+            "=" * 60,
+            f"Protected Attribute: {attribution['protected_attribute']}",
+            "-" * 60,
+        ]
+        
+        for comparison, data in attribution["group_comparisons"].items():
+            lines.append(f"\n{comparison}:")
+            lines.append("Top Bias Drivers (features with divergent impact):")
+            for driver in data["top_bias_drivers"][:5]:
+                lines.append(f"  • {driver['feature']}: ΔSHAP = {driver['shap_difference']:.4f}")
+        
+        lines.append("=" * 60)
+        return "\n".join(lines)
+
+
+
+
+
+
+# src/incident_response/runbook_engine.py
+"""
+Incident Response Engine for CreditScoreV4.
+Automated SEV classification, escalation, and remediation.
+"""
+
+import json
+import os
+from dataclasses import dataclass
+from datetime import datetime, timezone, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Callable
+
+import requests
+from loguru import logger
+
+
+class Severity(Enum):
+    SEV1 = "sev1"  # Critical - Production outage
+    SEV2 = "sev2"  # High - Significant degradation
+    SEV3 = "sev3"  # Medium - Monitoring alerts
+    SEV4 = "sev4"  # Low - Informational
+
+
+@dataclass
+class IncidentConfig:
+    """Incident response configuration."""
+    
+    # Escalation times (minutes)
+    sev1_response_minutes: int = 15
+    sev2_response_minutes: int = 60
+    sev3_response_minutes: int = 240
+    sev4_response_minutes: int = 1440
+    
+    # Auto-rollback
+    auto_rollback_enabled: bool = True
+    
+    # PagerDuty
+    pagerduty_api_key: Optional[str] = None
+    pagerduty_service_key: Optional[str] = None
+    
+    # Slack
+    slack_webhook_url: Optional[str] = None
+
+
+class Incident:
+    """Represents an active incident."""
+    
+    def __init__(
+        self,
+        incident_type: str,
+        severity: Severity,
+        description: str,
+        metrics: Dict[str, Any],
+        auto_rollback: bool = False,
+    ):
+        self.id = f"INC-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{severity.value}"
+        self.type = incident_type
+        self.severity = severity
+        self.description = description
+        self.metrics = metrics
+        self.auto_rollback = auto_rollback
+        self.created_at = datetime.now(timezone.utc)
+        self.status = "open"
+        self.resolved_at: Optional[datetime] = None
+        self.actions_taken: List[Dict[str, Any]] = []
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "id": self.id,
+            "type": self.type,
+            "severity": self.severity.value,
+            "description": self.description,
+            "metrics": self.metrics,
+            "auto_rollback": self.auto_rollback,
+            "created_at": self.created_at.isoformat(),
+            "status": self.status,
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "actions_taken": self.actions_taken,
+        }
+
+
+class IncidentResponseEngine:
+    """
+    Automated incident response for ML production issues.
+    
+    During the AUC 0.81 → 0.74 incident, this would have:
+    1. Classified as SEV1 within minutes
+    2. Auto-triggered rollback
+    3. Paged the on-call engineer
+    4. Executed the AUC degradation runbook
+    """
+    
+    # Incident classification rules
+    CLASSIFICATION_RULES = [
+        {
+            "name": "auc_critical_degradation",
+            "condition": lambda m: m.get("auc", 1.0) < 0.76,
+            "severity": Severity.SEV1,
+            "auto_rollback": True,
+            "runbook": "RB-001",
+        },
+        {
+            "name": "auc_significant_degradation",
+            "condition": lambda m: m.get("auc", 1.0) < 0.78,
+            "severity": Severity.SEV2,
+            "auto_rollback": True,
+            "runbook": "RB-001",
+        },
+        {
+            "name": "data_quality_failure",
+            "condition": lambda m: m.get("null_rate", 0) > 0.05,
+            "severity": Severity.SEV1,
+            "auto_rollback": True,
+            "runbook": "RB-002",
+        },
+        {
+            "name": "fairness_violation",
+            "condition": lambda m: m.get("disparate_impact", 1.0) < 0.80,
+            "severity": Severity.SEV1,
+            "auto_rollback": True,
+            "runbook": "RB-003",
+        },
+        {
+            "name": "drift_warning",
+            "condition": lambda m: m.get("psi", 0) > 0.2,
+            "severity": Severity.SEV2,
+            "auto_rollback": False,
+            "runbook": "RB-004",
+        },
+        {
+            "name": "high_latency",
+            "condition": lambda m: m.get("p99_latency_ms", 0) > 500,
+            "severity": Severity.SEV3,
+            "auto_rollback": False,
+            "runbook": None,
+        },
+    ]
+    
+    # Runbooks
+    RUNBOOKS = {
+        "RB-001": {
+            "title": "AUC Degradation Response",
+            "steps": [
+                "Check data quality metrics and NULL rates",
+                "Run drift detection on all features",
+                "Analyze feature importance shifts vs baseline",
+                "Check upstream vendor API status and schema",
+                "Review recent deployments for correlation",
+                "If auto-rollback triggered: verify rollback success",
+                "If manual: initiate rollback or emergency retraining",
+                "Document root cause for post-mortem",
+            ],
+        },
+        "RB-002": {
+            "title": "Data Quality Failure Response",
+            "steps": [
+                "Identify all affected features and NULL rates",
+                "Check upstream vendor for schema changes",
+                "Run data contract validation suite",
+                "Alert data engineering team via PagerDuty",
+                "If auto-rollback triggered: verify rollback success",
+                "Coordinate with vendor for data fix",
+                "Implement temporary data patching if needed",
+            ],
+        },
+        "RB-003": {
+            "title": "Fairness Violation Response",
+            "steps": [
+                "Run SHAP bias attribution analysis",
+                "Identify features driving disparate impact",
+                "Check for proxy variables (zip_code → race)",
+                "Alert compliance and legal teams",
+                "If auto-rollback triggered: verify rollback success",
+                "Prepare regulatory reporting documentation",
+                "Plan model retraining with fairness constraints",
+            ],
+        },
+        "RB-004": {
+            "title": "Drift Detection Response",
+            "steps": [
+                "Analyze drifted features for business context",
+                "Check if drift is expected (seasonality, policy change)",
+                "Run feature importance analysis",
+                "Evaluate if retraining is needed",
+                "Schedule model refresh if drift is significant",
+            ],
+        },
+    }
+    
+    def __init__(self, config: Optional[IncidentConfig] = None):
+        self.config = config or IncidentConfig()
+        self.active_incidents: Dict[str, Incident] = {}
+        self.resolved_incidents: List[Incident] = []
+    
+    def evaluate_metrics(self, metrics: Dict[str, Any]) -> List[Incident]:
+        """
+        Evaluate metrics against classification rules and create incidents.
+        
+        Returns:
+            List of newly created incidents.
+        """
+        new_incidents = []
+        
+        for rule in self.CLASSIFICATION_RULES:
+            if rule["condition"](metrics):
+                # Check if similar incident already active
+                existing = self._find_similar_active(rule["name"])
+                if existing:
+                    continue
+                
+                incident = Incident(
+                    incident_type=rule["name"],
+                    severity=rule["severity"],
+                    description=f"Triggered by rule: {rule['name']}",
+                    metrics=metrics,
+                    auto_rollback=rule.get("auto_rollback", False),
+                )
+                
+                self.active_incidents[incident.id] = incident
+                new_incidents.append(incident)
+                
+                self._handle_incident(incident, rule.get("runbook"))
+        
+        return new_incidents
+    
+    def _find_similar_active(self, incident_type: str) -> Optional[Incident]:
+        """Find active incident of same type."""
+        for incident in self.active_incidents.values():
+            if incident.type == incident_type and incident.status == "open":
+                return incident
+        return None
+    
+    def _handle_incident(self, incident: Incident, runbook_id: Optional[str]):
+        """Handle incident with appropriate actions."""
+        logger.critical(
+            f"INCIDENT {incident.id}: {incident.type} ({incident.severity.value}) - "
+            f"{incident.description}"
+        )
+        
+        # Execute runbook
+        if runbook_id and runbook_id in self.RUNBOOKS:
+            runbook = self.RUNBOOKS[runbook_id]
+            logger.info(f"Executing runbook {runbook_id}: {runbook['title']}")
+            incident.actions_taken.append({
+                "action": "runbook_executed",
+                "runbook_id": runbook_id,
+                "runbook_title": runbook["title"],
+                "steps": runbook["steps"],
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+        
+        # Auto-rollback
+        if incident.auto_rollback and self.config.auto_rollback_enabled:
+            logger.critical(f"Auto-rollback triggered for {incident.id}")
+            incident.actions_taken.append({
+                "action": "auto_rollback_initiated",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+            self._trigger_rollback(incident)
+        
+        # Page on-call
+        if incident.severity in (Severity.SEV1, Severity.SEV2):
+            self._page_oncall(incident)
+        
+        # Slack notification
+        self._notify_slack(incident)
+    
+    def _trigger_rollback(self, incident: Incident):
+        """Trigger model rollback."""
+        # Integration point with deployment manager
+        incident.actions_taken.append({
+            "action": "rollback_completed",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info(f"Rollback completed for incident {incident.id}")
+    
+    def _page_oncall(self, incident: Incident):
+        """Page on-call engineer via PagerDuty."""
+        if not self.config.pagerduty_service_key:
+            logger.warning("PagerDuty not configured, skipping page")
+            return
+        
+        try:
+            response = requests.post(
+                "https://events.pagerduty.com/v2/enqueue",
+                json={
+                    "routing_key": self.config.pagerduty_service_key,
+                    "event_action": "trigger",
+                    "dedup_key": incident.id,
+                    "payload": {
+                        "summary": f"[{incident.severity.value.upper()}] {incident.type}",
+                        "severity": "critical" if incident.severity == Severity.SEV1 else "error",
+                        "source": "creditscorev4-ml-governance",
+                        "custom_details": incident.metrics,
+                    },
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            
+            incident.actions_taken.append({
+                "action": "pagerduty_page_sent",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.info(f"PagerDuty page sent for {incident.id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send PagerDuty page: {e}")
+    
+    def _notify_slack(self, incident: Incident):
+        """Send Slack notification."""
+        if not self.config.slack_webhook_url:
+            return
+        
+        color = {
+            Severity.SEV1: "#FF0000",
+            Severity.SEV2: "#FF8C00",
+            Severity.SEV3: "#FFD700",
+            Severity.SEV4: "#00FF00",
+        }.get(incident.severity, "#808080")
+        
+        message = {
+            "attachments": [{
+                "color": color,
+                "title": f"[{incident.severity.value.upper()}] {incident.type}",
+                "text": incident.description,
+                "fields": [
+                    {"title": "Incident ID", "value": incident.id, "short": True},
+                    {"title": "Auto-Rollback", "value": str(incident.auto_rollback), "short": True},
+                    {"title": "Metrics", "value": json.dumps(incident.metrics, indent=2), "short": False},
+                ],
+                "footer": "CreditScoreV4 ML Governance",
+                "ts": int(datetime.now(timezone.utc).timestamp()),
+            }]
+        }
+        
+        try:
+            requests.post(
+                self.config.slack_webhook_url,
+                json=message,
+                timeout=10,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send Slack notification: {e}")
+    
+    def resolve_incident(self, incident_id: str, resolution: str):
+        """Resolve an active incident."""
+        if incident_id not in self.active_incidents:
+            raise ValueError(f"Incident {incident_id} not found")
+        
+        incident = self.active_incidents.pop(incident_id)
+        incident.status = "resolved"
+        incident.resolved_at = datetime.now(timezone.utc)
+        incident.actions_taken.append({
+            "action": "resolved",
+            "resolution": resolution,
+            "timestamp": incident.resolved_at.isoformat(),
+        })
+        
+        self.resolved_incidents.append(incident)
+        logger.info(f"Resolved incident {incident_id}: {resolution}")
+    
+    def get_active_incidents(self) -> List[Dict[str, Any]]:
+        """Get all active incidents."""
+        return [inc.to_dict() for inc in self.active_incidents.values()]
+    
+    def get_incident_summary(self) -> Dict[str, Any]:
+        """Get summary of incident status."""
+        return {
+            "active_incidents": len(self.active_incidents),
+            "resolved_incidents_24h": len([
+                i for i in self.resolved_incidents
+                if i.resolved_at and i.resolved_at > datetime.now(timezone.utc) - timedelta(hours=24)
+            ]),
+            "sev1_active": len([i for i in self.active_incidents.values() if i.severity == Severity.SEV1]),
+            "sev2_active": len([i for i in self.active_incidents.values() if i.severity == Severity.SEV2]),
+        }
+
+
+
+
+# src/monitoring/airflow_dags/creditscorev4_pipeline.py
+"""
+Airflow DAG for CreditScoreV4 MLOps Pipeline.
+Orchestrates: ingestion → validation → preprocessing → training → validation → drift → fairness → deployment
+"""
+
+from datetime import datetime, timedelta
+
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.utils.dates import days_ago
+
+# Default args
+default_args = {
+    "owner": "ml-engineering",
+    "depends_on_past": False,
+    "email": ["ml-alerts@company.com"],
+    "email_on_failure": True,
+    "email_on_retry": False,
+    "retries": 2,
+    "retry_delay": timedelta(minutes=5),
+    "execution_timeout": timedelta(hours=2),
+}
+
+dag = DAG(
+    "creditscorev4_pipeline",
+    default_args=default_args,
+    description="CreditScoreV4 ML Pipeline - Daily retraining and monitoring",
+    schedule_interval="0 2 * * *",  # Daily at 2 AM
+    start_date=days_ago(1),
+    catchup=False,
+    max_active_runs=1,
+    tags=["creditscorev4", "ml", "production"],
+)
+
+
+def data_ingestion_task(**context):
+    """Task: Ingest data from upstream vendor."""
+    from src.data_ingestion.ingestor import DataIngestor
+    
+    ingestor = DataIngestor()
+    file_path = ingestor.ingest_daily_batch()
+    
+    context["ti"].xcom_push(key="raw_data_path", value=file_path)
+    context["ti"].xcom_push(key="ingestion_metadata", value=ingestor.get_ingestion_metadata())
+    
+    return f"Ingested: {file_path}"
+
+
+def data_validation_task(**context):
+    """Task: Validate data quality with Great Expectations."""
+    from src.data_validation.great_expectations_suite import CreditScoreV4ValidationSuite
+    from src.data_validation.schema_validator import SchemaDriftDetector
+    
+    ti = context["ti"]
+    raw_path = ti.xcom_pull(task_ids="data_ingestion", key="raw_data_path")
+    
+    import pandas as pd
+    df = pd.read_parquet(raw_path)
+    
+    # Schema drift check
+    schema_detector = SchemaDriftDetector()
+    drift_result = schema_detector.detect_drift(df)
+    
+    if drift_result["drift_detected"] and drift_result["critical_violations"] > 0:
+        raise ValueError(f"Critical schema drift detected: {drift_result['violations']}")
+    
+    # Great Expectations validation
+    validator = CreditScoreV4ValidationSuite()
+    validation_result = validator.validate_dataframe(df)
+    
+    if not validation_result["passed"]:
+        raise ValueError(f"Data quality validation failed: {validation_result['failed_expectations']} expectations failed")
+    
+    return "Data validation passed"
+
+
+def preprocessing_task(**context):
+    """Task: Preprocess data."""
+    from src.preprocessing.preprocessor import CreditScoreV4Preprocessor, PreprocessingConfig
+    
+    ti = context["ti"]
+    raw_path = ti.xcom_pull(task_ids="data_ingestion", key="raw_data_path")
+    
+    import pandas as pd
+    df = pd.read_parquet(raw_path)
+    
+    config = PreprocessingConfig(
+        numerical_features=["annual_income", "debt_to_income_ratio", "credit_history_length",
+                          "device_risk_score", "employment_length", "num_credit_lines", "avg_credit_utilization"],
+        categorical_features=["loan_purpose", "home_ownership", "verification_status"],
+        protected_attributes=["race", "gender", "age_group"],
+    )
+    
+    preprocessor = CreditScoreV4Preprocessor(config)
+    processed_df = preprocessor.fit_transform(df)
+    
+    # Save preprocessor
+    preprocessor_path = f"models/preprocessor_{context['ds']}.pkl"
+    preprocessor.save(preprocessor_path)
+    
+    # Save processed data
+    processed_path = f"data/processed/processed_{context['ds']}.parquet"
+    processed_df.to_parquet(processed_path)
+    
+    ti.xcom_push(key="processed_data_path", value=processed_path)
+    ti.xcom_push(key="preprocessor_path", value=preprocessor_path)
+    
+    return f"Preprocessed: {processed_path}"
+
+
+def model_training_task(**context):
+    """Task: Train XGBoost model."""
+    from src.model_training.trainer import CreditScoreV4Trainer, ModelConfig
+    
+    ti = context["ti"]
+    processed_path = ti.xcom_pull(task_ids="preprocessing", key="processed_data_path")
+    
+    import pandas as pd
+    df = pd.read_parquet(processed_path)
+    
+    trainer = CreditScoreV4Trainer()
+    X_train, y_train, X_test, y_test = trainer.prepare_data(df)
+    
+    # Cross-validation
+    cv_results = trainer.cross_validate(
+        pd.concat([X_train, X_test]),
+        pd.concat([y_train, y_test]),
+    )
+    
+    # Train final model
+    trainer.train(X_train, y_train, X_test, y_test)
+    
+    # Evaluate
+    metrics = trainer.evaluate(X_test, y_test)
+    
+    # Check thresholds
+    passed, failures = metrics.meets_thresholds(trainer.config)
+    if not passed:
+        raise ValueError(f"Model does not meet thresholds: {failures}")
+    
+    # Log to MLflow
+    run_id = trainer.log_to_mlflow()
+    
+    # Save model
+    model_path = f"models/creditscorev4_{context['ds']}.pkl"
+    trainer.save_model(model_path)
+    
+    ti.xcom_push(key="model_path", value=model_path)
+    ti.xcom_push(key="mlflow_run_id", value=run_id)
+    ti.xcom_push(key="model_auc", value=metrics.metrics["auc"])
+    
+    return f"Model trained: AUC={metrics.metrics['auc']:.4f}"
+
+
+def drift_detection_task(**context):
+    """Task: Run drift detection."""
+    from src.drift_detection.psi_calculator import PSICalculator, PSIDriftConfig
+    
+    ti = context["ti"]
+    processed_path = ti.xcom_pull(task_ids="preprocessing", key="processed_data_path")
+    
+    import pandas as pd
+    df = pd.read_parquet(processed_path)
+    
+    # Load baseline
+    calculator = PSICalculator.load_baseline("data/validation/baseline_psi.json")
+    
+    report = calculator.detect_all_drift(df)
+    calculator.save_report(report)
+    
+    if report["overall_status"] == "critical":
+        raise ValueError(f"Critical drift detected: {report['critical_features']} features")
+    
+    return f"Drift check: {report['overall_status']}"
+
+
+def fairness_audit_task(**context):
+    """Task: Run fairness audit."""
+    from src.fairness_monitoring.fairness_metrics import FairnessMetricsCalculator, FairnessConfig
+    
+    ti = context["ti"]
+    processed_path = ti.xcom_pull(task_ids="preprocessing", key="processed_data_path")
+    
+    import pandas as pd
+    df = pd.read_parquet(processed_path)
+    
+    # Add predictions
+    from src.model_training.trainer import CreditScoreV4Trainer
+    model_path = ti.xcom_pull(task_ids="model_training", key="model_path")
+    model, _ = CreditScoreV4Trainer.load_model(model_path)
+    
+    feature_cols = [c for c in df.columns if c not in ["race", "gender", "age_group", "delinquent"]]
+    df["predicted_score"] = model.predict_proba(df[feature_cols])[:, 1]
+    
+    calculator = FairnessMetricsCalculator()
+    report = calculator.compute_all_metrics(df)
+    calculator.save_report(report)
+    
+    if report["overall_status"] == "critical":
+        raise ValueError(f"Critical fairness violations: {report['critical_violations']}")
+    
+    return f"Fairness audit: {report['overall_status']}"
+
+
+def model_registration_task(**context):
+    """Task: Register model in MLflow model registry."""
+    import mlflow
+    
+    ti = context["ti"]
+    run_id = ti.xcom_pull(task_ids="model_training", key="mlflow_run_id")
+    
+    # Transition to staging
+    client = mlflow.tracking.MlflowClient()
+    model_version = client.create_model_version(
+        name="creditscorev4",
+        source=f"runs:/{run_id}/model",
+        run_id=run_id,
+    )
+    
+    client.transition_model_version_stage(
+        name="creditscorev4",
+        version=model_version.version,
+        stage="Staging",
+    )
+    
+    return f"Model registered: version {model_version.version}"
+
+
+# Define tasks
+t1_ingestion = PythonOperator(
+    task_id="data_ingestion",
+    python_callable=data_ingestion_task,
+    dag=dag,
+)
+
+t2_validation = PythonOperator(
+    task_id="data_validation",
+    python_callable=data_validation_task,
+    dag=dag,
+)
+
+t3_preprocessing = PythonOperator(
+    task_id="preprocessing",
+    python_callable=preprocessing_task,
+    dag=dag,
+)
+
+t4_training = PythonOperator(
+    task_id="model_training",
+    python_callable=model_training_task,
+    dag=dag,
+)
+
+t5_drift = PythonOperator(
+    task_id="drift_detection",
+    python_callable=drift_detection_task,
+    dag=dag,
+)
+
+t6_fairness = PythonOperator(
+    task_id="fairness_audit",
+    python_callable=fairness_audit_task,
+    dag=dag,
+)
+
+t7_register = PythonOperator(
+    task_id="model_registration",
+    python_callable=model_registration_task,
+    dag=dag,
+)
+
+# Dependencies
+t1_ingestion >> t2_validation >> t3_preprocessing
+t3_preprocessing >> [t4_training, t5_drift]
+t4_training >> t6_fairness >> t7_register
+
+
+
+
+
+# docker/docker-compose.yml
+version: "3.8"
+
+services:
+  # PostgreSQL - Metadata store for Airflow and MLflow
+  postgres:
+    image: postgres:15
+    container_name: csv4-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching and Celery broker
+  redis:
+    image: redis:7-alpine
+    container_name: csv4-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # MinIO - S3-compatible artifact store
+  minio:
+    image: minio/minio:latest
+    container_name: csv4-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # MLflow - Model tracking and registry
+  mlflow:
+    image: mlflow-server:latest
+    build:
+      context: .
+      dockerfile: docker/mlflow.Dockerfile
+    container_name: csv4-mlflow
+    environment:
+      MLFLOW_TRACKING_URI: http://0.0.0.0:5000
+      MLFLOW_ARTIFACT_ROOT: s3://creditscorev4-artifacts
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - minio
+
+  # Airflow Webserver
+  airflow-webserver:
+    image: apache/airflow:2.7.0
+    container_name: csv4-airflow-webserver
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:password@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: your-fernet-key-here
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/monitoring/airflow_dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      - postgres
+      - redis
+    command: >
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+        airflow webserver
+      "
+
+  # Airflow Scheduler
+  airflow-scheduler:
+    image: apache/airflow:2.7.0
+    container_name: csv4-airflow-scheduler
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:password@postgres:5432/airflow
+    volumes:
+      - ./src/monitoring/airflow_dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - airflow_logs:/opt/airflow/logs
+    depends_on:
+      - postgres
+      - redis
+    command: airflow scheduler
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: csv4-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  # Grafana - Visualization
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: csv4-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+  # CreditScoreV4 API
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: csv4-api
+    ports:
+      - "8081:8080"
+    environment:
+      - MODEL_PATH=/app/models/creditscorev4.pkl
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+    depends_on:
+      - redis
+      - mlflow
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  airflow_logs:
+  prometheus_data:
+  grafana_data:
+
+
+
+# .github/workflows/ml-pipeline.yml
+name: CreditScoreV4 ML Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run unit tests
+        run: pytest tests/unit -v --cov=src --cov-report=xml
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+
+  data-validation:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run Great Expectations suite
+        run: |
+          python -m src.data_validation.great_expectations_suite
+      
+      - name: Run schema drift detection
+        run: |
+          python -m src.data_validation.schema_validator
+
+  model-training:
+    runs-on: ubuntu-latest
+    needs: [test, data-validation]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Start MLflow
+        run: |
+          docker compose -f docker/docker-compose.yml up -d mlflow postgres
+      
+      - name: Train model
+        run: |
+          python -m src.model_training.trainer
+      
+      - name: Run drift detection
+        run: |
+          python -m src.drift_detection.psi_calculator
+      
+      - name: Run fairness audit
+        run: |
+          python -m src.fairness_monitoring.fairness_metrics
+      
+      - name: Upload model artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-model
+          path: models/
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: model-training
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build and test
+        run: |
+          docker compose -f docker/docker-compose.yml up -d
+          sleep 30
+          pytest tests/integration -v
+          docker compose -f docker/docker-compose.yml down
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: integration-test
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Deploy to ECS staging
+        run: |
+          aws ecs update-service --cluster creditscorev4-cluster \
+            --service creditscorev4-api-staging --force-new-deployment
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Shadow deployment
+        run: |
+          echo "Starting shadow deployment..."
+          # Deploy with 0% traffic, monitor for 14 days
+      
+      - name: Canary deployment
+        run: |
+          echo "Starting canary: 10% → 50% → 100%"
+          # Gradual traffic shift with automated gates
