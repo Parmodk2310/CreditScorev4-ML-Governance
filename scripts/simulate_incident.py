@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Apply Vendor B migration to the healthy holdout and evaluate the same model."""
+
 from __future__ import annotations
 
 import argparse
@@ -44,9 +45,16 @@ def main() -> None:
         vendor="vendor_b",
     )
     save_metrics(metrics, root / "data/evidence/phase1/incident_metrics.json")
-    save_roc_plot(model, migrated, root / "data/evidence/phase1/incident_roc.png", title="CreditScoreV4 — Vendor B Incident")
+    save_roc_plot(
+        model,
+        migrated,
+        root / "data/evidence/phase1/incident_roc.png",
+        title="CreditScoreV4 — Vendor B Incident",
+    )
 
-    baseline_metrics = json.loads((root / "data/evidence/phase1/baseline_metrics.json").read_text(encoding="utf-8"))
+    baseline_metrics = json.loads(
+        (root / "data/evidence/phase1/baseline_metrics.json").read_text(encoding="utf-8")
+    )
     comparison = {
         "baseline_roc_auc": baseline_metrics["roc_auc"],
         "incident_roc_auc": metrics["roc_auc"],

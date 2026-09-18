@@ -1,4 +1,5 @@
 """Configuration helpers for Phase 1."""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Train and evaluate the healthy Vendor A CreditScoreV4 baseline."""
+
 from __future__ import annotations
 
 import argparse
@@ -34,7 +35,12 @@ def main() -> None:
         vendor="vendor_a",
     )
     save_metrics(metrics, root / "data/evidence/phase1/baseline_metrics.json")
-    save_roc_plot(model, holdout_df, root / "data/evidence/phase1/baseline_roc.png", title="CreditScoreV4 — Healthy Vendor A")
+    save_roc_plot(
+        model,
+        holdout_df,
+        root / "data/evidence/phase1/baseline_roc.png",
+        title="CreditScoreV4 — Healthy Vendor A",
+    )
 
     print(f"Saved model: {model_path}")
     print(f"Baseline ROC-AUC={metrics['roc_auc']:.4f}")

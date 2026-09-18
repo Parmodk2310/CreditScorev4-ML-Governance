@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run Phase 1 end-to-end and enforce measurable acceptance gates."""
+
 from __future__ import annotations
 
 import json
@@ -29,11 +30,19 @@ def main() -> None:
     auc_drop = baseline["roc_auc"] - incident["roc_auc"]
 
     checks = {
-        "baseline_auc": acceptance["baseline_auc_min"] <= baseline["roc_auc"] <= acceptance["baseline_auc_max"],
-        "incident_auc": acceptance["incident_auc_min"] <= incident["roc_auc"] <= acceptance["incident_auc_max"],
+        "baseline_auc": acceptance["baseline_auc_min"]
+        <= baseline["roc_auc"]
+        <= acceptance["baseline_auc_max"],
+        "incident_auc": acceptance["incident_auc_min"]
+        <= incident["roc_auc"]
+        <= acceptance["incident_auc_max"],
         "auc_drop": auc_drop >= acceptance["minimum_auc_drop"],
-        "baseline_null_rate": acceptance["baseline_null_rate_min"] <= baseline["device_risk_null_rate"] <= acceptance["baseline_null_rate_max"],
-        "incident_null_rate": acceptance["incident_null_rate_min"] <= incident["device_risk_null_rate"] <= acceptance["incident_null_rate_max"],
+        "baseline_null_rate": acceptance["baseline_null_rate_min"]
+        <= baseline["device_risk_null_rate"]
+        <= acceptance["baseline_null_rate_max"],
+        "incident_null_rate": acceptance["incident_null_rate_min"]
+        <= incident["device_risk_null_rate"]
+        <= acceptance["incident_null_rate_max"],
     }
 
     print("\nMeasured evidence")

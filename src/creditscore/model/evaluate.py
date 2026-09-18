@@ -1,4 +1,5 @@
 """Model evaluation, evidence persistence, and ROC visualization."""
+
 from __future__ import annotations
 
 import json

@@ -1,4 +1,5 @@
 """Model feature contract and preprocessing pipeline."""
+
 from __future__ import annotations
 
 from sklearn.compose import ColumnTransformer

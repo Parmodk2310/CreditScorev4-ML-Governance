@@ -1,4 +1,5 @@
 """Deterministic synthetic lending data for the CreditScoreV4 incident case study."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -50,7 +51,9 @@ def generate_lending_dataset(config: SyntheticDataConfig) -> pd.DataFrame:
     )
     sex = rng.choice(["female", "male"], n, p=[0.48, 0.52])
     synthetic_demographic_group = rng.choice(["group_a", "group_b", "group_c"], n, p=[0.55, 0.30, 0.15])
-    age_group = pd.cut(age, bins=[20, 29, 44, 59, 70], labels=["21-29", "30-44", "45-59", "60-70"], include_lowest=True).astype(str)
+    age_group = pd.cut(
+        age, bins=[20, 29, 44, 59, 70], labels=["21-29", "30-44", "45-59", "60-70"], include_lowest=True
+    ).astype(str)
 
     # The latent risk function is intentionally non-linear enough to make a tree
     # model useful, but noisy enough that the baseline AUC remains realistic.

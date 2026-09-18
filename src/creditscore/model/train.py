@@ -1,4 +1,5 @@
 """CreditScoreV4 baseline model construction and training."""
+
 from __future__ import annotations
 
 from pathlib import Path

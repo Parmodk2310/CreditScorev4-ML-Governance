@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate deterministic healthy Vendor A training/holdout data."""
+
 from __future__ import annotations
 
 import argparse
