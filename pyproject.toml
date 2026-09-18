@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "creditscorev4-ml-governance"
-version = "0.1.0"
+version = "0.2.0"
 description = "Production-style ML incident simulation and governance case study"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -21,6 +21,7 @@ dependencies = [
     "PyYAML>=6.0,<7",
     "joblib>=1.4,<2",
     "matplotlib>=3.9,<4",
+    "great-expectations>=1.23,<2",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +31,7 @@ dev = [
     "ruff>=0.8,<1",
     "black>=24,<27",
     "mypy>=1.13,<2",
+    "types-PyYAML>=6.0.12",
 ]
 
 [project.urls]
@@ -54,8 +56,10 @@ target-version = ["py312"]
 
 [tool.mypy]
 python_version = "3.12"
-mypy_path = "src"
+mypy_path = ["src"]
+explicit_package_bases = true
+namespace_packages = true
 ignore_missing_imports = true
-check_untyped_defs = true
 warn_unused_ignores = true
-no_implicit_optional = true
+warn_redundant_casts = true
+check_untyped_defs = true

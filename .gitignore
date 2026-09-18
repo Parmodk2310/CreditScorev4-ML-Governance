@@ -1,3 +1,7 @@
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
 .venv/
 venv/
 __pycache__/
@@ -25,6 +29,12 @@ models/baseline/*.joblib
 !data/processed/.gitkeep
 !data/evidence/phase1/.gitkeep
 !models/baseline/.gitkeep
+
+# Phase 2 generated governance evidence / quarantine
+/data/evidence/phase2/*.json
+!/data/evidence/phase2/.gitkeep
+/data/quarantine/phase2/*.csv
+!/data/quarantine/phase2/.gitkeep
 
 # Python packaging artifacts
 *.egg-info/
