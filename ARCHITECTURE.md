@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 3
+# CreditScoreV4 ML Governance Architecture — Through Phase 5
 
 ```text
                          PHASE 1
@@ -64,3 +64,26 @@ Vendor D subgroup proxy stress                |
 ```
 
 Protected/evaluation columns (`sex`, `age_group`, `synthetic_demographic_group`) remain outside `MODEL_INPUT_FEATURES`. Phase 4 uses them only after inference to evaluate subgroup behavior. Vendor D changes non-protected proxy features only for a synthetic evaluation group, while preserving schema, target, and protected values.
+
+## Phase 5 — governance policy engine and model registry
+
+```text
+Phase 2 quality evidence -----------+
+Phase 3 drift evidence -------------+----> evidence normalization / hashes
+Phase 4 fairness evidence ----------+                 |
+Model performance + calibration ----+                 v
+                                             configurable policy gates
+                                                      |
+                                             +--------+--------+
+                                             |                 |
+                                          APPROVE            REJECT
+                                             |                 |
+                                             v                 v
+                                 CANDIDATE -> STAGING       REJECTED
+                                             |                 |
+                                             +--------+--------+
+                                                      v
+                                                append-only audit
+```
+
+Phase 5 does not deploy a model. It establishes the deterministic decision boundary which Phase 6 will consume before shadow/canary rollout. `SHADOW`, `CANARY`, and `PRODUCTION` are reserved registry states and are intentionally unreachable from a Phase 5 candidate.
