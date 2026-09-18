@@ -15,12 +15,12 @@ class RegistryTransitionError(ValueError):
 ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     "REGISTERED": {"CANDIDATE"},
     "CANDIDATE": {"STAGING", "REJECTED"},
-    "STAGING": set(),
-    "REJECTED": set(),
-    # Reserved for Phase 6. They are known stages but cannot be reached by Phase 5.
-    "SHADOW": set(),
-    "CANARY": set(),
+    # Phase 5 stops at STAGING. Phase 6 owns the safe-release transitions below.
+    "STAGING": {"SHADOW"},
+    "SHADOW": {"CANARY", "STAGING"},
+    "CANARY": {"PRODUCTION", "STAGING"},
     "PRODUCTION": set(),
+    "REJECTED": set(),
 }
 
 
