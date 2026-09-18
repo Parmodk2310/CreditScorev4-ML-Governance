@@ -1,4 +1,4 @@
-# Project Structure — Through Phase 4
+# Project Structure — Through Phase 5
 
 ```text
 creditscorev4-ml-governance/
@@ -6,7 +6,8 @@ creditscorev4-ml-governance/
 │   ├── phase1.yaml
 │   ├── phase2.yaml
 │   ├── phase3.yaml
-│   └── phase4.yaml
+│   ├── phase4.yaml
+│   └── phase5.yaml
 ├── contracts/
 │   └── credit_application_contract.yaml
 ├── data/
@@ -19,45 +20,56 @@ creditscorev4-ml-governance/
 │   ├── evidence/phase2/
 │   ├── evidence/phase3/
 │   ├── evidence/phase4/
-│   └── quarantine/phase2/
+│   ├── evidence/phase5/
+│   ├── quarantine/phase2/
+│   ├── quarantine/phase5/
+│   ├── registry/
+│   └── audit/
 ├── models/baseline/
 ├── src/creditscore/
 │   ├── data/
 │   ├── features/
 │   ├── incidents/
-│   │   ├── vendor_migration.py
-│   │   ├── vendor_c_drift.py
-│   │   └── vendor_d_group_stress.py
 │   ├── model/
 │   ├── validation/
 │   ├── drift/
 │   ├── fairness/
-│   │   ├── evaluator.py
-│   │   ├── metrics.py
-│   │   ├── models.py
-│   │   └── report.py
-│   └── explainability/
-│       └── shap_engine.py
+│   ├── explainability/
+│   └── governance/
+│       ├── __init__.py
+│       ├── models.py
+│       ├── policy.py
+│       ├── gates.py
+│       ├── evaluator.py
+│       ├── evidence.py
+│       ├── registry.py
+│       ├── audit_log.py
+│       ├── decision.py
+│       └── workflow.py
 ├── scripts/
+│   ├── register_model.py
+│   ├── evaluate_governance.py
+│   ├── promote_model.py
+│   ├── show_registry.py
 │   ├── verify_phase1.py
 │   ├── verify_phase2.py
 │   ├── verify_phase3.py
-│   ├── simulate_fairness_stress.py
-│   ├── assess_fairness.py
-│   ├── explain_model.py
-│   └── verify_phase4.py
+│   ├── verify_phase4.py
+│   └── verify_phase5.py
 ├── tests/
 │   ├── unit/
 │   ├── quality/
 │   ├── drift/
 │   ├── fairness/
 │   ├── explainability/
+│   ├── governance/
 │   └── integration/
 └── docs/
     ├── PHASE1.md
     ├── PHASE2.md
     ├── PHASE3.md
-    └── PHASE4.md
+    ├── PHASE4.md
+    └── PHASE5.md
 ```
 
-Later-phase registry, serving, rollout, observability, orchestration, and cloud infrastructure remain intentionally absent until their corresponding behavior is implemented and verified.
+Phase 6 owns serving, shadow/canary rollout, observability, and rollback. Phase 7 owns workflow automation and cloud deployment.

@@ -53,3 +53,14 @@ models/baseline/*.joblib
 
 !data/raw/vendor_d/.gitkeep
 !data/evidence/phase4/.gitkeep
+
+# Phase 5 generated governance evidence / registry / audit / quarantine
+/data/evidence/phase5/**
+/data/registry/*.json
+/data/audit/*.jsonl
+/data/quarantine/phase5/*.csv
+
+!data/evidence/phase5/.gitkeep
+!data/registry/.gitkeep
+!data/audit/.gitkeep
+!data/quarantine/phase5/.gitkeep
