@@ -1,0 +1,41 @@
+project:
+  name: CreditScoreV4 ML Governance
+  phase: 1
+  random_seed: 42
+
+data:
+  n_samples: 50000
+  test_size: 0.30
+  target_column: default_30d
+  baseline_device_null_rate: 0.03
+
+incident:
+  target_device_null_rate: 0.22
+  semantic_attenuation: 0.42
+  semantic_bias: -0.04
+  semantic_noise_std: 0.12
+
+model:
+  decision_threshold: 0.50
+  params:
+    n_estimators: 280
+    max_depth: 4
+    learning_rate: 0.04
+    subsample: 0.90
+    colsample_bytree: 0.90
+    min_child_weight: 4
+    reg_lambda: 2.0
+    eval_metric: logloss
+    n_jobs: 4
+    random_state: 42
+
+acceptance:
+  baseline_auc_min: 0.79
+  baseline_auc_max: 0.84
+  incident_auc_min: 0.71
+  incident_auc_max: 0.77
+  minimum_auc_drop: 0.05
+  baseline_null_rate_min: 0.02
+  baseline_null_rate_max: 0.04
+  incident_null_rate_min: 0.20
+  incident_null_rate_max: 0.24
