@@ -1,7 +1,7 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 5
+# CreditScoreV4 ML Governance Architecture — Through Phase 6
 
 ```text
-                         PHASE 1
+                           PHASE 1
 Vendor A train ----------------------> CreditScoreV4
 Vendor A holdout -------------------> healthy evaluation (~0.80 AUC)
         |
@@ -22,68 +22,79 @@ Vendor A reference -------------------------------+
 Vendor C: schema/type/range/null contract valid    |
         |                                          |
         +--> Phase 2 gate --> PASS                 |
-        |                                          |
         +--> feature PSI + KS <--------------------+
+        +--> prediction PSI + KS
+                         |
+                  overall drift CRITICAL
+                         |
+                         v
+                         PHASE 4
+Vendor D: aggregate-valid subgroup proxy stress
         |
-        +--> same CreditScoreV4
-                 |
-                 +--> prediction PSI + KS
+        +--> Phase 2 quality --> PASS
+        +--> Phase 3 aggregate drift --> STABLE
+        +--> Fairlearn subgroup assessment --> FAIL
+        +--> SHAP explains non-protected proxy drivers
                          |
-                  STABLE/WARNING/CRITICAL
+                         v
+                         PHASE 5
+quality + performance + calibration + drift + fairness + hashes
                          |
-                    drift evidence
+                  configurable policy engine
+                         |
+                   +-----+-----+
+                   |           |
+                APPROVE      REJECT
+                   |           |
+                   v           v
+                STAGING     REJECTED
+                   |
+                   v
+                         PHASE 6
+                 governed FastAPI serving
+                   /predict /batch-predict
+             /health /ready /model /metrics
+                   |
+                   v
+                 SHADOW
+                   |
+                   v
+                 CANARY
+          10% -> 25% -> 50% -> 100%
+                   |
+             +-----+-----+
+             |           |
+          healthy      degraded
+             |           |
+             v           v
+        PRODUCTION     STAGING
+                      rollback
 ```
 
-Phase 3 intentionally separates statistical drift from deterministic data quality. Passing Phase 2 is a precondition for the Vendor C drift demonstration.
+## Phase 6 release boundary
 
-## Phase 4 — subgroup fairness and explainability
+Phase 5 decides whether a model may enter `STAGING`. Phase 6 is the only layer that can move an approved staged model through `SHADOW`, `CANARY`, and `PRODUCTION`.
+
+The registry transitions are:
 
 ```text
-Vendor A reference ----------------------------+
-                                              |
-Vendor D subgroup proxy stress                |
-       |                                      |
-       +--> Phase 2 quality gate --> PASS     |
-       |                                      |
-       +--> Phase 3 aggregate drift --> STABLE|
-       |                                      |
-       +------------------+-------------------+
-                          |
-                          v
-                  same CreditScoreV4
-                          |
-              +-----------+-----------+
-              |                       |
-              v                       v
-      Fairlearn subgroup          SHAP TreeExplainer
-           metrics                    |
-              |                       |
-              +-----------+-----------+
-                          v
-                Phase 4 evidence / FAIL
+REGISTERED -> CANDIDATE -> STAGING -> SHADOW -> CANARY -> PRODUCTION
+                       \-> REJECTED      \-----------> STAGING rollback
+                                      SHADOW --------> STAGING rollback
 ```
 
-Protected/evaluation columns (`sex`, `age_group`, `synthetic_demographic_group`) remain outside `MODEL_INPUT_FEATURES`. Phase 4 uses them only after inference to evaluate subgroup behavior. Vendor D changes non-protected proxy features only for a synthetic evaluation group, while preserving schema, target, and protected values.
+`CANDIDATE -> PRODUCTION` remains illegal.
 
-## Phase 5 — governance policy engine and model registry
+## Serving plane
 
-```text
-Phase 2 quality evidence -----------+
-Phase 3 drift evidence -------------+----> evidence normalization / hashes
-Phase 4 fairness evidence ----------+                 |
-Model performance + calibration ----+                 v
-                                             configurable policy gates
-                                                      |
-                                             +--------+--------+
-                                             |                 |
-                                          APPROVE            REJECT
-                                             |                 |
-                                             v                 v
-                                 CANDIDATE -> STAGING       REJECTED
-                                             |                 |
-                                             +--------+--------+
-                                                      v
-                                                append-only audit
-```
+The serving process loads the same persisted sklearn/XGBoost pipeline used by the governance evidence. Request validation is handled by Pydantic/FastAPI, inference is serialized through the predictor wrapper, and `/model` exposes the model artifact SHA-256 used for operational traceability.
 
-Phase 5 does not deploy a model. It establishes the deterministic decision boundary which Phase 6 will consume before shadow/canary rollout. `SHADOW`, `CANARY`, and `PRODUCTION` are reserved registry states and are intentionally unreachable from a Phase 5 candidate.
+## Observability plane
+
+The API exposes Prometheus metrics for request counts, latency, prediction outcomes, risk distribution, readiness, rollout stage, canary share, and rollback count. `docker/phase6/` provisions a local Prometheus + Grafana demonstration stack.
+
+## Safe-release controller
+
+Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and canary checkpoints use configurable project guardrails for request volume, error rate, p95 latency, and mean risk-output delta. Failed blocking gates trigger rollback to `STAGING` and append a release audit event.
+
+Phase 7 will automate the orchestration/deployment of these controls; Phase 6 remains a deterministic local production-style release simulation.

@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Manifest — Through Phase 5
+# CreditScoreV4 ML Governance Manifest — Through Phase 6
 
 ## Phase 1 — incident and baseline
 
@@ -30,16 +30,26 @@
 
 ## Phase 5 — promotion governance and model registry
 
-- `configs/phase5.yaml` — promotion policy, thresholds, registry lifecycle, scenario versions
-- `src/creditscore/governance/` — evidence normalization/hashing, policy gates, evaluator, registry, audit, decisions
-- `scripts/register_model.py` — register and move a version into CANDIDATE
-- `scripts/evaluate_governance.py` — policy evaluation without final promotion
-- `scripts/promote_model.py` — apply APPROVE/REJECT registry transition
-- `scripts/show_registry.py` — inspect registry state
-- `scripts/verify_phase5.py` — healthy/Vendor C/Vendor D acceptance gate
-- `tests/governance/` — policy, gate, evaluator, registry, and audit tests
-- `tests/integration/test_phase5_governance_pipeline.py` — one-policy approve/reject integration test
-- `docs/PHASE5.md` — methodology, registry state machine, decision semantics, and limitations
-- generated Phase 5 evidence, registry, audit, decision, and quarantine artifacts remain ignored except `.gitkeep`
+- configurable evidence-driven promotion policy
+- performance, calibration, drift, fairness, and integrity gates
+- model registry and append-only audit trail
+- deterministic APPROVE/REJECT decisions
+- healthy candidate promoted to STAGING; Vendor C/D rejected for different gates
 
-Phase 6 will add serving, shadow/canary rollout, runtime observability, and rollback. Phase 7 will add workflow automation and cloud deployment.
+## Phase 6 — serving, safe release, observability, rollback
+
+- `configs/phase6.yaml` — serving, shadow/canary, release gates, acceptance settings
+- `src/creditscore/serving/` — FastAPI schemas, predictor, health, and Prometheus metrics
+- `src/creditscore/release/` — deterministic routing, health gates, rollout controller, rollback
+- Phase 5 registry extended with `STAGING -> SHADOW -> CANARY -> PRODUCTION`
+- rollback paths from SHADOW/CANARY to STAGING
+- `scripts/serve_model.py` — local FastAPI server
+- `scripts/run_shadow.py` / `run_canary.py` — staged rollout demonstrations
+- `scripts/simulate_rollback.py` — degraded canary rollback demonstration
+- `scripts/verify_phase6.py` — API + rollout + rollback release gate
+- `tests/serving/` and `tests/release/` — serving and safe-release unit tests
+- `tests/integration/test_phase6_safe_release_pipeline.py` — end-to-end lifecycle integration test
+- `docker/phase6/` — API, Prometheus, and Grafana local stack
+- generated Phase 6 evidence/state/audit files remain ignored except `.gitkeep`
+
+Phase 7 will add workflow automation, CI/CD deployment, and cloud infrastructure.
