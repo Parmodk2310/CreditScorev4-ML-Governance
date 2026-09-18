@@ -1,0 +1,38 @@
+name: Container image
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project for model generation
+        run: python -m pip install -e ".[dev]"
+      - name: Generate deterministic model artifact
+        run: python scripts/verify_phase1.py
+      - uses: docker/setup-buildx-action@v4
+      - name: Build local image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/phase6/Dockerfile
+          push: false
+          load: true
+          tags: creditscorev4:${{ github.sha }}
+      - name: Smoke test image
+        run: python scripts/verify_container.py --image creditscorev4:${GITHUB_SHA}
+      - name: Inspect image digest
+        run: docker image inspect creditscorev4:${GITHUB_SHA} --format '{{index .RepoDigests 0}}' || true
