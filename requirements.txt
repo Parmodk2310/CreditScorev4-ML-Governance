@@ -9,3 +9,6 @@ matplotlib>=3.9,<4
 great-expectations>=1.23,<2
 fairlearn>=0.14,<0.15
 shap>=0.52,<0.53
+fastapi>=0.140,<0.141
+uvicorn>=0.53,<0.54
+prometheus-client>=0.26,<0.27

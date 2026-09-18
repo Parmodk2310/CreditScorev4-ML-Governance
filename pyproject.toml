@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "creditscorev4-ml-governance"
-version = "0.5.0"
+version = "0.6.0"
 description = "Production-style ML incident simulation and governance case study"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -23,6 +23,9 @@ dependencies = [
     "great-expectations>=1.23,<2",
     "fairlearn>=0.14,<0.15",
     "shap>=0.52,<0.53",
+    "fastapi>=0.140,<0.141",
+    "uvicorn>=0.53,<0.54",
+    "prometheus-client>=0.26,<0.27",
 ]
 
 [project.optional-dependencies]
@@ -33,6 +36,7 @@ dev = [
     "black>=24,<27",
     "mypy>=1.13,<2",
     "types-PyYAML>=6.0.12",
+    "httpx>=0.28,<1",
 ]
 
 [project.urls]
