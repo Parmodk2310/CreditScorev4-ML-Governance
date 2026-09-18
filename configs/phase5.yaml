@@ -1,0 +1,66 @@
+project:
+  name: CreditScoreV4 ML Governance
+  phase: 5
+
+policy:
+  name: creditscorev4_promotion_policy
+  version: 1.0.0
+  requested_stage: STAGING
+  gates:
+    data_quality:
+      required_decision: PASS
+      blocking: true
+    performance:
+      minimum_roc_auc: 0.75
+      minimum_pr_auc: 0.60
+      blocking: true
+    calibration:
+      maximum_brier_score: 0.20
+      blocking: true
+    drift:
+      blocked_statuses:
+        - CRITICAL
+      blocking: true
+    fairness:
+      blocked_statuses:
+        - FAIL
+      blocking: true
+    evidence_integrity:
+      minimum_artifacts: 6
+      blocking: true
+
+registry:
+  model_name: CreditScoreV4
+  artifact_path: models/baseline/creditscorev4.joblib
+  initial_stage: REGISTERED
+  candidate_stage: CANDIDATE
+  approved_stage: STAGING
+  rejected_stage: REJECTED
+
+scenarios:
+  healthy:
+    model_version: 0.5.0-healthy
+    source: vendor_a
+  vendor_c:
+    model_version: 0.5.0-drift
+    source: vendor_c
+  vendor_d:
+    model_version: 0.5.0-fairness
+    source: vendor_d
+
+paths:
+  registry: data/registry/phase5_registry.json
+  audit_log: data/audit/phase5_audit.jsonl
+  evidence_dir: data/evidence/phase5
+  quarantine_dir: data/quarantine/phase5
+
+acceptance:
+  healthy_decision: APPROVE
+  healthy_stage: STAGING
+  vendor_c_decision: REJECT
+  vendor_c_blocking_gate: drift
+  vendor_c_stage: REJECTED
+  vendor_d_decision: REJECT
+  vendor_d_blocking_gate: fairness
+  vendor_d_stage: REJECTED
+  minimum_audit_records: 12
