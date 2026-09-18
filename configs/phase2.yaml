@@ -1,0 +1,20 @@
+project:
+  name: CreditScoreV4 ML Governance
+  phase: 2
+
+contract:
+  path: contracts/credit_application_contract.yaml
+  name: credit_application_scoring_v1
+
+gate:
+  quarantine_dir: data/quarantine/phase2
+  evidence_dir: data/evidence/phase2
+  fail_on_contract_error: true
+  fail_on_gx_error: true
+
+acceptance:
+  healthy_vendor_must_pass: true
+  incident_vendor_must_fail: true
+  required_failed_rule: device_risk_score.null_rate
+  incident_device_null_rate_min: 0.20
+  incident_device_null_rate_max: 0.24

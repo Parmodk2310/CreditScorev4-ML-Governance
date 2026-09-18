@@ -1,5 +1,42 @@
-Add-Content .gitignore ".venv/"
-Add-Content .gitignore "venv/"
-Add-Content .gitignore "__pycache__/"
-Add-Content .gitignore "*.pyc"
-Add-Content .gitignore ".env"
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.env
+*.log
+
+# Generated Phase 1 data/evidence/model artifacts
+data/raw/vendor_a/*.csv
+data/raw/vendor_b/*.csv
+data/processed/*
+data/evidence/phase1/*.json
+data/evidence/phase1/*.csv
+data/evidence/phase1/*.png
+models/baseline/*.joblib
+
+# Keep directories in Git
+!data/raw/vendor_a/.gitkeep
+!data/raw/vendor_b/.gitkeep
+!data/processed/.gitkeep
+!data/evidence/phase1/.gitkeep
+!models/baseline/.gitkeep
+
+# Phase 2 generated governance evidence / quarantine
+/data/evidence/phase2/*.json
+!/data/evidence/phase2/.gitkeep
+/data/quarantine/phase2/*.csv
+!/data/quarantine/phase2/.gitkeep
+
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
