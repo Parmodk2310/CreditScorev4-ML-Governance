@@ -13,6 +13,7 @@ from creditscore.incidents.vendor_migration import VendorMigrationConfig, Vendor
 from creditscore.model.evaluate import evaluate_model, save_metrics, save_roc_plot
 from creditscore.model.train import load_model
 from creditscore.utils.config import load_config, project_root
+from creditscore.utils.hashing import file_sha256
 
 
 def main() -> None:
@@ -61,6 +62,7 @@ def main() -> None:
         "auc_drop": baseline_metrics["roc_auc"] - metrics["roc_auc"],
         "baseline_device_risk_null_rate": baseline_metrics["device_risk_null_rate"],
         "incident_device_risk_null_rate": metrics["device_risk_null_rate"],
+        "vendor_b_file_sha256": file_sha256(vendor_b_path),
     }
     (root / "data/evidence/phase1/performance_comparison.json").write_text(
         json.dumps(comparison, indent=2, sort_keys=True), encoding="utf-8"
