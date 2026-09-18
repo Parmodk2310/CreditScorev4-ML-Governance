@@ -1,50 +1,37 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 2
+# CreditScoreV4 ML Governance Architecture — Through Phase 3
 
 ```text
                          PHASE 1
-Synthetic population
+Vendor A train ----------------------> CreditScoreV4
+Vendor A holdout -------------------> healthy evaluation (~0.80 AUC)
         |
-        +------------------+
-        |                  |
-        v                  v
-   Vendor A train     Vendor A holdout
-        |                  |
-        v                  v
- CreditScoreV4       healthy evaluation
-        |                  |
-        |             ROC-AUC ≈ 0.80
-        |
-        |           Phase 1 vendor migration
-        |                  |
-        |                  v
-        |            Vendor B holdout
-        |             same schema
-        |             NULL ≈ 22%
-        |                  |
-        +----------------->v
-                 same CreditScoreV4
-                        |
-                  ROC-AUC ≈ 0.73
-                        |
-                 incident evidence
-                        |
-                        v
+        +--> Vendor B migration ----> same model (~0.73 AUC)
+                         |
+                         v
                          PHASE 2
-              versioned scoring contract
-                        |
-              +---------+----------+
-              |                    |
-              v                    v
-        Domain validator    Great Expectations
-              |                    |
-              +---------+----------+
-                        |
-                 Data Quality Gate
-                   /          \
-                PASS          BLOCK
-                 |              |
-            downstream     quarantine
-                            + JSON evidence
+              versioned data contract
+                 + Great Expectations
+                         |
+                  Vendor B --> BLOCK
+                    quarantine/evidence
+                         |
+                         v
+                         PHASE 3
+Vendor A reference -------------------------------+
+                                                   |
+Vendor C: schema/type/range/null contract valid    |
+        |                                          |
+        +--> Phase 2 gate --> PASS                 |
+        |                                          |
+        +--> feature PSI + KS <--------------------+
+        |
+        +--> same CreditScoreV4
+                 |
+                 +--> prediction PSI + KS
+                         |
+                  STABLE/WARNING/CRITICAL
+                         |
+                    drift evidence
 ```
 
-The design intentionally keeps Phase 2 upstream of model scoring/retraining. The gate blocks a batch because it violates declared data-quality controls. Statistical drift monitoring is a separate Phase 3 responsibility.
+Phase 3 intentionally separates statistical drift from deterministic data quality. Passing Phase 2 is a precondition for the Vendor C drift demonstration.
