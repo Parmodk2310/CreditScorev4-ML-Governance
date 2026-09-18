@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import subprocess
 import time
 import urllib.error
@@ -21,7 +22,12 @@ def wait_for_api(base_url: str, timeout_seconds: int = 45) -> None:
             with urllib.request.urlopen(f"{base_url}/health", timeout=3) as response:
                 if response.status == 200:
                     return
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except (
+            urllib.error.URLError,
+            TimeoutError,
+            ConnectionError,
+            http.client.HTTPException,
+        ) as exc:
             last_error = exc
         time.sleep(1)
     raise RuntimeError(f"API did not become healthy: {last_error}")

@@ -32,6 +32,7 @@ jobs:
           AWS_DEPLOY_ENABLED: ${{ vars.AWS_DEPLOY_ENABLED }}
           AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
           TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
           CONFIRM_DEPLOY: ${{ inputs.confirm_deploy }}
         run: |
           python scripts/check_deployment_gate.py --github-output "$GITHUB_OUTPUT" --require-confirmation
@@ -88,7 +89,8 @@ jobs:
           terraform -chdir=infra/terraform init -input=false             -backend-config="bucket=${TF_STATE_BUCKET}"             -backend-config="key=${TF_STATE_KEY}"             -backend-config="region=${AWS_REGION}"             -backend-config="use_lockfile=true"
       - name: Bootstrap ECR repository in Terraform state
         run: |
-          terraform -chdir=infra/terraform apply -auto-approve             -target=aws_ecr_repository.app             -var="aws_region=${AWS_REGION}"             -var="image_uri=bootstrap.invalid/creditscorev4:bootstrap"
+          terraform -chdir=infra/terraform apply -auto-approve             -target=aws_ecr_repository.app             -var="aws_region=${AWS_REGION}"             -var="image_uri=bootstrap.invalid/creditscorev4:bootstrap" \
+            -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
       - id: ecr
         name: Resolve ECR repository
         run: |
@@ -113,7 +115,8 @@ jobs:
           echo "image_uri=${REPOSITORY_URL}@${DIGEST}" >> "$GITHUB_OUTPUT"
       - name: Terraform plan
         run: |
-          terraform -chdir=infra/terraform plan -input=false -out=phase7.tfplan             -var="aws_region=${AWS_REGION}"             -var="image_uri=${{ steps.digest.outputs.image_uri }}"
+          terraform -chdir=infra/terraform plan -input=false -out=phase7.tfplan             -var="aws_region=${AWS_REGION}"             -var="image_uri=${{ steps.digest.outputs.image_uri }}" \
+            -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
       - name: Terraform apply
         run: terraform -chdir=infra/terraform apply -input=false -auto-approve phase7.tfplan
       - name: Verify deployed health endpoint

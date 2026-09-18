@@ -36,3 +36,14 @@ def test_deploy_workflow_requires_oidc_and_explicit_gate() -> None:
 def test_cloud_image_contains_generated_model_artifact() -> None:
     dockerfile = (ROOT / "docker/phase6/Dockerfile").read_text()
     assert "COPY models/baseline/creditscorev4.joblib" in dockerfile
+
+
+def test_security_workflow_can_read_pull_request_metadata() -> None:
+    text = workflow("security.yml")
+    assert "pull-requests: read" in text
+
+
+def test_legacy_ml_pipeline_uses_supported_python() -> None:
+    text = workflow("ml-pipeline.yml")
+    assert 'python-version: "3.12"' in text
+    assert 'python-version: "3.11"' not in text

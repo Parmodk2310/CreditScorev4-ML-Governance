@@ -13,7 +13,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true
+  map_public_ip_on_launch = false
 }
 
 resource "aws_route_table" "public" {
@@ -33,24 +33,31 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_security_group" "alb" {
   name        = "${local.name}-alb"
-  description = "Public HTTP access to the Phase 7 ALB"
+  description = "Public HTTPS access to the Phase 7 ALB"
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ALB traffic only needs to reach the model service inside the VPC.
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.container_port
+    to_port     = var.container_port
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 }
 
+# The minimal-cost Fargate topology deliberately permits outbound HTTPS
+# so the task can reach AWS services such as ECR and CloudWatch without
+# adding NAT gateways or multiple VPC interface endpoints.
+#
+# Inbound model traffic remains ALB-only.
+#trivy:ignore:AVD-AWS-0104
 resource "aws_security_group" "service" {
   name        = "${local.name}-service"
   description = "Only the ALB may reach the model-serving container"
@@ -64,9 +71,9 @@ resource "aws_security_group" "service" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }

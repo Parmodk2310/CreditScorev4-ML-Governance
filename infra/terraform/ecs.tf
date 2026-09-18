@@ -7,12 +7,17 @@ resource "aws_ecs_cluster" "app" {
   name = local.name
 }
 
+# Public exposure is intentional: this ALB is the HTTPS entry point for
+# the externally reachable model-serving API. The ECS service itself
+# remains restricted to traffic from the ALB security group.
+#trivy:ignore:AVD-AWS-0053
 resource "aws_lb" "app" {
-  name               = substr("${local.name}-alb", 0, 32)
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = aws_subnet.public[*].id
+  name                       = substr("${local.name}-alb", 0, 32)
+  internal                   = false
+  load_balancer_type         = "application"
+  security_groups            = [aws_security_group.alb.id]
+  subnets                    = aws_subnet.public[*].id
+  drop_invalid_header_fields = true
 }
 
 resource "aws_lb_target_group" "app" {
@@ -32,10 +37,13 @@ resource "aws_lb_target_group" "app" {
   }
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.app.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+
+  certificate_arn = var.acm_certificate_arn
+  ssl_policy      = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 
   default_action {
     type             = "forward"
@@ -55,17 +63,27 @@ resource "aws_ecs_task_definition" "app" {
     name      = "creditscorev4"
     image     = var.image_uri
     essential = true
+
     portMappings = [{
       containerPort = var.container_port
       hostPort      = var.container_port
       protocol      = "tcp"
     }]
+
     environment = [
-      { name = "CREDITSCORE_MODEL_PATH", value = "/app/models/baseline/creditscorev4.joblib" },
-      { name = "CREDITSCORE_MODEL_VERSION", value = "0.7.0" }
+      {
+        name  = "CREDITSCORE_MODEL_PATH"
+        value = "/app/models/baseline/creditscorev4.joblib"
+      },
+      {
+        name  = "CREDITSCORE_MODEL_VERSION"
+        value = "0.7.0"
+      }
     ]
+
     logConfiguration = {
       logDriver = "awslogs"
+
       options = {
         awslogs-group         = aws_cloudwatch_log_group.app.name
         awslogs-region        = var.aws_region
@@ -98,5 +116,5 @@ resource "aws_ecs_service" "app" {
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
 
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener.https]
 }

@@ -40,3 +40,17 @@ variable "desired_count" {
   type    = number
   default = 1
 }
+
+variable "acm_certificate_arn" {
+  description = "ACM certificate ARN used by the public HTTPS ALB listener."
+  type        = string
+  default     = ""
+
+  validation {
+    condition = (
+      var.acm_certificate_arn == "" ||
+      startswith(var.acm_certificate_arn, "arn:aws:acm:")
+    )
+    error_message = "acm_certificate_arn must be empty for local validation or a valid ACM ARN."
+  }
+}

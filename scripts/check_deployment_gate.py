@@ -7,7 +7,13 @@ import argparse
 import os
 from pathlib import Path
 
-REQUIRED_WHEN_ENABLED = ("AWS_ROLE_TO_ASSUME", "AWS_REGION", "TF_STATE_BUCKET", "TF_STATE_KEY")
+REQUIRED_WHEN_ENABLED = (
+    "AWS_ROLE_TO_ASSUME",
+    "AWS_REGION",
+    "TF_STATE_BUCKET",
+    "TF_STATE_KEY",
+    "ACM_CERTIFICATE_ARN",
+)
 
 
 def is_truthy(value: str | None) -> bool:
