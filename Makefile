@@ -1,7 +1,7 @@
 PYTHON ?= python
 export PYTHONPATH := src$(if $(PYTHONPATH),:$(PYTHONPATH))
 
-.PHONY: setup lint format typecheck phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean quality
+.PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean clean
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
@@ -13,7 +13,6 @@ lint:
 format:
 	black src/creditscore scripts tests
 
-# Package-mode checking avoids the src-layout duplicate-module ambiguity.
 typecheck:
 	mypy -p creditscore
 
@@ -54,10 +53,31 @@ phase2-test:
 phase2-verify:
 	$(PYTHON) scripts/verify_phase1.py
 	$(PYTHON) scripts/verify_phase2.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/integration
+	$(PYTHON) -m pytest tests/unit tests/quality tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py
 
 phase2-clean:
 	rm -f data/evidence/phase2/*.json
 	rm -f data/quarantine/phase2/*.csv
 
-clean: phase1-clean phase2-clean
+phase3-simulate:
+	$(PYTHON) scripts/simulate_drift.py
+
+phase3-drift: phase3-simulate
+	$(PYTHON) scripts/check_drift.py
+
+phase3-test:
+	$(PYTHON) -m pytest tests/drift tests/integration/test_phase3_drift_pipeline.py
+
+phase3-verify:
+	$(PYTHON) scripts/verify_phase1.py
+	$(PYTHON) scripts/verify_phase2.py
+	$(PYTHON) scripts/verify_phase3.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/integration
+
+phase3-clean:
+	rm -f data/raw/vendor_c/*.csv
+	rm -f data/reference/phase3/*.json
+	rm -f data/evidence/phase3/*.json data/evidence/phase3/*.csv
+	rm -f data/evidence/phase2/vendor_c_drift_quality_report.json
+
+clean: phase1-clean phase2-clean phase3-clean
