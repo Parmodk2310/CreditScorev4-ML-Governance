@@ -30,7 +30,7 @@ def evaluate_model(
         {
             "scenario": scenario,
             "vendor": vendor,
-            "n_samples": int(len(frame)),
+            "n_samples": len(frame),
             "target_rate": float(y.mean()),
             "device_risk_null_rate": float(frame["device_risk_score"].isna().mean()),
         }

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 
 from creditscore.data.generator import SyntheticDataConfig, generate_lending_dataset
 from creditscore.data.loader import split_train_holdout
