@@ -25,3 +25,8 @@ models/baseline/*.joblib
 !data/processed/.gitkeep
 !data/evidence/phase1/.gitkeep
 !models/baseline/.gitkeep
+
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
