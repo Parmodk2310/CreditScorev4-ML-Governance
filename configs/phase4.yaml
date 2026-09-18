@@ -1,0 +1,73 @@
+project:
+  name: CreditScoreV4 ML Governance
+  phase: 4
+  random_seed: 27182
+
+scenario:
+  name: vendor_d_subgroup_proxy_stress
+  source: vendor_d
+  reference_source: vendor_a
+  input: data/raw/vendor_a/holdout.csv
+  output: data/raw/vendor_d/holdout.csv
+  stressed_group: group_c
+
+vendor_d:
+  sensitive_feature: synthetic_demographic_group
+  stressed_group: group_c
+  device_risk_score_shift: 0.12
+  credit_utilization_shift: 0.05
+  bank_transaction_risk_shift: 0.05
+
+prediction:
+  default_threshold: 0.50
+  approval_threshold: 0.50
+
+fairness:
+  primary_sensitive_feature: synthetic_demographic_group
+  monitored_sensitive_features:
+    - synthetic_demographic_group
+    - sex
+    - age_group
+  governance_sensitive_features:
+    - synthetic_demographic_group
+  thresholds:
+    demographic_parity_ratio:
+      warning_below: 0.90
+      fail_below: 0.80
+    selection_rate_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.15
+    equalized_odds_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.20
+
+explainability:
+  sample_size: 3000
+  random_seed: 27182
+  primary_group: group_c
+  top_k: 10
+  local_examples: 3
+  required_positive_proxy_features:
+    - device_risk_score
+    - credit_utilization
+    - bank_transaction_risk
+
+paths:
+  model: models/baseline/creditscorev4.joblib
+  fairness_json: data/evidence/phase4/fairness_report.json
+  fairness_csv: data/evidence/phase4/fairness_by_group.csv
+  shap_summary_json: data/evidence/phase4/shap_summary.json
+  shap_global_csv: data/evidence/phase4/shap_global_importance.csv
+  shap_group_csv: data/evidence/phase4/shap_group_importance.csv
+  shap_delta_csv: data/evidence/phase4/shap_group_delta.csv
+
+acceptance:
+  require_phase2_pass: true
+  require_phase3_status: STABLE
+  require_fairness_status: FAIL
+  maximum_primary_demographic_parity_ratio: 0.80
+  minimum_primary_selection_rate_difference: 0.15
+  minimum_primary_equalized_odds_difference: 0.20
+  require_protected_attributes_absent_from_model: true
+  require_protected_attributes_absent_from_shap: true
+  require_all_proxy_features_in_top_positive_group_features: true
