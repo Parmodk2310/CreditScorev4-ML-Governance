@@ -10,6 +10,7 @@ COPY pyproject.toml README.md ./
 COPY src ./src
 COPY configs ./configs
 COPY scripts ./scripts
+COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install .
