@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "creditscorev4-ml-governance"
-version = "0.3.0"
+version = "0.4.0"
 description = "Production-style ML incident simulation and governance case study"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -21,6 +21,8 @@ dependencies = [
     "joblib>=1.4,<2",
     "matplotlib>=3.9,<4",
     "great-expectations>=1.23,<2",
+    "fairlearn>=0.14,<0.15",
+    "shap>=0.52,<0.53",
 ]
 
 [project.optional-dependencies]
