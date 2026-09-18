@@ -45,3 +45,11 @@ models/baseline/*.joblib
 !data/quarantine/phase2/.gitkeep
 !data/reference/phase3/.gitkeep
 !models/baseline/.gitkeep
+
+# Phase 4 generated fairness/explainability fixtures and evidence
+/data/raw/vendor_d/*.csv
+/data/evidence/phase4/*.json
+/data/evidence/phase4/*.csv
+
+!data/raw/vendor_d/.gitkeep
+!data/evidence/phase4/.gitkeep

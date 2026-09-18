@@ -1,7 +1,7 @@
 PYTHON ?= python
 export PYTHONPATH := src$(if $(PYTHONPATH),:$(PYTHONPATH))
 
-.PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean clean
+.PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean phase4-simulate phase4-fairness phase4-explain phase4-test phase4-verify phase4-clean clean
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
@@ -72,7 +72,7 @@ phase3-verify:
 	$(PYTHON) scripts/verify_phase1.py
 	$(PYTHON) scripts/verify_phase2.py
 	$(PYTHON) scripts/verify_phase3.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/integration
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py
 
 phase3-clean:
 	rm -f data/raw/vendor_c/*.csv
@@ -80,4 +80,28 @@ phase3-clean:
 	rm -f data/evidence/phase3/*.json data/evidence/phase3/*.csv
 	rm -f data/evidence/phase2/vendor_c_drift_quality_report.json
 
-clean: phase1-clean phase2-clean phase3-clean
+phase4-simulate:
+	$(PYTHON) scripts/simulate_fairness_stress.py
+
+phase4-fairness: phase4-simulate
+	$(PYTHON) scripts/assess_fairness.py
+
+phase4-explain: phase4-simulate
+	$(PYTHON) scripts/explain_model.py
+
+phase4-test:
+	$(PYTHON) -m pytest tests/fairness tests/explainability tests/integration/test_phase4_fairness_pipeline.py
+
+phase4-verify:
+	$(PYTHON) scripts/verify_phase1.py
+	$(PYTHON) scripts/verify_phase2.py
+	$(PYTHON) scripts/verify_phase3.py
+	$(PYTHON) scripts/verify_phase4.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/integration
+
+phase4-clean:
+	rm -f data/raw/vendor_d/*.csv
+	rm -f data/evidence/phase4/*.json data/evidence/phase4/*.csv
+	rm -f data/evidence/phase2/vendor_d_fairness_quality_report.json
+
+clean: phase1-clean phase2-clean phase3-clean phase4-clean
