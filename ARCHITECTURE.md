@@ -35,3 +35,32 @@ Vendor C: schema/type/range/null contract valid    |
 ```
 
 Phase 3 intentionally separates statistical drift from deterministic data quality. Passing Phase 2 is a precondition for the Vendor C drift demonstration.
+
+## Phase 4 — subgroup fairness and explainability
+
+```text
+Vendor A reference ----------------------------+
+                                              |
+Vendor D subgroup proxy stress                |
+       |                                      |
+       +--> Phase 2 quality gate --> PASS     |
+       |                                      |
+       +--> Phase 3 aggregate drift --> STABLE|
+       |                                      |
+       +------------------+-------------------+
+                          |
+                          v
+                  same CreditScoreV4
+                          |
+              +-----------+-----------+
+              |                       |
+              v                       v
+      Fairlearn subgroup          SHAP TreeExplainer
+           metrics                    |
+              |                       |
+              +-----------+-----------+
+                          v
+                Phase 4 evidence / FAIL
+```
+
+Protected/evaluation columns (`sex`, `age_group`, `synthetic_demographic_group`) remain outside `MODEL_INPUT_FEATURES`. Phase 4 uses them only after inference to evaluate subgroup behavior. Vendor D changes non-protected proxy features only for a synthetic evaluation group, while preserving schema, target, and protected values.
