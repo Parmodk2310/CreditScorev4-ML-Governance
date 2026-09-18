@@ -1,7 +1,7 @@
 PYTHON ?= python
 export PYTHONPATH := src$(if $(PYTHONPATH),:$(PYTHONPATH))
 
-.PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean phase4-simulate phase4-fairness phase4-explain phase4-test phase4-verify phase4-clean phase5-register phase5-evaluate phase5-demo phase5-test phase5-verify phase5-clean clean
+.PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean phase4-simulate phase4-fairness phase4-explain phase4-test phase4-verify phase4-clean phase5-register phase5-evaluate phase5-demo phase5-test phase5-verify phase5-clean phase6-serve phase6-shadow phase6-canary phase6-rollback phase6-demo phase6-test phase6-verify phase6-clean clean
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
@@ -123,7 +123,7 @@ phase5-verify:
 	$(PYTHON) scripts/verify_phase3.py
 	$(PYTHON) scripts/verify_phase4.py
 	$(PYTHON) scripts/verify_phase5.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/integration
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py
 
 phase5-clean:
 	rm -rf data/evidence/phase5/*
@@ -131,4 +131,36 @@ phase5-clean:
 	rm -f data/audit/phase5_audit.jsonl
 	rm -f data/quarantine/phase5/*.csv
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean
+phase6-serve:
+	$(PYTHON) scripts/serve_model.py
+
+phase6-shadow:
+	$(PYTHON) scripts/run_shadow.py
+
+phase6-canary:
+	$(PYTHON) scripts/run_canary.py
+
+phase6-rollback:
+	$(PYTHON) scripts/simulate_rollback.py
+
+phase6-demo:
+	$(PYTHON) scripts/verify_phase6.py
+
+phase6-test:
+	$(PYTHON) -m pytest tests/serving tests/release tests/integration/test_phase6_safe_release_pipeline.py
+
+phase6-verify:
+	$(PYTHON) scripts/verify_phase1.py
+	$(PYTHON) scripts/verify_phase2.py
+	$(PYTHON) scripts/verify_phase3.py
+	$(PYTHON) scripts/verify_phase4.py
+	$(PYTHON) scripts/verify_phase5.py
+	$(PYTHON) scripts/verify_phase6.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/serving tests/release tests/integration
+
+phase6-clean:
+	rm -f data/evidence/phase6/*.json
+	rm -f data/release/*.json
+	rm -f data/audit/phase6_*.jsonl
+
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean

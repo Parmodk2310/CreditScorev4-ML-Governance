@@ -1,4 +1,4 @@
-# Project Structure — Through Phase 5
+# Project Structure — Through Phase 6
 
 ```text
 creditscorev4-ml-governance/
@@ -7,7 +7,8 @@ creditscorev4-ml-governance/
 │   ├── phase2.yaml
 │   ├── phase3.yaml
 │   ├── phase4.yaml
-│   └── phase5.yaml
+│   ├── phase5.yaml
+│   └── phase6.yaml
 ├── contracts/
 │   └── credit_application_contract.yaml
 ├── data/
@@ -21,10 +22,12 @@ creditscorev4-ml-governance/
 │   ├── evidence/phase3/
 │   ├── evidence/phase4/
 │   ├── evidence/phase5/
+│   ├── evidence/phase6/
 │   ├── quarantine/phase2/
 │   ├── quarantine/phase5/
 │   ├── registry/
-│   └── audit/
+│   ├── audit/
+│   └── release/
 ├── models/baseline/
 ├── src/creditscore/
 │   ├── data/
@@ -35,27 +38,30 @@ creditscorev4-ml-governance/
 │   ├── drift/
 │   ├── fairness/
 │   ├── explainability/
-│   └── governance/
-│       ├── __init__.py
+│   ├── governance/
+│   ├── serving/
+│   │   ├── app.py
+│   │   ├── schemas.py
+│   │   ├── predictor.py
+│   │   ├── health.py
+│   │   └── metrics.py
+│   └── release/
 │       ├── models.py
-│       ├── policy.py
+│       ├── router.py
 │       ├── gates.py
-│       ├── evaluator.py
-│       ├── evidence.py
-│       ├── registry.py
-│       ├── audit_log.py
-│       ├── decision.py
-│       └── workflow.py
+│       ├── rollback.py
+│       └── controller.py
 ├── scripts/
-│   ├── register_model.py
-│   ├── evaluate_governance.py
-│   ├── promote_model.py
-│   ├── show_registry.py
+│   ├── serve_model.py
+│   ├── run_shadow.py
+│   ├── run_canary.py
+│   ├── simulate_rollback.py
 │   ├── verify_phase1.py
 │   ├── verify_phase2.py
 │   ├── verify_phase3.py
 │   ├── verify_phase4.py
-│   └── verify_phase5.py
+│   ├── verify_phase5.py
+│   └── verify_phase6.py
 ├── tests/
 │   ├── unit/
 │   ├── quality/
@@ -63,13 +69,23 @@ creditscorev4-ml-governance/
 │   ├── fairness/
 │   ├── explainability/
 │   ├── governance/
+│   ├── serving/
+│   ├── release/
 │   └── integration/
+├── docker/phase6/
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── prometheus/prometheus.yml
+│   └── grafana/
+│       ├── provisioning/
+│       └── dashboards/phase6-serving.json
 └── docs/
     ├── PHASE1.md
     ├── PHASE2.md
     ├── PHASE3.md
     ├── PHASE4.md
-    └── PHASE5.md
+    ├── PHASE5.md
+    └── PHASE6.md
 ```
 
-Phase 6 owns serving, shadow/canary rollout, observability, and rollback. Phase 7 owns workflow automation and cloud deployment.
+Phase 7 owns workflow automation, CI/CD deployment, and cloud infrastructure.

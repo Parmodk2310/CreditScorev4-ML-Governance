@@ -64,3 +64,11 @@ models/baseline/*.joblib
 !data/registry/.gitkeep
 !data/audit/.gitkeep
 !data/quarantine/phase5/.gitkeep
+
+# Phase 6 generated serving/release evidence and state
+/data/evidence/phase6/*.json
+/data/release/*.json
+/data/audit/phase6_*.jsonl
+
+!data/evidence/phase6/.gitkeep
+!data/release/.gitkeep

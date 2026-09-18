@@ -1,0 +1,50 @@
+project:
+  name: CreditScoreV4 ML Governance
+  phase: 6
+
+serving:
+  host: 0.0.0.0
+  port: 8000
+  model_name: CreditScoreV4
+  model_version: 0.5.0-healthy
+  model_path: models/baseline/creditscorev4.joblib
+  decision_threshold: 0.50
+  max_batch_size: 500
+
+release:
+  model_name: CreditScoreV4
+  model_version: 0.5.0-healthy
+  registry_path: data/registry/phase5_registry.json
+  audit_log: data/audit/phase6_release_audit.jsonl
+  state_path: data/release/phase6_release_state.json
+  canary_shares:
+    - 0.10
+    - 0.25
+    - 0.50
+    - 1.00
+  gates:
+    shadow:
+      maximum_error_rate: 0.02
+      maximum_p95_latency_ms: 250.0
+      maximum_mean_risk_delta: 0.05
+      minimum_request_count: 50
+    canary:
+      maximum_error_rate: 0.03
+      maximum_p95_latency_ms: 300.0
+      maximum_mean_risk_delta: 0.06
+      minimum_request_count: 100
+
+paths:
+  evidence_dir: data/evidence/phase6
+
+acceptance:
+  healthy_final_stage: PRODUCTION
+  rollback_final_stage: STAGING
+  minimum_release_audit_records: 8
+  api_endpoints:
+    - /health
+    - /ready
+    - /predict
+    - /batch-predict
+    - /model
+    - /metrics
