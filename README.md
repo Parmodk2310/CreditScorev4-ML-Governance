@@ -1,6 +1,6 @@
-# CreditScoreV4 ML Governance Platform
+# CreditScoreV4 ML Governance
 
-> Production ML Incident Remediation & Fairness Governance
+> Production ML Incident Simulation, Remediation & Governance
 
 ## Overview
 
