@@ -1,7 +1,3 @@
-# Python packaging artifacts
-*.egg-info/
-build/
-dist/
 .venv/
 venv/
 __pycache__/
@@ -14,6 +10,11 @@ htmlcov/
 .env
 *.log
 
+# Python packaging artifacts
+*.egg-info/
+build/
+dist/
+
 # Generated Phase 1 data/evidence/model artifacts
 data/raw/vendor_a/*.csv
 data/raw/vendor_b/*.csv
@@ -23,20 +24,24 @@ data/evidence/phase1/*.csv
 data/evidence/phase1/*.png
 models/baseline/*.joblib
 
-# Keep directories in Git
-!data/raw/vendor_a/.gitkeep
-!data/raw/vendor_b/.gitkeep
-!data/processed/.gitkeep
-!data/evidence/phase1/.gitkeep
-!models/baseline/.gitkeep
-
 # Phase 2 generated governance evidence / quarantine
 /data/evidence/phase2/*.json
-!/data/evidence/phase2/.gitkeep
 /data/quarantine/phase2/*.csv
-!/data/quarantine/phase2/.gitkeep
 
-# Python packaging artifacts
-*.egg-info/
-build/
-dist/
+# Phase 3 generated drift fixtures/reference/evidence
+/data/raw/vendor_c/*.csv
+/data/reference/phase3/*.json
+/data/evidence/phase3/*.json
+/data/evidence/phase3/*.csv
+
+# Keep runtime directories in Git
+!data/raw/vendor_a/.gitkeep
+!data/raw/vendor_b/.gitkeep
+!data/raw/vendor_c/.gitkeep
+!data/processed/.gitkeep
+!data/evidence/phase1/.gitkeep
+!data/evidence/phase2/.gitkeep
+!data/evidence/phase3/.gitkeep
+!data/quarantine/phase2/.gitkeep
+!data/reference/phase3/.gitkeep
+!models/baseline/.gitkeep
