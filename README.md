@@ -2,11 +2,11 @@
 
 **Production ML Incident Simulation, Remediation & Governance**
 
-CreditScoreV4 ML Governance is a production-style case study built around one continuous ML failure lifecycle. It reproduces upstream data failure, adds data-quality and drift controls, evaluates subgroup behavior, explains model decisions, turns evidence into auditable promotion decisions, and now demonstrates governed serving with shadow/canary rollout and automatic rollback.
+CreditScoreV4 ML Governance is a production-style case study built around one continuous ML failure lifecycle. It reproduces upstream data failure, adds data-quality and drift controls, evaluates subgroup behavior, explains model decisions, turns evidence into auditable promotion decisions, demonstrates governed serving with shadow/canary rollout and automatic rollback, and automates the release path with CI, security scanning, immutable container evidence, and fail-closed AWS deployment.
 
 ## Current status
 
-**Phase 6 — Serving, Safe Release & Runtime Observability**
+**Phase 7 — Automation, Security & Gated Cloud Deployment**
 
 - ✅ Phase 1: deterministic synthetic lending population and same-model incident degradation
 - ✅ Phase 2: versioned data contract, Great Expectations, blocking quality gate, quarantine
@@ -14,7 +14,7 @@ CreditScoreV4 ML Governance is a production-style case study built around one co
 - ✅ Phase 4: aggregate-stable Vendor D fairness failure plus SHAP explainability
 - ✅ Phase 5: policy engine, evidence hashing, audit log, model registry, APPROVE/REJECT
 - ✅ Phase 6: FastAPI serving, Prometheus metrics, shadow release, canary routing, rollback
-- ⏳ Phase 7: workflow automation, CI/CD deployment, and cloud infrastructure
+- ✅ Phase 7: GitHub Actions CI/security, container verification, Terraform ECS/Fargate, OIDC, gated deployment
 
 ## Continuous governance story
 
@@ -102,7 +102,7 @@ A direct `CANDIDATE -> PRODUCTION` transition remains blocked.
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
-make phase6-verify
+make phase7-verify
 ```
 
 Run the API locally:
@@ -137,7 +137,37 @@ Local services:
 - `scripts/verify_phase6.py` — Phase 6 release gate
 - `docker/phase6/` — API + Prometheus + Grafana demonstration stack
 - `docs/PHASE6.md` — Phase 6 methodology and scope
+- `configs/phase7.yaml` — automation/security/deployment contract
+- `.github/workflows/` — CI, security, image, and gated AWS deployment workflows
+- `docker/phase6/Dockerfile` — Phase 7 hardens the image into a standalone deployable artifact by copying the generated model
+- `infra/terraform/` — ECR + ECS/Fargate + ALB + networking infrastructure
+- `scripts/verify_phase7.py` — fail-closed Phase 7 acceptance gate
+- `docs/PHASE7.md` — Phase 7 automation and cloud-deployment methodology
 
 ## Scope boundary
 
-This repository is a synthetic, production-style ML governance case study. The thresholds and decisions are configurable project controls, not legal or regulatory determinations. Phase 6 demonstrates local serving and safe-release mechanics; workflow orchestration, CI/CD deployment automation, and cloud infrastructure remain Phase 7.
+This repository is a synthetic, production-style ML governance case study. The thresholds and decisions are configurable project controls, not legal or regulatory determinations. Phase 7 demonstrates a deployable automation path but keeps cloud deployment disabled by default. AWS resources are created only after an explicit manual workflow dispatch, `AWS_DEPLOY_ENABLED=true`, confirmation input, OIDC role configuration, and persistent Terraform-backend configuration. This is a synthetic portfolio deployment architecture, not a claim of a live regulated credit system.
+
+## Phase 7 automation and cloud boundary
+
+```text
+Pull request / main
+        |
+        +--> Quality + Phase 6 regression + Phase 7 tests
+        +--> Gitleaks + Trivy
+        +--> Terraform fmt/init(validate without backend)
+        +--> Docker build + runtime smoke test (no push)
+
+Manual deployment only
+        |
+AWS_DEPLOY_ENABLED=true + typed DEPLOY confirmation + OIDC + S3 state
+        |
+        +--> bootstrap Terraform-managed ECR
+        +--> push immutable SHA-tagged image
+        +--> resolve image digest
+        +--> Terraform plan/apply ECS/Fargate + ALB
+        +--> deployed /health /ready /model verification
+        +--> release manifest evidence
+```
+
+The production workflow is intentionally fail-closed. `AWS_DEPLOY_ENABLED` is expected to be absent/false in the repository until you intentionally configure a deployment environment.
