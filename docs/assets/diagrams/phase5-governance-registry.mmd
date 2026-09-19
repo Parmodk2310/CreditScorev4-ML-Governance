@@ -1,0 +1,10 @@
+flowchart LR
+  A[Evidence bundle<br/>quality / drift / performance<br/>calibration / fairness] --> B[SHA-256 integrity verification]
+  B --> C[Versioned policy<br/>blocking gates]
+  C --> D[Deterministic decision]
+  D -->|healthy| E[APPROVE]
+  D -->|blocking gate| F[REJECT]
+  E --> G[Registry<br/>CANDIDATE -> STAGING]
+  F --> H[Registry<br/>REJECTED]
+  G --> I[Audit record<br/>+ decision artifact]
+  H --> I

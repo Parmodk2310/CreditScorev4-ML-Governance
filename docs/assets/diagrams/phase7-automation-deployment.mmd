@@ -1,0 +1,13 @@
+flowchart LR
+  A[Pull request] --> B[Quality + cumulative verification]
+  A --> C[Gitleaks + Trivy]
+  A --> D[Docker build + smoke test]
+  A --> E[Terraform fmt + validate]
+  B --> F[Deployment gate<br/>AWS_DEPLOY_ENABLED=false]
+  C --> F
+  D --> F
+  E --> F
+  F -->|explicit opt-in| G[GitHub OIDC]
+  G --> H[Immutable ECR]
+  H --> I[ECS/Fargate]
+  I --> J[HTTPS ALB<br/>restricted service ingress]

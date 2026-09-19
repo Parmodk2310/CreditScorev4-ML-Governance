@@ -1,0 +1,7 @@
+flowchart LR
+  A[Vendor D<br/>subgroup proxy stress] --> B[Phase 2 quality<br/>PASS]
+  B --> C[Phase 3 aggregate drift<br/>STABLE]
+  C --> D[Fairness metrics<br/>DP ratio 0.7480<br/>Selection diff 0.1860<br/>EO diff 0.2269]
+  C --> E[SHAP investigation<br/>proxy feature importance]
+  D --> F[Fairness governance<br/>FAIL]
+  E --> F

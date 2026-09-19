@@ -1,0 +1,6 @@
+flowchart LR
+  A[Vendor A<br/>healthy synthetic data] --> B[Train baseline<br/>CreditScoreV4]
+  B --> C[Healthy evidence<br/>AUC 0.8025<br/>NULL 3.14%]
+  C -->|controlled incident| D[Vendor B incident fixture<br/>NULL stress]
+  D --> E[Incident evidence<br/>AUC 0.7329<br/>NULL 22.00%]
+  E --> F[Acceptance gates<br/>PHASE 1 VERIFIED]
