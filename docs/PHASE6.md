@@ -2,7 +2,7 @@
 
 ## Objective
 
-Phase 6 takes a model version that Phase 5 has already approved into `STAGING` and demonstrates how that version can be served and promoted safely without bypassing governance. The phase is a production-style simulation: it exercises real FastAPI inference against the persisted CreditScoreV4 artifact while rollout traffic, health, and rollback conditions are deterministic local controls.
+Phase 6 takes a model version that Phase 5 has already approved into `STAGING` and verifies that the version can be served and promoted safely without bypassing governance. The phase uses a local release simulation: it exercises real FastAPI inference against the persisted CreditScoreV4 artifact while rollout traffic, health, and rollback conditions are deterministic local controls.
 
 ## Boundary with Phase 5
 
@@ -132,4 +132,4 @@ Local ports:
 
 ## Scope boundary
 
-Phase 6 is a local production-style safe-release simulation. It does not claim a live banking deployment, real customer traffic, or regulatory certification. Workflow orchestration, CI/CD deployment automation, and cloud infrastructure remain Phase 7.
+Phase 6 is a local safe-release simulation. It does not claim a live banking deployment, real customer traffic, or regulatory certification. Workflow orchestration, CI/CD deployment automation, and cloud infrastructure remain Phase 7.

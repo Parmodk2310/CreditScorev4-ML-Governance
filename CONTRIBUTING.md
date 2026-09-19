@@ -2,7 +2,7 @@
 
 Thanks for helping improve CreditScoreV4 ML Governance.
 
-This repository is a reproducible, synthetic ML governance case study.
+This repository uses deterministic synthetic data to test ML governance controls.
 Contributions should preserve that boundary and should not introduce claims of
 real-bank production use, regulatory certification, or live AWS deployment
 without corresponding evidence.
@@ -89,12 +89,12 @@ Changes must preserve or deliberately update the executable contracts for:
 - fail-closed cloud deployment.
 
 If a threshold or expected outcome changes, update the corresponding config,
-verification code, tests, evidence contract, and reviewer-facing documentation
+verification code, tests, evidence contract, and public documentation
 in the same pull request.
 
 ## Documentation
 
-Keep reviewer claims synchronized with executable behavior. Avoid unsupported
+Keep documentation claims synchronized with executable behavior. Avoid unsupported
 statements about real customer/bank data, production traffic, regulatory
 compliance, deployed AWS infrastructure, or causal conclusions from SHAP.
 

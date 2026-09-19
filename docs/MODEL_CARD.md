@@ -4,13 +4,13 @@
 
 **Model name:** CreditScoreV4
 **Project:** CreditScoreV4 ML Governance
-**Purpose:** synthetic credit-risk ML governance case study
+**Purpose:** synthetic credit-risk model governance and controlled release
 **Model family:** XGBoost classifier inside a scikit-learn preprocessing pipeline
 **Target:** `default_30d`
 **Positive class:** `default_30d = 1`
 **Primary output:** probability of 30-day default
 
-The project demonstrates ML incident detection, evidence-backed governance, and
+The system evaluates ML incident detection, evidence-backed governance, and
 controlled model release. It is not a real lending system.
 
 ## Intended use

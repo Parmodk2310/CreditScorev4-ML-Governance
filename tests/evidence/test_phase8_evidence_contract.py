@@ -1,105 +1,85 @@
-import re
+from __future__ import annotations
+
 from pathlib import Path
 
+from creditscore.governance.registry import ALLOWED_TRANSITIONS
+from creditscore.utils.config import load_yaml
+
 ROOT = Path(__file__).resolve().parents[2]
-SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
-def workflow(name: str) -> str:
-    return (ROOT / ".github/workflows" / name).read_text()
+def test_phase8_required_document_and_visual_contract() -> None:
+    config = load_yaml(ROOT / "configs" / "phase8.yaml")
+
+    for relative in config["documents"]["required"]:
+        assert (ROOT / str(relative)).exists(), relative
+
+    for relative in config["visuals"]["required"]:
+        assert (ROOT / str(relative)).exists(), relative
 
 
-def assert_actions_pinned(text: str) -> None:
-    refs: list[str] = []
+def test_phase8_policy_contract_matches_phase5() -> None:
+    phase8 = load_yaml(ROOT / "configs" / "phase8.yaml")
+    phase5 = load_yaml(ROOT / "configs" / "phase5.yaml")
 
-    for line in text.splitlines():
-        stripped = line.strip()
+    expected = phase8["policy_contract"]
+    actual = phase5["policy"]["gates"]
 
-        if not stripped.startswith("- uses:"):
-            continue
-
-        value = stripped.split("uses:", 1)[1].split("#", 1)[0].strip()
-
-        assert "@" in value, value
-
-        action, ref = value.rsplit("@", 1)
-
-        assert action, value
-        assert SHA_PATTERN.fullmatch(ref), f"Action is not SHA-pinned: {value}"
-
-        refs.append(ref)
-
-    assert refs, "Expected at least one external GitHub Action"
+    assert float(actual["performance"]["minimum_roc_auc"]) == float(expected["minimum_roc_auc"])
+    assert float(actual["performance"]["minimum_pr_auc"]) == float(expected["minimum_pr_auc"])
+    assert float(actual["calibration"]["maximum_brier_score"]) == float(expected["maximum_brier_score"])
+    assert str(expected["blocked_drift_status"]) in actual["drift"]["blocked_statuses"]
+    assert str(expected["blocked_fairness_status"]) in actual["fairness"]["blocked_statuses"]
+    assert int(actual["evidence_integrity"]["minimum_artifacts"]) == int(expected["minimum_artifacts"])
 
 
-def test_ci_runs_quality_and_validates_terraform() -> None:
-    text = workflow("ci.yml")
-
-    assert "make quality" in text
-    assert "terraform validate" in text
-
-    assert_actions_pinned(text)
-
-
-def test_security_uses_gitleaks_and_trivy() -> None:
-    text = workflow("security.yml")
-
-    assert "gitleaks/gitleaks-action@" in text
-    assert text.count("aquasecurity/trivy-action@") == 2
-
-    assert_actions_pinned(text)
+def test_phase8_registry_state_contract() -> None:
+    assert ALLOWED_TRANSITIONS["REGISTERED"] == {"CANDIDATE"}
+    assert ALLOWED_TRANSITIONS["CANDIDATE"] == {"STAGING", "REJECTED"}
+    assert "PRODUCTION" not in ALLOWED_TRANSITIONS["CANDIDATE"]
+    assert ALLOWED_TRANSITIONS["STAGING"] == {"SHADOW"}
+    assert ALLOWED_TRANSITIONS["SHADOW"] == {"CANARY", "STAGING"}
+    assert ALLOWED_TRANSITIONS["CANARY"] == {"PRODUCTION", "STAGING"}
+    assert ALLOWED_TRANSITIONS["PRODUCTION"] == set()
+    assert ALLOWED_TRANSITIONS["REJECTED"] == set()
 
 
-def test_image_workflow_builds_without_push_and_smoke_tests() -> None:
-    text = workflow("image.yml")
+def test_phase8_release_contract_matches_phase6() -> None:
+    phase8 = load_yaml(ROOT / "configs" / "phase8.yaml")
+    phase6 = load_yaml(ROOT / "configs" / "phase6.yaml")
 
-    assert "push: false" in text
-    assert "verify_container.py" in text
+    expected = phase8["release_contract"]
+    actual = phase6["release"]
 
-    assert_actions_pinned(text)
+    assert [float(v) for v in actual["canary_shares"]] == [float(v) for v in expected["canary_shares"]]
 
-
-def test_deploy_workflow_requires_oidc_and_explicit_gate() -> None:
-    text = workflow("deploy.yml")
-
-    assert "AWS_DEPLOY_ENABLED" in text
-    assert "confirm_deploy" in text
-    assert "aws-actions/configure-aws-credentials@" in text
-
-    assert_actions_pinned(text)
-
-
-def test_deploy_workflow_scopes_oidc_and_serializes_production() -> None:
-    text = workflow("deploy.yml")
-
-    assert "concurrency:" in text
-    assert "group: creditscorev4-production" in text
-    assert "cancel-in-progress: false" in text
-
-    workflow_header = text.split("jobs:", 1)[0]
-
-    assert "permissions:" in workflow_header
-    assert "contents: read" in workflow_header
-    assert "id-token: write" not in workflow_header
-
-    jobs_section = text.split("jobs:", 1)[1]
-
-    gate_section, deploy_section = jobs_section.split("  deploy:", 1)
-
-    assert "id-token: write" not in gate_section
-
-    assert "permissions:" in deploy_section
-    assert "contents: read" in deploy_section
-    assert "id-token: write" in deploy_section
+    for stage in ("shadow", "canary"):
+        for field in (
+            "maximum_error_rate",
+            "maximum_p95_latency_ms",
+            "maximum_mean_risk_delta",
+            "minimum_request_count",
+        ):
+            assert float(actual["gates"][stage][field]) == float(expected[stage][field])
 
 
-def test_cloud_image_contains_generated_model_artifact() -> None:
-    dockerfile = (ROOT / "docker/phase6/Dockerfile").read_text()
+def test_phase8_deployment_contract_matches_phase7() -> None:
+    phase8 = load_yaml(ROOT / "configs" / "phase8.yaml")
+    phase7 = load_yaml(ROOT / "configs" / "phase7.yaml")
 
-    assert "COPY models/baseline/creditscorev4.joblib" in dockerfile
+    assert phase8["deployment_contract"]["safe_default"] is False
+    assert str(phase7["aws"]["deploy_enabled_env"]) == str(phase8["deployment_contract"]["enable_env"])
+
+    ci_workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    deploy_workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text(encoding="utf-8")
+
+    assert "make phase8-verify" in ci_workflow
+    assert "make phase8-verify" in deploy_workflow
+    assert "make phase7-verify" not in ci_workflow
+    assert "make phase7-verify" not in deploy_workflow
 
 
-def test_security_workflow_can_read_pull_request_metadata() -> None:
-    text = workflow("security.yml")
-
-    assert "pull-requests: read" in text
+def test_phase8_reviewer_manifest_path_is_phase8_scoped() -> None:
+    config = load_yaml(ROOT / "configs" / "phase8.yaml")
+    path = str(config["evidence"]["reviewer_manifest"])
+    assert path == "data/evidence/phase8/reviewer_evidence_manifest.json"

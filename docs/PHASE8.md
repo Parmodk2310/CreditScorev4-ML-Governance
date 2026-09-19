@@ -1,15 +1,15 @@
-# Phase 8 — Governance Evidence & Reviewer Experience
+# Phase 8 — Governance Evidence & Traceability
 
 ## Objective
 
 Phase 8 turns the verified Phase 1–7 implementation into a reviewer-ready,
 evidence-driven ML governance case study.
 
-It does not add another ML platform, orchestration framework, or cloud stack for
-portfolio breadth. Instead, it makes existing implementation claims easier to
-verify, reproduce, explain, and review.
+It does not add another ML platform, orchestration framework, or cloud stack.
+Instead, it makes existing implementation claims easier to verify, reproduce,
+explain, and trace.
 
-> Every important reviewer-facing claim should be traceable to executable
+> Every important public claim should be traceable to executable
 > configuration, source code, tests, or generated evidence.
 
 ## Existing baseline
@@ -24,9 +24,9 @@ Phase 8 builds on:
 6. FastAPI serving plus shadow/canary/rollback,
 7. CI, security scanning, Docker, Terraform, and gated AWS ECS/Fargate delivery.
 
-## Reviewer paths
+## Documentation paths
 
-### Recruiter
+### Overview
 
 `README -> 60-second story -> architecture -> evidence -> outcomes -> case study`
 
@@ -34,7 +34,7 @@ Phase 8 builds on:
 
 `README -> ARCHITECTURE -> TECHNICAL_DEEP_DIVE -> GOVERNANCE_POLICY -> source -> tests -> REPRODUCIBLE_DEMO`
 
-### ML governance / model-risk reviewer
+### Governance review
 
 `MODEL_CARD -> MODEL_VALIDATION_REPORT -> GOVERNANCE_POLICY -> MONITORING_PLAN -> EVIDENCE_INDEX -> LIMITATIONS`
 
@@ -48,7 +48,7 @@ Governance documentation:
 - `docs/MONITORING_PLAN.md`
 - `docs/LIMITATIONS.md`
 
-Reviewer documentation:
+Governance documentation:
 
 - `docs/EVIDENCE_INDEX.md`
 - `docs/TECHNICAL_DEEP_DIVE.md`
@@ -128,8 +128,8 @@ The verifier returns non-zero when a blocking evidence contract fails.
 ## Non-goals
 
 Phase 8 intentionally does not add Airflow, MLflow, Kafka, Kubernetes/EKS, RDS,
-a feature store, another model, or another dashboard solely for portfolio
-appearance.
+a feature store, another model, or another dashboard without a verified
+operational requirement.
 
 ## Acceptance criteria
 

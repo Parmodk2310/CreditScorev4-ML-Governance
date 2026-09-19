@@ -1,6 +1,6 @@
 # Immutable GitHub Actions Pinning Manifest
 
-Resolved on 2026-09-19 for the v0.8.0 hardening package.
+Resolved on 2026-09-19 for the v0.8.1 hardening release.
 
 All workflow `uses:` references are pinned to immutable 40-character commit
 SHAs. The human-readable release/tag is retained only as an inline comment.

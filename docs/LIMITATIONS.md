@@ -46,7 +46,7 @@ environment so failure modes and governance behavior are reproducible.
 
 ## Intended interpretation
 
-Correct: a production-style synthetic engineering case study demonstrating
+Scope: a synthetic engineering system implementing
 layered ML governance and release controls.
 
 Incorrect: a real bank production system or certified regulatory-compliance

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable portfolio releases of CreditScoreV4 ML Governance are documented here.
+All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
@@ -22,7 +22,7 @@ The project uses phased releases to demonstrate the evolution from incident repr
 - Strengthened reviewer-document consistency tests.
 
 
-## v0.8.0 — Governance Evidence & Reviewer Experience
+## v0.8.0 — Governance Evidence & Traceability
 
 - Added reviewer-specific navigation and evidence traceability.
 - Enforced cumulative Phase 8 verification in CI and the gated deployment preflight.

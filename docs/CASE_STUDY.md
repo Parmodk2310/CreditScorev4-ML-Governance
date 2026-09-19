@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-CreditScoreV4 ML Governance is a production-style synthetic incident-remediation case study. It demonstrates how an ML engineering team can detect upstream data failures, quantify model and subgroup degradation, explain likely proxy behavior, enforce deterministic governance gates, and move only approved candidates through a safe serving and release lifecycle.
+CreditScoreV4 ML Governance is a synthetic credit-risk governance system. It demonstrates how an ML engineering team can detect upstream data failures, quantify model and subgroup degradation, explain likely proxy behavior, enforce deterministic governance gates, and move only approved candidates through a safe serving and release lifecycle.
 
 The project is deliberately structured as a sequence of increasingly subtle failure modes. Vendor B is visibly bad and should be blocked by data-quality controls. Vendor C remains contract-valid yet creates critical drift. Vendor D remains aggregate-stable yet creates material subgroup disparities. These scenarios prevent the governance story from collapsing into a single “schema validation” check.
 
@@ -88,11 +88,11 @@ Measured Phase 3 evidence:
 - Prediction PSI: **0.2379**
 - Prediction KS: **0.1863**
 
-This phase demonstrates why contract validation and drift monitoring are separate controls. A dataset can be structurally valid and still be operationally unsafe.
+Contract validation and drift monitoring are separate controls. A dataset can be structurally valid and still be operationally unsafe.
 
 ## 7. Vendor D — Subgroup/Fairness Stress
 
-Vendor D demonstrates a third blind spot: aggregate monitoring can look healthy while subgroup outcomes degrade.
+Vendor D exercises a third failure mode: aggregate monitoring can look healthy while subgroup outcomes degrade.
 
 Measured Phase 4 evidence:
 
@@ -304,9 +304,9 @@ The next iteration should deepen operational realism rather than add more isolat
 7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
 
 <!-- PHASE8_CASE_STUDY -->
-## 18. Evidence Traceability and Reviewer Experience
+## 18. Evidence Traceability
 
-Phase 8 adds a reviewer-facing evidence layer over the existing Phase 1–7
+Phase 8 adds an evidence-traceability layer over the existing Phase 1–7
 implementation. It connects policy, release control, tests, screenshots, and
 generated artifacts into a reviewable contract rather than creating a second
 governance system.

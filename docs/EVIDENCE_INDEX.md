@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This index connects reviewer-facing claims to repository locations that generate
+This index connects documented claims to repository locations that generate
 or store supporting evidence.
 
 ## Phase 1 — incident reproduction
