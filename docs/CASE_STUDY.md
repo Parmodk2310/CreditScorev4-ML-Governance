@@ -19,7 +19,7 @@ Incident reproduction
   -> Automated, fail-closed cloud delivery
 ```
 
-The v0.7.0 release verifies 63 cumulative tests plus quality, Terraform, container, secret-scanning, and IaC security controls.
+The v0.8.0 code line verifies 63 Phase 1–7 regression tests plus 6 Phase 8 evidence-contract tests, together with quality, Terraform, container, secret-scanning, and IaC security controls.
 
 ## 2. Why I Built This
 
@@ -253,10 +253,11 @@ Release-level verified boundaries:
 | Phase 5 | approve/reject decisions, integrity hashes, registry/audit evidence |
 | Phase 6 | serving endpoints, shadow/canary path, rollback path |
 | Phase 7 | CI/security/container/Terraform controls |
-| Historical Phase 6 test boundary | **47 passed** |
-| Phase 7-specific tests | **16 passed** |
-| Cumulative test suite | **63 passed** |
-| PR checks | **5/5 successful** |
+| Phase 8 | reviewer evidence contract and documentation/configuration traceability |
+| Phase 1–7 regression suite | **63 passed** |
+| Phase 8 evidence-contract tests | **6 passed** |
+| Phase 1–8 tests exercised by the cumulative gate | **69 passed** |
+| Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 15. Design Decisions
 
@@ -288,7 +289,7 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - The registry/audit implementation is project-owned rather than a managed MLflow deployment.
 - Phase 7 defines and validates a cloud path; it does not prove a live production deployment.
 - The current repo does not rely on Airflow orchestration; GitHub Actions, scripts, and Make targets drive the verified lifecycle.
-- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.7.0.
+- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.8.0.
 
 ## 17. What I Would Build Next
 
@@ -301,7 +302,6 @@ The next iteration should deepen operational realism rather than add more isolat
 5. **Observability** — OpenTelemetry traces, SLOs, error budgets, and alert routing.
 6. **Performance testing** — realistic concurrency, latency distributions, capacity limits, and rollback under load.
 7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
-8. **Model cards / governance reports** — generated human-readable summaries tied to the same machine-readable evidence.
 
 <!-- PHASE8_CASE_STUDY -->
 ## 18. Evidence Traceability and Reviewer Experience

@@ -66,6 +66,7 @@ registry platform, orchestrator, or cloud runtime.
 | **5 — Governance + registry** | Can evidence become deterministic promotion decisions? | Healthy candidate **APPROVE → STAGING**; drift/fairness candidates **REJECTED** |
 | **6 — Serving + safe release** | Can an approved candidate be served and rolled out safely? | FastAPI endpoints verified; shadow → canary **10/25/50/100%** → production; degraded canary rolls back |
 | **7 — Automated delivery** | Can release engineering be automated without unsafe default cloud mutation? | CI/security/container/Terraform controls verified; AWS deployment remains **disabled by default** |
+| **8 — Governance evidence** | Can reviewer-facing claims remain synchronized with executable policy, release controls, and generated evidence? | Evidence contract, model card, validation report, monitoring plan, limitations, reviewer manifest, and reproducible review path verified |
 
 ## Evidence snapshots
 
@@ -149,21 +150,21 @@ Important: the repository validates the AWS deployment architecture, but cloud m
 
 ## Verification status
 
-The v0.7.0 release was produced after the following verified boundaries:
+The v0.8.0 code line is verified at the following boundaries:
 
 | Verification | Result |
 |---|---:|
 | Ruff / Black / mypy / compile checks | **PASS** |
-| Phase 6 historical regression boundary | **47 passed** |
-| Phase 7-specific tests | **16 passed** |
-| Cumulative suite | **63 passed** |
+| Phase 1–7 regression suite | **63 passed** |
+| Phase 8 evidence-contract tests | **6 passed** |
+| Phase 1–8 tests exercised by `make phase8-verify` | **69 passed** |
 | Terraform format / validation | **PASS** |
 | Container smoke test | **PASS** |
 | Gitleaks | **PASS** |
 | Trivy | **PASS** |
-| Phase 7 PR checks | **5/5 successful** |
+| Phase 8 implementation PR #9 checks | **5/5 successful** |
 
-Release: **v0.7.0** — commit `45c0f1112d9c21dc2954f0a2d0b36eb849c69e43`.
+Current code version: **v0.8.0**. Published tags are recorded in GitHub Releases.
 
 ## Quick verification
 
@@ -173,8 +174,7 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 
 make quality
-make phase6-verify
-make phase7-verify
+make phase8-verify
 make phase7-terraform
 python -m pytest -q
 ```
@@ -189,6 +189,7 @@ python scripts/verify_phase4.py
 python scripts/verify_phase5.py
 python scripts/verify_phase6.py
 python scripts/verify_phase7.py
+python scripts/verify_phase8.py
 ```
 
 ## Documentation
@@ -216,5 +217,5 @@ The next upgrades would focus on replacing local/simplified control-plane compon
 
 ---
 
-**Release:** `v0.7.0`
+**Current code version:** `v0.8.0`
 **Primary focus:** ML governance · model risk · safe release engineering · MLOps · AWS/Terraform
