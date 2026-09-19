@@ -1,121 +1,169 @@
-# CreditScoreV4 ML Governance
+<p align="center">
+  <h1 align="center">CreditScoreV4 ML Governance</h1>
+  <p align="center">
+    Evidence-backed ML governance for data quality, drift, fairness, model promotion,
+    progressive delivery, rollback, and fail-closed AWS deployment.
+  </p>
+</p>
 
-> Production-style synthetic ML governance case study for credit-risk incident remediation, drift/fairness controls, safe model release, and gated AWS deployment.
+<p align="center">
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/ci.yml">
+    <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/ci.yml/badge.svg" alt="Quality and governance" />
+  </a>
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/security.yml">
+    <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/security.yml/badge.svg" alt="Security" />
+  </a>
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml">
+    <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml/badge.svg" alt="Container image" />
+  </a>
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases">
+    <img src="https://img.shields.io/github/v/release/Parmodk2310/CreditScorev4-ML-Governance" alt="Latest release" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" />
+  </a>
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
+</p>
 
-CreditScoreV4 ML Governance demonstrates how an ML team can move from a reproducible production-style incident to evidence-backed governance and controlled release engineering. The repository intentionally uses synthetic data and simulated failure modes so the full lifecycle can be tested deterministically without claiming a real banking incident or regulatory compliance.
+> **A credit-risk model can be accurate and still be unsafe to promote.**
+> CreditScoreV4 demonstrates how an ML platform can detect upstream failures,
+> require evidence before promotion, and progressively release an approved model
+> without silently bypassing governance controls.
 
-## The 60-second story
+This repository is a **production-style synthetic ML governance case study**. It
+uses deterministic synthetic data and controlled failure scenarios so the
+complete lifecycle can be reproduced without claiming a real banking incident,
+live lending system, or regulatory certification.
 
-A healthy credit-risk model starts with **ROC-AUC 0.8025** and a **3.14%** null rate in `device_risk_score`. Three controlled upstream scenarios are then introduced:
+<p align="center">
+  <img src="docs/assets/diagrams/phase1-7-end-to-end.svg"
+       alt="CreditScoreV4 end-to-end ML governance architecture"
+       width="100%" />
+</p>
 
-- **Vendor B — data-quality failure:** `device_risk_score` nulls jump to **22.00%**, model AUC falls to **0.7329**, and the Phase 2 quality gate blocks the batch.
-- **Vendor C — contract-valid drift:** data quality still passes, but statistical monitoring detects **CRITICAL** feature and prediction drift (`PSI=0.2379`, `KS=0.1863`).
-- **Vendor D — subgroup/fairness stress:** aggregate drift remains **STABLE**, yet fairness governance fails (`DP ratio=0.7480`, `selection-rate difference=0.1860`, `equalized-odds difference=0.2269`).
+## Why CreditScoreV4
 
-The project then converts those signals into deterministic governance decisions, records evidence and audit trails, serves the approved model through FastAPI, exercises shadow/canary/rollback release states, and validates a fail-closed AWS ECS/Fargate deployment path through GitHub Actions and Terraform.
+Many ML projects end after model training and evaluation. In a production ML
+system, that is only the beginning.
 
-![Phase 1-7 architecture](docs/assets/diagrams/phase1-7-end-to-end.svg)
+CreditScoreV4 focuses on the controls between **a trained model** and
+**production traffic**:
 
-## Why this project exists
+- **Valid schema does not mean healthy data.**
+- **Healthy aggregate metrics do not mean healthy subgroup outcomes.**
+- **A governance approval does not mean a model should receive 100% traffic immediately.**
+- **A deployment pipeline should fail closed when evidence or configuration is missing.**
 
-Many ML portfolios stop at training accuracy. This project focuses on what happens **after** a model is trained:
-
-1. What if upstream data silently changes?
-2. What if the schema remains valid but distributions shift?
-3. What if aggregate health looks stable while subgroup outcomes degrade?
-4. What evidence should be required before promotion?
-5. How should a release roll forward gradually and roll back automatically?
-6. How do CI/CD and infrastructure controls fail closed instead of silently deploying?
-
-The result is a single case study that connects model risk, software engineering, release safety, and cloud delivery.
-
-<!-- PHASE8_REVIEWER_PATHS -->
-## Reviewer paths
-
-This repository supports different review depths without requiring every reader
-to traverse the full implementation.
-
-| Reader | Recommended path |
-|---|---|
-| Recruiter / hiring manager | README -> architecture -> evidence snapshots -> case study |
-| Senior ML / MLOps engineer | architecture -> technical deep dive -> governance policy -> source/tests -> reproducible demo |
-| ML governance / model-risk reviewer | model card -> validation report -> governance policy -> monitoring plan -> evidence index -> limitations |
-
-Key Phase 8 documentation:
-
-- [`docs/GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md)
-- [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md)
-- [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md)
-- [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md)
-- [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md)
-- [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md)
-- [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md)
-- [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md)
-
-Phase 8 adds reviewer/evidence verification; it does not introduce a new model,
-registry platform, orchestrator, or cloud runtime.
-
-## Phase-by-phase lifecycle
-
-| Phase | Engineering question | Demonstrated outcome |
-|---|---|---|
-| **1 — Incident baseline** | Can the failure be reproduced deterministically? | Baseline AUC **0.8025** → incident AUC **0.7329**; null rate **3.14% → 22.00%** |
-| **2 — Data quality** | Can malformed or materially degraded vendor data be blocked before use? | Healthy Vendor A **PASS**; Vendor B **BLOCK** and quarantine evidence |
-| **3 — Drift governance** | Can contract-valid distribution shift be detected? | Vendor C passes Phase 2 but reaches **CRITICAL** drift |
-| **4 — Fairness + SHAP** | Can subgroup risk be detected even when aggregate drift is stable? | Vendor D aggregate drift **STABLE**, fairness governance **FAIL**; SHAP explains stressed proxy features |
-| **5 — Governance + registry** | Can evidence become deterministic promotion decisions? | Healthy candidate **APPROVE → STAGING**; drift/fairness candidates **REJECTED** |
-| **6 — Serving + safe release** | Can an approved candidate be served and rolled out safely? | FastAPI endpoints verified; shadow → canary **10/25/50/100%** → production; degraded canary rolls back |
-| **7 — Automated delivery** | Can release engineering be automated without unsafe default cloud mutation? | CI/security/container/Terraform controls verified; AWS deployment remains **disabled by default** |
-| **8 — Governance evidence** | Can reviewer-facing claims remain synchronized with executable policy, release controls, and generated evidence? | Evidence contract, model card, validation report, monitoring plan, limitations, reviewer manifest, and reproducible review path verified |
-
-## Evidence snapshots
-
-### 1. Incident reproduction
-
-![Phase 1 incident baseline](docs/assets/screenshots/01-incident-baseline.png)
-
-### 2. Governance decisions
-
-![Phase 5 governance decisions](docs/assets/screenshots/05-governance-decisions.png)
-
-### 3. Safe release and rollback
-
-![Phase 6 safe release](docs/assets/screenshots/06-release-rollback.png)
-
-## Governance architecture
-
-The governance layer treats promotion as an **evidence decision**, not a deployment shortcut.
+The project connects those concerns into one reproducible control path:
 
 ```text
-Data-quality evidence ─┐
-Drift evidence ────────┤
-Performance evidence ──┤
-Calibration evidence ──┼──> Policy / blocking gates ──> APPROVE or REJECT
-Fairness evidence ─────┤                              │
-Evidence hashes ───────┘                              ├──> Registry transition
-                                                      ├──> Audit record
-                                                      └──> Decision artifact
+Incoming data
+    |
+    v
+Data quality
+    |
+    v
+Drift
+    |
+    v
+Fairness + explainability
+    |
+    v
+Governance policy
+    |
+    v
+Evidence verification
+    |
+    v
+Model registry
+    |
+    v
+STAGING -> SHADOW -> CANARY -> PRODUCTION
+               \          \
+                \-----------> STAGING (rollback)
 ```
 
-Phase 5 uses a project-owned registry/state machine rather than claiming MLflow integration. MLflow is a reasonable future backend, but it is not required to demonstrate the governance contract implemented here.
+## Failure scenarios
 
-## Release lifecycle
+The repository deliberately separates failure modes that can look similar from
+the outside but require different controls.
 
-![Release-state diagram](docs/assets/diagrams/release-state.svg)
+| Scenario | What changes | What catches it | Outcome |
+|---|---|---|---|
+| **Healthy Vendor A** | Reference behavior | Full governance path | Eligible for promotion |
+| **Vendor B — data-quality failure** | `device_risk_score` nulls rise from **3.14%** to **22.00%** | Data contract + Great Expectations | **BLOCK + quarantine** |
+| **Vendor C — contract-valid drift** | Schema remains valid while feature/prediction distributions shift | PSI + KS drift governance | **CRITICAL → REJECT** |
+| **Vendor D — subgroup stress** | Aggregate drift remains stable while subgroup outcomes degrade | Fairlearn + SHAP-supported review | **FAIRNESS FAIL → REJECT** |
 
-The safe path is explicit:
+The baseline model records **ROC-AUC 0.8025**. Under the Vendor B incident
+fixture, ROC-AUC falls to **0.7329**. Vendor C produces **prediction PSI 0.2379**
+and **KS 0.1863**. Vendor D reaches a **demographic-parity ratio of 0.7480**,
+a **selection-rate difference of 0.1860**, and an **equalized-odds difference
+of 0.2269**.
+
+These thresholds and scenarios are project governance heuristics for the
+synthetic case study; they are not legal or regulatory standards.
+
+## What the system demonstrates
+
+### Data-quality governance
+
+Incoming batches are checked against a versioned contract and Great
+Expectations rules. Material violations are blocked before downstream model
+governance and written to quarantine/evidence paths.
+
+### Drift governance
+
+Contract-valid data is compared with the healthy reference using feature and
+prediction drift checks. This demonstrates why schema validation and
+distribution monitoring are separate controls.
+
+### Fairness and explainability
+
+Protected attributes are used for evaluation scenarios and excluded from model
+features. Fairness checks can reject a candidate even when aggregate drift is
+stable, while SHAP explains the non-protected proxy features driving the
+stressed scenario.
+
+### Evidence-backed promotion
+
+Performance, calibration, data quality, drift, fairness, and evidence integrity
+are evaluated by a configurable policy engine. Promotion is a deterministic
+governance decision, not a manual deployment shortcut.
+
+### Governed model registry
+
+The registry enforces explicit lifecycle transitions:
 
 ```text
-CANDIDATE -> STAGING -> SHADOW -> CANARY -> PRODUCTION
-                       |          |
-                       +----------+----> STAGING (rollback)
+REGISTERED -> CANDIDATE -> STAGING -> SHADOW -> CANARY -> PRODUCTION
+                       \-> REJECTED
 ```
 
-Direct `CANDIDATE -> PRODUCTION` promotion is blocked. Canary routing is deterministic, configured shares are exercised, and failed release gates return the candidate to staging with an evidence-backed rollback reason.
+Direct `CANDIDATE -> PRODUCTION` promotion is illegal.
 
-## Serving API
+### Progressive delivery and rollback
 
-Phase 6 exposes a FastAPI service with:
+An approved staged candidate moves through shadow evaluation and deterministic
+canary checkpoints:
+
+```text
+10% -> 25% -> 50% -> 100%
+```
+
+Release gates evaluate request volume, errors, latency, and mean risk-output
+delta. A degraded canary returns the candidate to `STAGING` with an auditable
+rollback reason.
+
+<p align="center">
+  <img src="docs/assets/diagrams/release-state.svg"
+       alt="CreditScoreV4 governed release-state machine"
+       width="900" />
+</p>
+
+### Serving and observability
+
+The approved model is exposed through FastAPI:
 
 ```text
 GET  /health
@@ -126,60 +174,80 @@ GET  /model
 GET  /metrics
 ```
 
-The verification suite checks each endpoint, model readiness, Prometheus-compatible metrics, release transitions, and rollback behavior.
+The serving layer exposes Prometheus-compatible operational metrics and model
+metadata, including artifact traceability.
 
-## Automated delivery and infrastructure
+### CI/CD and cloud controls
 
-Phase 7 adds the production-style delivery path:
+Pull requests exercise quality, governance, security, container, and
+infrastructure checks before merge:
 
 ```text
 Pull request
    |
-   +--> Python quality + cumulative verification
+   +--> Ruff / Black / mypy / compile
+   +--> cumulative Phase 8 verification
    +--> Gitleaks
-   +--> Trivy IaC scan
-   +--> Docker image build + smoke test
-   +--> Terraform fmt + validate
-   |
-   `--> explicit deployment gate
-          |
-          `--> GitHub OIDC -> AWS -> immutable ECR -> ECS/Fargate -> HTTPS ALB
+   +--> Trivy filesystem + Terraform scan
+   +--> Docker build + smoke test
+   `--> Terraform fmt + validate
 ```
 
-Important: the repository validates the AWS deployment architecture, but cloud mutation is **fail-closed by default** with `AWS_DEPLOY_ENABLED=false`. Actual AWS deployment requires explicit opt-in plus OIDC, Terraform state, confirmation, and ACM certificate configuration.
+External GitHub Actions are pinned to immutable commit SHAs.
+
+The cloud path uses **GitHub OIDC → AWS → ECR → ECS/Fargate → ALB**, managed by
+Terraform. Cloud mutation remains **fail-closed by default** with
+`AWS_DEPLOY_ENABLED=false`.
 
 ## Verification status
 
-The v0.8.0 code line is verified at the following boundaries:
+The repository currently verifies the following boundaries:
 
 | Verification | Result |
 |---|---:|
-| Ruff / Black / mypy / compile checks | **PASS** |
+| Ruff / Black / mypy / compile | **PASS** |
 | Phase 1–7 regression suite | **63 passed** |
-| Phase 8 evidence-contract tests | **6 passed** |
-| Phase 1–8 tests exercised by `make phase8-verify` | **69 passed** |
-| Terraform format / validation | **PASS** |
-| Container smoke test | **PASS** |
+| Phase 8 evidence-contract suite | **6 passed** |
+| Terraform format + validation | **PASS** |
+| Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
-| Trivy | **PASS** |
-| Phase 8 implementation PR #9 checks | **5/5 successful** |
+| Trivy filesystem / IaC scan | **PASS** |
+| Workflow Action pinning contract | **PASS** |
 
-Current code version: **v0.8.0**. Published tags are recorded in GitHub Releases.
+The FastAPI `TestClient` path currently emits a non-blocking Starlette
+deprecation warning; it does not change the verified Phase 6 outcomes.
 
-## Quick verification
+## Quick start
+
+### Prerequisites
+
+- Python **3.12**
+- `make`
+- Terraform for infrastructure validation
+- Docker for container smoke testing
+
+### Install
 
 ```bash
+git clone https://github.com/Parmodk2310/CreditScorev4-ML-Governance.git
+cd CreditScorev4-ML-Governance
+
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
 
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+```
+
+### Verify the full local governance path
+
+```bash
 make quality
 make phase8-verify
 make phase7-terraform
-python -m pytest -q
 ```
 
-For focused evidence:
+### Run focused phase verification
 
 ```bash
 python scripts/verify_phase1.py
@@ -192,30 +260,108 @@ python scripts/verify_phase7.py
 python scripts/verify_phase8.py
 ```
 
-## Documentation
+### Run the test suite
 
-- [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — complete engineering case study
-- [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) — Phase 1–7 diagram index
-- [`docs/RELEASE_STATE.md`](docs/RELEASE_STATE.md) — registry and rollout state model
+```bash
+python -m pytest -q
+```
 
-## Design principles
+## Architecture
 
-- **Reproducibility before remediation** — every governance control starts from deterministic failure evidence.
-- **Separate data validity from distribution stability** — a valid schema does not mean healthy data.
-- **Separate aggregate health from subgroup health** — stable averages can hide fairness failures.
-- **Evidence before promotion** — decisions are policy-driven, auditable, and hash-verifiable.
-- **Progressive delivery instead of instant production** — approved models still pass shadow/canary release gates.
-- **Fail closed** — cloud deployment is opt-in rather than implicit.
+The system is split into four control planes:
 
-## Scope and limitations
+| Plane | Responsibility |
+|---|---|
+| **Data / model risk** | Data quality, drift, fairness, explainability, performance and calibration |
+| **Governance** | Policy evaluation, evidence integrity, registry transitions and audit records |
+| **Release** | FastAPI serving, shadow evaluation, deterministic canary routing and rollback |
+| **Delivery** | CI/security checks, immutable Action references, Terraform and gated AWS deployment |
 
-This is a **production-style synthetic case study**. It does not represent a real bank incident, a live lending decision system, or a claim of regulatory compliance. Protected attributes are used for evaluation/governance scenarios and are intentionally excluded from model features. The Terraform architecture is validated and security-scanned; the repository does not claim that the current release has been applied to a live AWS production account.
+For implementation details, see
+[`ARCHITECTURE.md`](ARCHITECTURE.md) and
+[`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md).
 
-## What I would build next
+## Evidence and reviewer paths
 
-The next upgrades would focus on replacing local/simplified control-plane components with managed production backends rather than adding more demo features: MLflow or another registry backend, workflow orchestration such as Airflow, durable audit/evidence storage, signed images/SBOM provenance, OpenTelemetry/SLOs, load tests, and a real gated cloud environment with cost controls.
+You do not need to read every document to understand the project.
+
+| If you are... | Start here |
+|---|---|
+| **Recruiter / hiring manager** | README → [`CASE_STUDY.md`](docs/CASE_STUDY.md) → architecture diagrams |
+| **ML / MLOps engineer** | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) → source/tests |
+| **Model-risk / governance reviewer** | [`MODEL_CARD.md`](docs/MODEL_CARD.md) → [`MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
+| **Reproducing the project** | [`REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) → [`EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) |
+| **Reviewing operational limits** | [`MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) → [`LIMITATIONS.md`](docs/LIMITATIONS.md) |
+
+### Core documentation
+
+- [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — problem, incidents, engineering decisions, and outcomes
+- [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) — implementation-level architecture and control flow
+- [`docs/GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) — executable promotion/blocking policy
+- [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) — model purpose, inputs, intended use, and constraints
+- [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) — performance and validation evidence
+- [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) — operational monitoring and escalation plan
+- [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — generated evidence and reviewer map
+- [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
+- [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
+
+Repository security and contribution controls are documented in
+[`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md),
+[`docs/ACTION_PINNING.md`](docs/ACTION_PINNING.md), and
+[`docs/BRANCH_PROTECTION.md`](docs/BRANCH_PROTECTION.md).
+
+## Repository boundaries
+
+CreditScoreV4 is intentionally scoped.
+
+It **does demonstrate**:
+
+- deterministic synthetic incident reproduction;
+- independent data-quality, drift, fairness, and release controls;
+- evidence-backed model promotion and rejection;
+- model registry/state-machine behavior;
+- FastAPI serving and operational metrics;
+- progressive shadow/canary release with rollback;
+- CI/security/container/Terraform verification;
+- a gated AWS ECS/Fargate deployment architecture.
+
+It **does not claim**:
+
+- a real bank production incident;
+- real applicant/customer data;
+- regulatory certification or legal compliance;
+- causal conclusions from SHAP or fairness metrics;
+- a currently active production AWS environment;
+- a managed MLflow/Airflow/Kubernetes platform.
+
+## Project structure
+
+```text
+.
+├── .github/workflows/        # quality, security, image and gated deployment
+├── configs/                  # versioned phase/governance configuration
+├── data/evidence/            # generated governance/release evidence
+├── docker/phase6/            # serving + local observability stack
+├── docs/                     # case study, governance and reviewer documentation
+├── infra/terraform/          # AWS ECR/ECS/Fargate/ALB infrastructure
+├── models/baseline/          # deterministic persisted baseline artifact
+├── scripts/                  # phase verification and release/deployment tooling
+├── src/creditscore/          # application and governance implementation
+└── tests/                    # quality, governance, serving, release and automation tests
+```
+
+## Contributing
+
+Contributions should preserve the project's evidence-first and fail-closed
+governance boundaries. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+For security issues, follow [`SECURITY.md`](SECURITY.md) rather than opening a
+public vulnerability issue.
+
+## License
+
+Released under the [`MIT License`](LICENSE).
 
 ---
 
-**Current code version:** `v0.8.0`
 **Primary focus:** ML governance · model risk · safe release engineering · MLOps · AWS/Terraform
