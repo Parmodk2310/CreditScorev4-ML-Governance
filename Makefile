@@ -190,4 +190,19 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean
+
+
+# Phase 8 — governance evidence and reviewer experience
+.PHONY: phase8-test phase8-verify phase8-clean
+
+phase8-test:
+	$(PYTHON) -m pytest tests/evidence
+
+phase8-verify:
+	$(MAKE) phase7-verify
+	$(PYTHON) scripts/verify_phase8.py
+	$(PYTHON) -m pytest tests/evidence
+
+phase8-clean:
+	rm -f data/evidence/phase8/*.json

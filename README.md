@@ -29,6 +29,32 @@ Many ML portfolios stop at training accuracy. This project focuses on what happe
 
 The result is a single case study that connects model risk, software engineering, release safety, and cloud delivery.
 
+<!-- PHASE8_REVIEWER_PATHS -->
+## Reviewer paths
+
+This repository supports different review depths without requiring every reader
+to traverse the full implementation.
+
+| Reader | Recommended path |
+|---|---|
+| Recruiter / hiring manager | README -> architecture -> evidence snapshots -> case study |
+| Senior ML / MLOps engineer | architecture -> technical deep dive -> governance policy -> source/tests -> reproducible demo |
+| ML governance / model-risk reviewer | model card -> validation report -> governance policy -> monitoring plan -> evidence index -> limitations |
+
+Key Phase 8 documentation:
+
+- [`docs/GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md)
+- [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md)
+- [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md)
+- [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md)
+- [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md)
+- [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md)
+- [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md)
+- [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md)
+
+Phase 8 adds reviewer/evidence verification; it does not introduce a new model,
+registry platform, orchestrator, or cloud runtime.
+
 ## Phase-by-phase lifecycle
 
 | Phase | Engineering question | Demonstrated outcome |

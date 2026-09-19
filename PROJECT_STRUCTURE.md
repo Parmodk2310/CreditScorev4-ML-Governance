@@ -112,3 +112,35 @@ creditscorev4-ml-governance/
 ```
 
 Phase 7 implements workflow automation, security gates, immutable image verification, and a fail-closed Terraform ECS/Fargate deployment path.
+
+<!-- PHASE8_STRUCTURE -->
+## Phase 8 additions
+
+```text
+configs/
+└── phase8.yaml
+
+data/evidence/phase8/
+└── .gitkeep
+   # reviewer_evidence_manifest.json is generated
+
+scripts/
+└── verify_phase8.py
+
+tests/evidence/
+└── test_phase8_evidence_contract.py
+
+docs/
+├── PHASE8.md
+├── GOVERNANCE_POLICY.md
+├── MODEL_CARD.md
+├── MODEL_VALIDATION_REPORT.md
+├── MONITORING_PLAN.md
+├── LIMITATIONS.md
+├── EVIDENCE_INDEX.md
+├── TECHNICAL_DEEP_DIVE.md
+├── REPRODUCIBLE_DEMO.md
+└── history/
+    ├── PHASE1_APPLY.md
+    └── PHASE2_APPLY.md
+```

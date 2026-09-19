@@ -67,3 +67,19 @@
 - `scripts/verify_phase7.py` — static/local Phase 7 acceptance gate
 - `tests/automation/`, `tests/deployment/`, and Phase 7 integration test
 - generated Phase 7 release evidence ignored except `.gitkeep`
+
+<!-- PHASE8_MANIFEST -->
+## Phase 8 — governance evidence and reviewer experience
+
+- governance policy documentation tied to Phase 5 configuration,
+- model card and evidence-backed validation report,
+- monitoring plan and explicit limitations,
+- evidence index covering Phase 1–7 artifacts,
+- technical design-decision deep dive,
+- reproducible reviewer demonstration,
+- `configs/phase8.yaml` reviewer/evidence contract,
+- `scripts/verify_phase8.py` evidence/documentation gate,
+- `tests/evidence/test_phase8_evidence_contract.py`,
+- generated `data/evidence/phase8/reviewer_evidence_manifest.json`,
+- historical package-application notes moved out of the repository root,
+- no new ML platform/runtime introduced solely for portfolio breadth.

@@ -302,3 +302,28 @@ The next iteration should deepen operational realism rather than add more isolat
 6. **Performance testing** — realistic concurrency, latency distributions, capacity limits, and rollback under load.
 7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
 8. **Model cards / governance reports** — generated human-readable summaries tied to the same machine-readable evidence.
+
+<!-- PHASE8_CASE_STUDY -->
+## 18. Evidence Traceability and Reviewer Experience
+
+Phase 8 adds a reviewer-facing evidence layer over the existing Phase 1–7
+implementation. It connects policy, release control, tests, screenshots, and
+generated artifacts into a reviewable contract rather than creating a second
+governance system.
+
+Useful entry points:
+
+- `docs/GOVERNANCE_POLICY.md`
+- `docs/MODEL_CARD.md`
+- `docs/MODEL_VALIDATION_REPORT.md`
+- `docs/MONITORING_PLAN.md`
+- `docs/EVIDENCE_INDEX.md`
+- `docs/TECHNICAL_DEEP_DIVE.md`
+- `docs/REPRODUCIBLE_DEMO.md`
+- `docs/LIMITATIONS.md`
+
+`scripts/verify_phase8.py` checks that reviewer documentation remains aligned
+with executable Phase 5–7 configuration and generated Phase 1–7 evidence. This
+reduces documentation drift: a README or case study should not silently claim a
+threshold, state transition, release outcome, or deployment property the
+repository no longer implements.
