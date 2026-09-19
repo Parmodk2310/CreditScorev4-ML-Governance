@@ -1,0 +1,15 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.45, ranksep=0.8, fontname="DejaVu Sans"];
+  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
+  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
+  st [label="STAGING"];
+  api [label="FastAPI serving\nhealth / ready / predict\nbatch / model / metrics"];
+  sh [label="SHADOW"];
+  ca [label="CANARY\n10% -> 25% -> 50% -> 100%"];
+  pr [label="PRODUCTION", fillcolor="#ecfdf5", color="#047857"];
+  gates [label="Release gates\nerrors / risk delta / p95 latency"];
+  rb [label="ROLLBACK -> STAGING", fillcolor="#fff1f2", color="#be123c"];
+  st -> api -> sh -> ca -> gates;
+  gates -> pr [label="pass"];
+  gates -> rb [label="fail"];
+}

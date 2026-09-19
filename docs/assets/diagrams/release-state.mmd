@@ -1,0 +1,13 @@
+stateDiagram-v2
+  [*] --> CANDIDATE
+  CANDIDATE --> STAGING: governance APPROVE
+  CANDIDATE --> REJECTED: governance REJECT
+  STAGING --> SHADOW: start shadow
+  SHADOW --> CANARY: shadow gates pass
+  CANARY --> PRODUCTION: release gates pass
+  SHADOW --> STAGING: rollback
+  CANARY --> STAGING: rollback
+  note right of CANDIDATE
+    Direct CANDIDATE -> PRODUCTION
+    is intentionally illegal.
+  end note

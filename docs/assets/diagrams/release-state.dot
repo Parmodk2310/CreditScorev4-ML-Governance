@@ -1,0 +1,19 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad=0.35, nodesep=0.55, ranksep=0.9, fontname="DejaVu Sans"];
+  node [shape=box, style="rounded,filled", fillcolor="#f8fafc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
+  edge [color="#475569", penwidth=1.45, arrowsize=0.8, fontname="DejaVu Sans", fontsize=9];
+  candidate [label="CANDIDATE"];
+  rejected [label="REJECTED", fillcolor="#fff1f2", color="#be123c"];
+  staging [label="STAGING"];
+  shadow [label="SHADOW"];
+  canary [label="CANARY\n10% -> 25% -> 50% -> 100%"];
+  prod [label="PRODUCTION", fillcolor="#ecfdf5", color="#047857"];
+  candidate -> staging [label="governance APPROVE"];
+  candidate -> rejected [label="governance REJECT"];
+  staging -> shadow [label="start shadow"];
+  shadow -> canary [label="shadow gates pass"];
+  canary -> prod [label="release gates pass"];
+  shadow -> staging [label="rollback", color="#be123c"];
+  canary -> staging [label="rollback", color="#be123c"];
+  candidate -> prod [label="ILLEGAL", style=dashed, color="#be123c", fontcolor="#be123c", constraint=false];
+}

@@ -1,0 +1,17 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.55, ranksep=0.8, fontname="DejaVu Sans"];
+  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
+  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
+  v [label="Vendor C\ncontract-valid batch"];
+  q [label="Phase 2 quality gate\nPASS", fillcolor="#ecfdf5", color="#047857"];
+  ref [label="Reference distributions\n+ prediction baseline"];
+  drift [label="Feature drift\nPSI / KS"];
+  pred [label="Prediction drift\nPSI 0.2379\nKS 0.1863"];
+  result [label="Overall drift\nCRITICAL", fillcolor="#fff1f2", color="#be123c"];
+  v -> q -> drift;
+  ref -> drift;
+  ref -> pred;
+  q -> pred;
+  drift -> result;
+  pred -> result;
+}

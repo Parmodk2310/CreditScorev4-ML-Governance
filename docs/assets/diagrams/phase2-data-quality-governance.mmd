@@ -1,0 +1,6 @@
+flowchart LR
+  A[Incoming vendor batch] --> B[Versioned data contract<br/>+ Great Expectations]
+  B -->|healthy| C[PASS<br/>Vendor A]
+  B -->|material failure| D[BLOCK<br/>Vendor B]
+  D --> E[Quarantine + evidence]
+  C --> F[Eligible for downstream monitoring]

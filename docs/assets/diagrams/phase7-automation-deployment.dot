@@ -1,0 +1,21 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.45, ranksep=0.8, fontname="DejaVu Sans"];
+  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
+  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
+  pr [label="Pull request"];
+  ci [label="Quality + cumulative verification"];
+  sec [label="Gitleaks + Trivy"];
+  img [label="Docker build\n+ smoke test"];
+  tf [label="Terraform fmt\n+ validate"];
+  gate [label="Deployment gate\nAWS_DEPLOY_ENABLED=false", fillcolor="#fff7ed", color="#c2410c"];
+  oidc [label="GitHub OIDC"];
+  ecr [label="Immutable ECR"];
+  ecs [label="ECS/Fargate"];
+  alb [label="HTTPS ALB\nrestricted service ingress"];
+  pr -> ci -> gate;
+  pr -> sec -> gate;
+  pr -> img -> gate;
+  pr -> tf -> gate;
+  gate -> oidc [label="explicit opt-in"];
+  oidc -> ecr -> ecs -> alb;
+}

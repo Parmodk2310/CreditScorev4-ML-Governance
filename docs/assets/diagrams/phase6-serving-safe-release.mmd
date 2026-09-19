@@ -1,0 +1,7 @@
+flowchart LR
+  A[STAGING] --> B[FastAPI serving<br/>health / ready / predict<br/>batch / model / metrics]
+  B --> C[SHADOW]
+  C --> D[CANARY<br/>10% -> 25% -> 50% -> 100%]
+  D --> E[Release gates<br/>errors / risk delta / p95 latency]
+  E -->|pass| F[PRODUCTION]
+  E -->|fail| G[ROLLBACK -> STAGING]

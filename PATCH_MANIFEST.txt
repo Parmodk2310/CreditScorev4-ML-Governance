@@ -1,0 +1,32 @@
+CreditScoreV4 Repo Polish v0.7.1 documentation overlay
+
+REPLACE:
+  README.md
+
+ADD:
+  docs/CASE_STUDY.md
+  docs/DEMO_5_MINUTES.md
+  docs/INTERVIEW_DEEP_DIVE.md
+  docs/SCREENSHOT_GUIDE.md
+  docs/ARCHITECTURE_FIGURES.md
+  docs/RELEASE_STATE.md
+  docs/GITHUB_METADATA.md
+  docs/REPO_POLISH_CHECKLIST.md
+  docs/assets/screenshots/README.md
+  docs/assets/screenshots/.gitkeep
+  docs/assets/diagrams/phase1-incident-baseline.{dot,mmd,svg}
+  docs/assets/diagrams/phase2-data-quality-governance.{dot,mmd,svg}
+  docs/assets/diagrams/phase3-drift-governance.{dot,mmd,svg}
+  docs/assets/diagrams/phase4-fairness-explainability.{dot,mmd,svg}
+  docs/assets/diagrams/phase5-governance-registry.{dot,mmd,svg}
+  docs/assets/diagrams/phase6-serving-safe-release.{dot,mmd,svg}
+  docs/assets/diagrams/phase7-automation-deployment.{dot,mmd,svg}
+  docs/assets/diagrams/phase1-7-end-to-end.{dot,mmd,svg}
+  docs/assets/diagrams/release-state.{dot,mmd,svg}
+
+BUNDLE HELPERS (do not copy into repo):
+  APPLY_PATCH.md
+  apply_patch.sh
+  PATCH_MANIFEST.txt
+
+NO RUNTIME / CI / TERRAFORM FILES ARE MODIFIED BY THIS OVERLAY.
