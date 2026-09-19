@@ -258,8 +258,6 @@ Release-level verified boundaries:
 | Cumulative test suite | **63 passed** |
 | PR checks | **5/5 successful** |
 
-See [`SCREENSHOT_GUIDE.md`](SCREENSHOT_GUIDE.md) for the nine evidence captures used in interviews and the README.
-
 ## 15. Design Decisions
 
 ### Separate quality, drift, and fairness gates

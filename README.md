@@ -43,8 +43,6 @@ The result is a single case study that connects model risk, software engineering
 
 ## Evidence snapshots
 
-The README intentionally uses only three screenshots so the evidence remains readable. The full evidence set is documented in [`docs/SCREENSHOT_GUIDE.md`](docs/SCREENSHOT_GUIDE.md).
-
 ### 1. Incident reproduction
 
 ![Phase 1 incident baseline](docs/assets/screenshots/01-incident-baseline.png)
@@ -170,11 +168,9 @@ python scripts/verify_phase7.py
 ## Documentation
 
 - [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — complete engineering case study
-- [`docs/DEMO_5_MINUTES.md`](docs/DEMO_5_MINUTES.md) — recruiter / interview demo script
 - [`docs/INTERVIEW_DEEP_DIVE.md`](docs/INTERVIEW_DEEP_DIVE.md) — technical questions, cross-questions, and narrative
 - [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) — Phase 1–7 diagram index
 - [`docs/RELEASE_STATE.md`](docs/RELEASE_STATE.md) — registry and rollout state model
-- [`docs/SCREENSHOT_GUIDE.md`](docs/SCREENSHOT_GUIDE.md) — how to capture real project evidence
 - [`docs/GITHUB_METADATA.md`](docs/GITHUB_METADATA.md) — repository description, topics, and homepage settings
 
 ## Design principles
