@@ -75,10 +75,6 @@ resource "aws_ecs_task_definition" "app" {
         name  = "CREDITSCORE_MODEL_PATH"
         value = "/app/models/baseline/creditscorev4.joblib"
       },
-      {
-        name  = "CREDITSCORE_MODEL_VERSION"
-        value = "0.7.0"
-      }
     ]
 
     logConfiguration = {

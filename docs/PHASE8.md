@@ -139,9 +139,20 @@ the cumulative Phase 1–7 regression boundary pass, quality checks pass,
 `git diff --check` passes, historical root-level package artifacts are cleaned,
 README contains only implemented claims, and PR checks pass.
 
-## Release rule
+## Release procedure
 
-Do not create `v0.8.0` during development.
+The v0.8.0 release followed this sequence:
+
+implementation
+-> Phase 8 verification
+-> cumulative verification
+-> quality
+-> PR checks
+-> merge
+-> verify main
+-> tag/release
+
+Future releases must follow the same verification-first sequence.
 
 Release sequence:
 

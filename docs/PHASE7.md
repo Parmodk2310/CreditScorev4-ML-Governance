@@ -6,7 +6,7 @@ Phase 7 automates the already-verified governance and safe-release system withou
 
 ## CI boundary
 
-Every pull request to `main` runs Python quality checks, the cumulative Phase 6 release regression, Phase 7 automation tests, and Terraform validation without a remote backend. Container CI builds the existing Phase 6 serving image and smoke-tests `/health`, `/ready`, and `/model` without publishing an image.
+Every pull request to `main` runs Python quality checks, the cumulative Phase 8 governance/evidence verification, Phase 7 automation tests, and Terraform validation without a remote backend. Container CI builds the existing Phase 6 serving image and smoke-tests `/health`, `/ready`, and `/model` without publishing an image.
 
 ## Security boundary
 
@@ -21,7 +21,7 @@ AWS deployment is disabled by default. The deployment workflow is manual only an
 - GitHub OIDC role variable `AWS_ROLE_TO_ASSUME`
 - `AWS_REGION`
 - persistent Terraform S3 backend variables `TF_STATE_BUCKET` and `TF_STATE_KEY`
-- successful quality and Phase 6 governed-release regression
+- successful quality and cumulative Phase 8 governance/evidence verification
 
 No long-lived AWS access keys are required by the workflow.
 

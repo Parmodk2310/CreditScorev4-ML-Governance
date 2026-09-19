@@ -10,7 +10,10 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+
+concurrency:
+  group: creditscorev4-production
+  cancel-in-progress: false
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
@@ -19,13 +22,17 @@ env:
 jobs:
   gate:
     runs-on: ubuntu-latest
+
     outputs:
       enabled: ${{ steps.gate.outputs.enabled }}
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
+
       - id: gate
         name: Check explicit deployment gate
         env:
@@ -35,29 +42,41 @@ jobs:
           ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
           CONFIRM_DEPLOY: ${{ inputs.confirm_deploy }}
         run: |
-          python scripts/check_deployment_gate.py --github-output "$GITHUB_OUTPUT" --require-confirmation
+          python scripts/check_deployment_gate.py \
+            --github-output "$GITHUB_OUTPUT" \
+            --require-confirmation
 
   deploy:
     needs: gate
     if: needs.gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     environment: production
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
           cache: pip
+
       - name: Install project
         run: python -m pip install -e ".[dev]"
+
       - name: Re-run quality and cumulative governed release gates
         run: |
           make quality
           make phase8-verify
+
       - name: Re-run secret scan before cloud mutation
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Re-run filesystem vulnerability scan before cloud mutation
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -66,6 +85,7 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
+
       - name: Re-run Terraform configuration scan before cloud mutation
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -73,15 +93,19 @@ jobs:
           scan-ref: infra/terraform
           severity: HIGH,CRITICAL
           exit-code: "1"
+
       - name: Generate deterministic model artifact
         run: python scripts/verify_phase1.py
+
       - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
+
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: "1.14.6"
+
       - name: Terraform init with persistent S3 state
         env:
           TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
@@ -91,6 +115,7 @@ jobs:
             -backend-config="key=${TF_STATE_KEY}" \
             -backend-config="region=${AWS_REGION}" \
             -backend-config="use_lockfile=true"
+
       - name: Bootstrap ECR repository in Terraform state
         run: |
           terraform -chdir=infra/terraform apply -auto-approve \
@@ -98,12 +123,16 @@ jobs:
             -var="aws_region=${AWS_REGION}" \
             -var="image_uri=bootstrap.invalid/creditscorev4:bootstrap" \
             -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
+
       - id: ecr
         name: Resolve ECR repository
         run: |
           echo "repository_url=$(terraform -chdir=infra/terraform output -raw ecr_repository_url)" >> "$GITHUB_OUTPUT"
+
       - uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
+
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
       - name: Build and push immutable image
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
@@ -111,31 +140,44 @@ jobs:
           file: docker/phase6/Dockerfile
           push: true
           tags: ${{ steps.ecr.outputs.repository_url }}:${{ github.sha }}
+
       - name: Resolve pushed image digest
         id: digest
         env:
           REPOSITORY_URL: ${{ steps.ecr.outputs.repository_url }}
         run: |
           REPOSITORY_NAME="${REPOSITORY_URL##*/}"
+
           DIGEST=$(aws ecr describe-images \
             --repository-name "$REPOSITORY_NAME" \
             --image-ids imageTag="${GITHUB_SHA}" \
             --query 'imageDetails[0].imageDigest' \
             --output text)
+
           echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
           echo "image_uri=${REPOSITORY_URL}@${DIGEST}" >> "$GITHUB_OUTPUT"
+
       - name: Terraform plan
         run: |
-          terraform -chdir=infra/terraform plan -input=false -out=phase7.tfplan \
+          terraform -chdir=infra/terraform plan \
+            -input=false \
+            -out=phase7.tfplan \
             -var="aws_region=${AWS_REGION}" \
             -var="image_uri=${{ steps.digest.outputs.image_uri }}" \
             -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
+
       - name: Terraform apply
-        run: terraform -chdir=infra/terraform apply -input=false -auto-approve phase7.tfplan
+        run: |
+          terraform -chdir=infra/terraform apply \
+            -input=false \
+            -auto-approve \
+            phase7.tfplan
+
       - name: Verify deployed health endpoint
         run: |
           SERVICE_URL=$(terraform -chdir=infra/terraform output -raw service_url)
           python scripts/verify_container.py --base-url "$SERVICE_URL"
+
       - name: Write release manifest
         env:
           AWS_DEPLOY_ENABLED: "true"
@@ -144,6 +186,7 @@ jobs:
             --image-digest "${{ steps.digest.outputs.digest }}" \
             --deployment-enabled \
             --output data/evidence/phase7/release_manifest.json
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: phase7-release-evidence

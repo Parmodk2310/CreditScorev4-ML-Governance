@@ -13,7 +13,16 @@ COPY scripts ./scripts
 COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install .
+    && python -m pip install . \
+    && groupadd --gid 10001 creditscore \
+    && useradd \
+        --uid 10001 \
+        --gid 10001 \
+        --no-create-home \
+        --shell /usr/sbin/nologin \
+        creditscore
+
+USER 10001:10001
 
 EXPOSE 8000
 
