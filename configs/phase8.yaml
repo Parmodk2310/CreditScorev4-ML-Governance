@@ -1,0 +1,77 @@
+phase: 8
+name: governance-evidence-reviewer-experience
+version: "0.8.0"
+
+documents:
+  required:
+    - docs/PHASE8.md
+    - docs/GOVERNANCE_POLICY.md
+    - docs/MODEL_CARD.md
+    - docs/MODEL_VALIDATION_REPORT.md
+    - docs/MONITORING_PLAN.md
+    - docs/LIMITATIONS.md
+    - docs/EVIDENCE_INDEX.md
+    - docs/TECHNICAL_DEEP_DIVE.md
+    - docs/REPRODUCIBLE_DEMO.md
+
+visuals:
+  required:
+    - docs/assets/diagrams/phase1-7-end-to-end.svg
+    - docs/assets/diagrams/release-state.svg
+    - docs/assets/screenshots/01-incident-baseline.png
+    - docs/assets/screenshots/02-data-quality-block.png
+    - docs/assets/screenshots/03-critical-drift.png
+    - docs/assets/screenshots/04-fairness-shap.png
+    - docs/assets/screenshots/05-governance-decisions.png
+    - docs/assets/screenshots/06-release-rollback.png
+    - docs/assets/screenshots/07-phase7-controls.png
+    - docs/assets/screenshots/08-github-checks.png
+    - docs/assets/screenshots/09-release-v070.png
+
+evidence:
+  required:
+    - data/evidence/phase1/baseline_metrics.json
+    - data/evidence/phase1/incident_metrics.json
+    - data/evidence/phase1/performance_comparison.json
+    - data/evidence/phase2/phase2_verification_summary.json
+    - data/evidence/phase3/drift_report.json
+    - data/evidence/phase4/fairness_report.json
+    - data/evidence/phase4/shap_summary.json
+    - data/evidence/phase5/healthy/governance_decision.json
+    - data/evidence/phase5/vendor_c/governance_decision.json
+    - data/evidence/phase5/vendor_d/governance_decision.json
+    - data/evidence/phase6/phase6_release_report.json
+    - data/evidence/phase7/release_manifest.json
+  reviewer_manifest: data/evidence/phase8/reviewer_evidence_manifest.json
+
+policy_contract:
+  minimum_roc_auc: 0.75
+  minimum_pr_auc: 0.60
+  maximum_brier_score: 0.20
+  blocked_drift_status: CRITICAL
+  blocked_fairness_status: FAIL
+  minimum_artifacts: 6
+
+release_contract:
+  canary_shares: [0.10, 0.25, 0.50, 1.00]
+  healthy_final_stage: PRODUCTION
+  rollback_final_stage: STAGING
+  shadow:
+    maximum_error_rate: 0.02
+    maximum_p95_latency_ms: 250.0
+    maximum_mean_risk_delta: 0.05
+    minimum_request_count: 50
+  canary:
+    maximum_error_rate: 0.03
+    maximum_p95_latency_ms: 300.0
+    maximum_mean_risk_delta: 0.06
+    minimum_request_count: 100
+
+governance_outcomes:
+  healthy: APPROVE
+  vendor_c: REJECT
+  vendor_d: REJECT
+
+deployment_contract:
+  enable_env: AWS_DEPLOY_ENABLED
+  safe_default: false

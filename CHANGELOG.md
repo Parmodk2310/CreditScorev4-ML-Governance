@@ -4,6 +4,18 @@ All notable portfolio releases of CreditScoreV4 ML Governance are documented her
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+<!-- PHASE8_CHANGELOG -->
+## Unreleased — Phase 8 Governance Evidence & Reviewer Experience
+
+- Added reviewer-specific navigation and evidence traceability.
+- Added governance policy documentation tied to executable Phase 5 thresholds.
+- Added a model card, validation report, monitoring plan, and limitations.
+- Added technical design-decision documentation and a reproducible demo.
+- Added a Phase 8 evidence contract and reviewer evidence manifest.
+- Added focused tests for policy, registry, release, documentation, and deployment contracts.
+- Removed/moved historical implementation-package material from the repository root.
+- Kept Phase 1–7 runtime behavior unchanged.
+
 ## v0.7.0 — Automated Delivery and Gated Cloud Deployment
 
 - Added GitHub Actions quality and cumulative verification.

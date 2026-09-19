@@ -118,3 +118,30 @@ Manual workflow_dispatch only
 ```
 
 Phase 7 does not bypass Phase 5/6 controls: the deploy workflow reruns quality and the Phase 6 governed release gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
+
+<!-- PHASE8_ARCHITECTURE -->
+## Phase 8 evidence/reviewer plane
+
+Phase 8 does not change the prediction or release data plane. It adds a
+cross-cutting evidence/reviewer plane:
+
+```text
+Phase 1-7 configs + source + tests + generated evidence
+                         |
+                         v
+              Phase 8 evidence contract
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+   governance docs   evidence index   reviewer manifest
+          |              |              |
+          +--------------+--------------+
+                         |
+                         v
+          reproducible technical review
+```
+
+The Phase 8 verifier checks documentation/visual presence, policy thresholds,
+registry transitions, release guardrails, fail-closed deployment behavior, and
+generated governance/release evidence.
