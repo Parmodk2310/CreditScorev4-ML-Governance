@@ -1,0 +1,49 @@
+phase: 7
+name: automation-deployment
+version: "0.7.0"
+
+ci:
+  python_version: "3.12"
+  required_gates:
+    - quality
+    - phase6_verify
+    - phase7_tests
+    - terraform_validate
+
+security:
+  gitleaks: true
+  trivy_filesystem: true
+  trivy_terraform_config: true
+  blocking_severities:
+    - HIGH
+    - CRITICAL
+
+container:
+  dockerfile: docker/phase6/Dockerfile
+  port: 8000
+  smoke_endpoints:
+    - /health
+    - /ready
+    - /model
+
+release_manifest:
+  output: data/evidence/phase7/release_manifest.json
+  required_fields:
+    - application_version
+    - git_commit
+    - image_digest
+    - governance_gate
+    - phase6_release_gate
+    - security_scan
+    - deployment_enabled
+
+aws:
+  deploy_enabled_env: AWS_DEPLOY_ENABLED
+  default_region: ap-south-1
+  terraform_directory: infra/terraform
+  deployment_environment: production
+  required_when_enabled:
+    - AWS_ROLE_TO_ASSUME
+    - AWS_REGION
+    - TF_STATE_BUCKET
+    - TF_STATE_KEY

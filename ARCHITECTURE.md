@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 6
+# CreditScoreV4 ML Governance Architecture — Through Phase 7
 
 ```text
                            PHASE 1
@@ -97,4 +97,24 @@ The API exposes Prometheus metrics for request counts, latency, prediction outco
 
 Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and canary checkpoints use configurable project guardrails for request volume, error rate, p95 latency, and mean risk-output delta. Failed blocking gates trigger rollback to `STAGING` and append a release audit event.
 
-Phase 7 will automate the orchestration/deployment of these controls; Phase 6 remains a deterministic local production-style release simulation.
+## Phase 7 automation/deployment plane
+
+```text
+GitHub PR / main
+  |-- CI: quality + Phase 6 regression + Phase 7 tests
+  |-- Security: Gitleaks + Trivy fs/config
+  |-- Image: deterministic model generation -> Docker build -> smoke test
+  `-- Terraform: fmt + init -backend=false + validate
+
+Manual workflow_dispatch only
+  -> fail-closed deployment gate
+  -> GitHub OIDC -> AWS role
+  -> persistent S3 Terraform backend
+  -> Terraform-managed ECR bootstrap
+  -> immutable image push + digest resolution
+  -> ECS/Fargate + ALB deployment
+  -> deployed health verification
+  -> release manifest evidence
+```
+
+Phase 7 does not bypass Phase 5/6 controls: the deploy workflow reruns quality and the Phase 6 governed release gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.

@@ -1,0 +1,134 @@
+name: Gated AWS deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deploy:
+        description: "Type DEPLOY to confirm the gated deployment"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
+  TF_STATE_KEY: ${{ vars.TF_STATE_KEY || 'creditscorev4/production.tfstate' }}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.gate.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - id: gate
+        name: Check explicit deployment gate
+        env:
+          AWS_DEPLOY_ENABLED: ${{ vars.AWS_DEPLOY_ENABLED }}
+          AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
+          CONFIRM_DEPLOY: ${{ inputs.confirm_deploy }}
+        run: |
+          python scripts/check_deployment_gate.py --github-output "$GITHUB_OUTPUT" --require-confirmation
+
+  deploy:
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+      - name: Re-run quality and cumulative governed release gates
+        run: |
+          make quality
+          make phase7-verify
+      - name: Re-run secret scan before cloud mutation
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Re-run filesystem vulnerability scan before cloud mutation
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Re-run Terraform configuration scan before cloud mutation
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: infra/terraform
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+      - name: Generate deterministic model artifact
+        run: python scripts/verify_phase1.py
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.14.6"
+      - name: Terraform init with persistent S3 state
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: |
+          terraform -chdir=infra/terraform init -input=false             -backend-config="bucket=${TF_STATE_BUCKET}"             -backend-config="key=${TF_STATE_KEY}"             -backend-config="region=${AWS_REGION}"             -backend-config="use_lockfile=true"
+      - name: Bootstrap ECR repository in Terraform state
+        run: |
+          terraform -chdir=infra/terraform apply -auto-approve             -target=aws_ecr_repository.app             -var="aws_region=${AWS_REGION}"             -var="image_uri=bootstrap.invalid/creditscorev4:bootstrap" \
+            -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
+      - id: ecr
+        name: Resolve ECR repository
+        run: |
+          echo "repository_url=$(terraform -chdir=infra/terraform output -raw ecr_repository_url)" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v4
+      - name: Build and push immutable image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/phase6/Dockerfile
+          push: true
+          tags: ${{ steps.ecr.outputs.repository_url }}:${{ github.sha }}
+      - name: Resolve pushed image digest
+        id: digest
+        env:
+          REPOSITORY_URL: ${{ steps.ecr.outputs.repository_url }}
+        run: |
+          REPOSITORY_NAME="${REPOSITORY_URL##*/}"
+          DIGEST=$(aws ecr describe-images             --repository-name "$REPOSITORY_NAME"             --image-ids imageTag="${GITHUB_SHA}"             --query 'imageDetails[0].imageDigest'             --output text)
+          echo "digest=${DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "image_uri=${REPOSITORY_URL}@${DIGEST}" >> "$GITHUB_OUTPUT"
+      - name: Terraform plan
+        run: |
+          terraform -chdir=infra/terraform plan -input=false -out=phase7.tfplan             -var="aws_region=${AWS_REGION}"             -var="image_uri=${{ steps.digest.outputs.image_uri }}" \
+            -var="acm_certificate_arn=${{ vars.ACM_CERTIFICATE_ARN }}"
+      - name: Terraform apply
+        run: terraform -chdir=infra/terraform apply -input=false -auto-approve phase7.tfplan
+      - name: Verify deployed health endpoint
+        run: |
+          SERVICE_URL=$(terraform -chdir=infra/terraform output -raw service_url)
+          python scripts/verify_container.py --base-url "$SERVICE_URL"
+      - name: Write release manifest
+        env:
+          AWS_DEPLOY_ENABLED: "true"
+        run: |
+          python scripts/write_release_manifest.py             --image-digest "${{ steps.digest.outputs.digest }}"             --deployment-enabled             --output data/evidence/phase7/release_manifest.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: phase7-release-evidence
+          path: data/evidence/phase7/release_manifest.json

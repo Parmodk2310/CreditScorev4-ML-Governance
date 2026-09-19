@@ -1,4 +1,4 @@
-# Project Structure — Through Phase 6
+# Project Structure — Through Phase 7
 
 ```text
 creditscorev4-ml-governance/
@@ -8,7 +8,8 @@ creditscorev4-ml-governance/
 │   ├── phase3.yaml
 │   ├── phase4.yaml
 │   ├── phase5.yaml
-│   └── phase6.yaml
+│   ├── phase6.yaml
+│   └── phase7.yaml
 ├── contracts/
 │   └── credit_application_contract.yaml
 ├── data/
@@ -23,6 +24,7 @@ creditscorev4-ml-governance/
 │   ├── evidence/phase4/
 │   ├── evidence/phase5/
 │   ├── evidence/phase6/
+│   ├── evidence/phase7/
 │   ├── quarantine/phase2/
 │   ├── quarantine/phase5/
 │   ├── registry/
@@ -61,7 +63,11 @@ creditscorev4-ml-governance/
 │   ├── verify_phase3.py
 │   ├── verify_phase4.py
 │   ├── verify_phase5.py
-│   └── verify_phase6.py
+│   ├── verify_phase6.py
+│   ├── verify_phase7.py
+│   ├── check_deployment_gate.py
+│   ├── write_release_manifest.py
+│   └── verify_container.py
 ├── tests/
 │   ├── unit/
 │   ├── quality/
@@ -71,6 +77,8 @@ creditscorev4-ml-governance/
 │   ├── governance/
 │   ├── serving/
 │   ├── release/
+│   ├── automation/
+│   ├── deployment/
 │   └── integration/
 ├── docker/phase6/
 │   ├── Dockerfile
@@ -79,13 +87,28 @@ creditscorev4-ml-governance/
 │   └── grafana/
 │       ├── provisioning/
 │       └── dashboards/phase6-serving.json
+├── .github/workflows/
+│   ├── ci.yml
+│   ├── security.yml
+│   ├── image.yml
+│   └── deploy.yml
+├── infra/terraform/
+│   ├── versions.tf
+│   ├── providers.tf
+│   ├── variables.tf
+│   ├── networking.tf
+│   ├── ecr.tf
+│   ├── iam.tf
+│   ├── ecs.tf
+│   └── outputs.tf
 └── docs/
     ├── PHASE1.md
     ├── PHASE2.md
     ├── PHASE3.md
     ├── PHASE4.md
     ├── PHASE5.md
-    └── PHASE6.md
+    ├── PHASE6.md
+    └── PHASE7.md
 ```
 
-Phase 7 owns workflow automation, CI/CD deployment, and cloud infrastructure.
+Phase 7 implements workflow automation, security gates, immutable image verification, and a fail-closed Terraform ECS/Fargate deployment path.

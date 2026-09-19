@@ -1,0 +1,12 @@
+aws_region    = "ap-south-1"
+project_name  = "creditscorev4"
+environment   = "production"
+desired_count = 1
+task_cpu      = 512
+task_memory   = 1024
+
+# Supply an immutable ECR repository@sha256:digest value during deployment.
+image_uri = "123456789012.dkr.ecr.ap-south-1.amazonaws.com/creditscorev4@sha256:replace-me"
+
+# ACM certificate for the HTTPS ALB listener.
+acm_certificate_arn = "arn:aws:acm:ap-south-1:123456789012:certificate/replace-me"

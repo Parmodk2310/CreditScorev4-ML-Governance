@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Manifest — Through Phase 6
+# CreditScoreV4 ML Governance Manifest — Through Phase 7
 
 ## Phase 1 — incident and baseline
 
@@ -52,4 +52,18 @@
 - `docker/phase6/` — API, Prometheus, and Grafana local stack
 - generated Phase 6 evidence/state/audit files remain ignored except `.gitkeep`
 
-Phase 7 will add workflow automation, CI/CD deployment, and cloud infrastructure.
+## Phase 7 — automation, security, and gated deployment
+
+- `.github/workflows/ci.yml` — quality, Phase 6 regression, Phase 7 tests, Terraform validation
+- `.github/workflows/security.yml` — Gitleaks and blocking Trivy filesystem/Terraform scans
+- `.github/workflows/image.yml` — deterministic model generation, Docker build, no-push smoke test
+- `docker/phase6/Dockerfile` updated so the generated model is embedded in the immutable cloud image
+- `.github/workflows/deploy.yml` — manual, fail-closed OIDC deployment workflow
+- `infra/terraform/` — persistent-S3-backend ECR + VPC + ALB + ECS/Fargate infrastructure
+- immutable ECR repository with scan-on-push and lifecycle policy
+- `scripts/check_deployment_gate.py` — default-deny AWS deployment gate
+- `scripts/write_release_manifest.py` — commit/image/governance/release/security evidence manifest
+- `scripts/verify_container.py` — local or deployed serving smoke verification
+- `scripts/verify_phase7.py` — static/local Phase 7 acceptance gate
+- `tests/automation/`, `tests/deployment/`, and Phase 7 integration test
+- generated Phase 7 release evidence ignored except `.gitkeep`

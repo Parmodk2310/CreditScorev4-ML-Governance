@@ -1,0 +1,21 @@
+.git
+.github
+.venv
+venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+build
+dist
+*.egg-info
+*.log
+.env
+infra
+# Generated runtime evidence and local state are not image inputs.
+data/evidence
+data/audit
+data/release
+data/quarantine

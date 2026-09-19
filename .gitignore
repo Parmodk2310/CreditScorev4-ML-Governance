@@ -72,3 +72,20 @@ models/baseline/*.joblib
 
 !data/evidence/phase6/.gitkeep
 !data/release/.gitkeep
+
+# Phase 7 generated automation/deployment evidence
+/data/evidence/phase7/*.json
+!data/evidence/phase7/.gitkeep
+
+# Terraform local state/cache (remote S3 backend is used for enabled deployment)
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfplan
+
+# Local Phase 7 container evidence
+.phase7-container-id
+
+# Track Phase 7 Terraform provider selections
+!/infra/terraform/.terraform.lock.hcl
