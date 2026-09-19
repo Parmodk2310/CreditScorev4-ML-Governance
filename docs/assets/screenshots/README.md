@@ -1,19 +1,17 @@
-# Screenshot Evidence Directory
+# Project Evidence Screenshots
 
-Populate this directory with **real** project evidence according to `docs/SCREENSHOT_GUIDE.md`.
+This directory contains real evidence captured from the released CreditScoreV4 ML Governance project.
 
-Expected files:
+## Evidence
 
-```text
-01-incident-baseline.png
-02-data-quality-block.png
-03-critical-drift.png
-04-fairness-shap.png
-05-governance-decisions.png
-06-release-rollback.png
-07-phase7-controls.png
-08-github-checks.png
-09-release-v070.png
-```
+- `01-incident-baseline.png` — Phase 1 incident reproduction
+- `02-data-quality-block.png` — Phase 2 data-quality gate
+- `03-critical-drift.png` — Phase 3 contract-valid drift
+- `04-fairness-shap.png` — Phase 4 fairness and SHAP evidence
+- `05-governance-decisions.png` — Phase 5 governance decisions
+- `06-release-rollback.png` — Phase 6 safe release and rollback
+- `07-phase7-controls.png` — Phase 7 automation/deployment controls
+- `08-github-checks.png` — GitHub pull-request verification
+- `09-release-v070.png` — v0.7.0 GitHub release
 
-Do not replace these with mock dashboard graphics. The strength of the case study is that the evidence comes directly from the verified implementation and GitHub release process.
+All screenshots are derived from real project verification output or GitHub release evidence.

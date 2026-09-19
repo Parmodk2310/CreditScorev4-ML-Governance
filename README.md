@@ -168,7 +168,6 @@ python scripts/verify_phase7.py
 ## Documentation
 
 - [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — complete engineering case study
-- [`docs/INTERVIEW_DEEP_DIVE.md`](docs/INTERVIEW_DEEP_DIVE.md) — technical questions, cross-questions, and narrative
 - [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) — Phase 1–7 diagram index
 - [`docs/RELEASE_STATE.md`](docs/RELEASE_STATE.md) — registry and rollout state model
 - [`docs/GITHUB_METADATA.md`](docs/GITHUB_METADATA.md) — repository description, topics, and homepage settings
