@@ -91,7 +91,14 @@ def main() -> int:
         and ALLOWED_TRANSITIONS["CANARY"] == {"PRODUCTION", "STAGING"}
     )
 
+    ci_workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    deploy_workflow = (ROOT / ".github/workflows/deploy.yml").read_text(encoding="utf-8")
+
     gates = {
+        "ci_enforces_phase8_gate": "make phase8-verify" in ci_workflow
+        and "make phase7-verify" not in ci_workflow,
+        "deploy_preflight_enforces_phase8_gate": "make phase8-verify" in deploy_workflow
+        and "make phase7-verify" not in deploy_workflow,
         "required_documents_exist": _all_paths_exist(required_docs),
         "required_visuals_exist": _all_paths_exist(required_visuals),
         "required_phase1_7_evidence_exists": evidence_present,

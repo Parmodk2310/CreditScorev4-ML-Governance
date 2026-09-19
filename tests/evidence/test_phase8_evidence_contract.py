@@ -70,6 +70,14 @@ def test_phase8_deployment_contract_matches_phase7() -> None:
     assert phase8["deployment_contract"]["safe_default"] is False
     assert str(phase7["aws"]["deploy_enabled_env"]) == str(phase8["deployment_contract"]["enable_env"])
 
+    ci_workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    deploy_workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text(encoding="utf-8")
+
+    assert "make phase8-verify" in ci_workflow
+    assert "make phase8-verify" in deploy_workflow
+    assert "make phase7-verify" not in ci_workflow
+    assert "make phase7-verify" not in deploy_workflow
+
 
 def test_phase8_reviewer_manifest_path_is_phase8_scoped() -> None:
     config = load_yaml(ROOT / "configs" / "phase8.yaml")

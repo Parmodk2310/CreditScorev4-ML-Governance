@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Manifest — Through Phase 7
+# CreditScoreV4 ML Governance Manifest — Through Phase 8
 
 ## Phase 1 — incident and baseline
 
@@ -54,7 +54,7 @@
 
 ## Phase 7 — automation, security, and gated deployment
 
-- `.github/workflows/ci.yml` — quality, Phase 6 regression, Phase 7 tests, Terraform validation
+- `.github/workflows/ci.yml` — quality, cumulative Phase 8 verification, Terraform validation
 - `.github/workflows/security.yml` — Gitleaks and blocking Trivy filesystem/Terraform scans
 - `.github/workflows/image.yml` — deterministic model generation, Docker build, no-push smoke test
 - `docker/phase6/Dockerfile` updated so the generated model is embedded in the immutable cloud image
@@ -81,5 +81,6 @@
 - `scripts/verify_phase8.py` evidence/documentation gate,
 - `tests/evidence/test_phase8_evidence_contract.py`,
 - generated `data/evidence/phase8/reviewer_evidence_manifest.json`,
+- CI and gated deployment preflight enforce `make phase8-verify`,
 - historical package-application notes moved out of the repository root,
 - no new ML platform/runtime introduced solely for portfolio breadth.

@@ -5,9 +5,12 @@ All notable portfolio releases of CreditScoreV4 ML Governance are documented her
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
 <!-- PHASE8_CHANGELOG -->
-## Unreleased — Phase 8 Governance Evidence & Reviewer Experience
+## v0.8.0 — Governance Evidence & Reviewer Experience
 
 - Added reviewer-specific navigation and evidence traceability.
+- Enforced cumulative Phase 8 verification in CI and the gated deployment preflight.
+- Removed stale Airflow/MLflow/MinIO platform scaffolding that was not part of the verified implementation.
+- Reduced `env.example` to the actual fail-closed AWS deployment contract.
 - Added governance policy documentation tied to executable Phase 5 thresholds.
 - Added a model card, validation report, monitoring plan, and limitations.
 - Added technical design-decision documentation and a reproducible demo.

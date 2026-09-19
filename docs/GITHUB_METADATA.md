@@ -48,7 +48,7 @@ Recommended current settings:
 
 | Setting | Recommendation | Reason |
 |---|---|---|
-| Releases | **ON** | v0.7.0 is a meaningful, verified project milestone |
+| Releases | **ON** | v0.8.0 is the current verified code milestone; publish the tag after main verification |
 | Deployments | **OFF for now** | do not imply a live cloud deployment without runtime evidence |
 | Packages | **OFF for now** | no package/container registry publication is currently part of the public project story |
 

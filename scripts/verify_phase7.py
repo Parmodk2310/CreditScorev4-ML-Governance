@@ -35,7 +35,6 @@ def main() -> int:
         "ci_workflow": contains(
             ".github/workflows/ci.yml",
             "make quality",
-            "make phase7-verify",
             "terraform validate",
         ),
         "security_workflow": contains(

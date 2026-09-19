@@ -1,4 +1,4 @@
-# Project Structure — Through Phase 7
+# Project Structure — Through Phase 8
 
 ```text
 creditscorev4-ml-governance/

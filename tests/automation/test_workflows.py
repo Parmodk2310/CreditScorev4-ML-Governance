@@ -7,9 +7,9 @@ def workflow(name: str) -> str:
     return (ROOT / ".github/workflows" / name).read_text()
 
 
-def test_ci_reuses_existing_release_gate_and_validates_terraform() -> None:
+def test_ci_runs_quality_and_validates_terraform() -> None:
     text = workflow("ci.yml")
-    assert "make phase7-verify" in text
+    assert "make quality" in text
     assert "terraform validate" in text
 
 
