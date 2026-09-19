@@ -30,7 +30,7 @@
 > require evidence before promotion, and progressively release an approved model
 > without silently bypassing governance controls.
 
-This repository is a **production-style synthetic ML governance case study**. It
+This repository implements a **synthetic ML governance system**. It
 uses deterministic synthetic data and controlled failure scenarios so the
 complete lifecycle can be reproduced without claiming a real banking incident,
 live lending system, or regulatory certification.
@@ -104,7 +104,7 @@ of 0.2269**.
 These thresholds and scenarios are project governance heuristics for the
 synthetic case study; they are not legal or regulatory standards.
 
-## What the system demonstrates
+## Failure scenarios and controls
 
 ### Data-quality governance
 
@@ -281,15 +281,15 @@ For implementation details, see
 [`ARCHITECTURE.md`](ARCHITECTURE.md) and
 [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md).
 
-## Evidence and reviewer paths
+## Documentation map
 
 You do not need to read every document to understand the project.
 
 | If you are... | Start here |
 |---|---|
-| **Recruiter / hiring manager** | README → [`CASE_STUDY.md`](docs/CASE_STUDY.md) → architecture diagrams |
+| **Overview** | README → [`CASE_STUDY.md`](docs/CASE_STUDY.md) → architecture diagrams |
 | **ML / MLOps engineer** | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) → source/tests |
-| **Model-risk / governance reviewer** | [`MODEL_CARD.md`](docs/MODEL_CARD.md) → [`MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
+| **Governance review** | [`MODEL_CARD.md`](docs/MODEL_CARD.md) → [`MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
 | **Reproducing the project** | [`REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) → [`EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) |
 | **Reviewing operational limits** | [`MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) → [`LIMITATIONS.md`](docs/LIMITATIONS.md) |
 
@@ -342,7 +342,7 @@ It **does not claim**:
 ├── configs/                  # versioned phase/governance configuration
 ├── data/evidence/            # generated governance/release evidence
 ├── docker/phase6/            # serving + local observability stack
-├── docs/                     # case study, governance and reviewer documentation
+├── docs/                     # governance, validation and operations documentation
 ├── infra/terraform/          # AWS ECR/ECS/Fargate/ALB infrastructure
 ├── models/baseline/          # deterministic persisted baseline artifact
 ├── scripts/                  # phase verification and release/deployment tooling

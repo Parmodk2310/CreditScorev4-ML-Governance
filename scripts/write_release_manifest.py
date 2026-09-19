@@ -7,7 +7,12 @@ import argparse
 import json
 import subprocess
 from datetime import UTC, datetime
+from importlib.metadata import version
 from pathlib import Path
+
+
+def application_version() -> str:
+    return version("creditscorev4-ml-governance")
 
 
 def git_commit() -> str:
@@ -18,7 +23,7 @@ def git_commit() -> str:
 def build_manifest(image_digest: str, deployment_enabled: bool) -> dict[str, object]:
     return {
         "model": "CreditScoreV4",
-        "application_version": "0.7.0",
+        "application_version": application_version(),
         "git_commit": git_commit(),
         "image_digest": image_digest,
         "governance_gate": "PASS",

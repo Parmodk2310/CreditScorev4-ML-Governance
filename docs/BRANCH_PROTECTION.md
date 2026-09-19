@@ -1,6 +1,6 @@
 # Main Branch Protection
 
-This policy is designed for a solo portfolio repository while still forcing
+This policy is designed for a single-maintainer repository while still forcing
 changes through a pull request and required CI.
 
 ## Required checks
@@ -27,7 +27,7 @@ The included policy:
 - disables force pushes;
 - disables branch deletion;
 - keeps merge commits allowed;
-- requires 0 approving reviews, appropriate for a single-owner portfolio repo.
+- requires 0 approving reviews, appropriate for a single-maintainer repository.
 
 If collaborators are added, raise `required_approving_review_count` to `1`.
 

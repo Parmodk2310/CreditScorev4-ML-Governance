@@ -125,7 +125,7 @@ Evidence: `data/evidence/phase7/release_manifest.json`
 
 ## Validation conclusion
 
-The project demonstrates defense in depth: obvious upstream failure is stopped
+The validation results show layered controls: obvious upstream failure is stopped
 by data quality, contract-valid shift is caught by drift monitoring,
 aggregate-stable subgroup stress is caught by fairness governance, evidence
 becomes a promotion decision, approved candidates still pass release-health

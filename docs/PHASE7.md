@@ -6,7 +6,7 @@ Phase 7 automates the already-verified governance and safe-release system withou
 
 ## CI boundary
 
-Every pull request to `main` runs Python quality checks, the cumulative Phase 6 release regression, Phase 7 automation tests, and Terraform validation without a remote backend. Container CI builds the existing Phase 6 serving image and smoke-tests `/health`, `/ready`, and `/model` without publishing an image.
+Every pull request to `main` runs Python quality checks, the cumulative Phase 8 governance/evidence verification, Phase 7 automation tests, and Terraform validation without a remote backend. Container CI builds the existing Phase 6 serving image and smoke-tests `/health`, `/ready`, and `/model` without publishing an image.
 
 ## Security boundary
 
@@ -21,7 +21,7 @@ AWS deployment is disabled by default. The deployment workflow is manual only an
 - GitHub OIDC role variable `AWS_ROLE_TO_ASSUME`
 - `AWS_REGION`
 - persistent Terraform S3 backend variables `TF_STATE_BUCKET` and `TF_STATE_KEY`
-- successful quality and Phase 6 governed-release regression
+- successful quality and cumulative Phase 8 governance/evidence verification
 
 No long-lived AWS access keys are required by the workflow.
 
@@ -29,7 +29,7 @@ No long-lived AWS access keys are required by the workflow.
 
 Terraform manages an immutable ECR repository, two-AZ public VPC, internet gateway, ALB, restricted ECS service security group, ECS/Fargate cluster/service/task definition, task-execution IAM role, and CloudWatch logs. The service security group accepts model traffic only from the ALB security group.
 
-The example uses public subnets plus Fargate public IPs to avoid a NAT gateway in this portfolio architecture. It still creates billable AWS resources when deployment is explicitly enabled.
+The example uses public subnets plus Fargate public IPs to avoid a NAT gateway in this cost-conscious reference architecture. It still creates billable AWS resources when deployment is explicitly enabled.
 
 ## Image evidence
 
@@ -56,4 +56,4 @@ The expected local default is `AWS_DEPLOY_ENABLED=false`, which is a passing saf
 
 ## Scope boundary
 
-This is a synthetic production-style ML governance portfolio system. Phase 7 demonstrates CI/CD, security, infrastructure-as-code, and gated cloud deployment. It does not claim a live regulated lending deployment or legal/regulatory compliance.
+This is a synthetic ML governance system. Phase 7 covers CI/CD, security, infrastructure-as-code, and gated cloud deployment. It does not claim a live regulated lending deployment or legal/regulatory compliance.

@@ -20,7 +20,7 @@ All thresholds below are project guardrails for the synthetic case study.
 
 Primary control: Phase 2 contract plus Great Expectations/custom validation.
 
-Vendor B demonstrates the blocking path:
+Vendor B exercises the blocking path:
 
 - healthy `device_risk_score` missingness: approximately `3.14%`
 - incident missingness: `22.00%`
@@ -46,7 +46,7 @@ Project KS magnitude levels:
 - `0.05 .. < 0.10` with statistical significance: warning
 - `>= 0.10` with statistical significance: critical
 
-Vendor C demonstrates why this layer is separate from data quality: it passes
+Vendor C exercises drift handling separately from data quality: it passes
 the contract but creates critical drift.
 
 Critical drift blocks promotion and triggers investigation rather than automatic
@@ -110,7 +110,7 @@ Default cloud behavior is deny/no-mutation.
 ## 8. Evidence retention
 
 Each monitoring layer writes machine-readable evidence under `data/evidence/`.
-The Phase 8 reviewer manifest summarizes where evidence exists; it does not
+The Phase 8 evidence manifest summarizes where evidence exists; it does not
 replace source artifacts.
 
 ## 9. Future production hardening

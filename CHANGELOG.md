@@ -1,11 +1,28 @@
 # Changelog
 
-All notable portfolio releases of CreditScoreV4 ML Governance are documented here.
+All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
 <!-- PHASE8_CHANGELOG -->
-## v0.8.0 — Governance Evidence & Reviewer Experience
+## v0.8.1 — Public Repository & Consistency Hardening
+
+- Enabled enforced `main` branch protection with required quality, Terraform,
+  security, and container checks.
+- Pinned all external GitHub Actions to immutable commit SHAs.
+- Added MIT license, security policy, and contribution policy.
+- Scoped AWS OIDC permission to the deployment job.
+- Serialized production deployment execution.
+- Removed stale/dead deployment model-version configuration.
+- Aligned release-manifest application version with the package release.
+- Hardened the serving container to run as a non-root user.
+- Migrated Starlette TestClient development dependency from deprecated
+  `httpx` fallback to `httpx2`.
+- Updated Phase 7/8 and repository-state documentation.
+- Strengthened reviewer-document consistency tests.
+
+
+## v0.8.0 — Governance Evidence & Traceability
 
 - Added reviewer-specific navigation and evidence traceability.
 - Enforced cumulative Phase 8 verification in CI and the gated deployment preflight.
@@ -18,6 +35,7 @@ The project uses phased releases to demonstrate the evolution from incident repr
 - Added focused tests for policy, registry, release, documentation, and deployment contracts.
 - Removed/moved historical implementation-package material from the repository root.
 - Kept Phase 1–7 runtime behavior unchanged.
+
 
 ## v0.7.0 — Automated Delivery and Gated Cloud Deployment
 

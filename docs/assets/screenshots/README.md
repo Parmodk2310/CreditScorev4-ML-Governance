@@ -12,6 +12,6 @@ These screenshots are captured from the CreditScoreV4 ML Governance verification
 | `06-release-rollback.png` | progressive release and rollback |
 | `07-phase7-controls.png` | automated delivery controls |
 | `08-github-checks.png` | CI/security release gates |
-| `09-release-v070.png` | v0.7.0 release milestone |
+| `09-release-v070.png` | historical v0.7.0 automated-delivery release milestone|
 
 All evidence comes from the project's deterministic synthetic environment. It does not represent a real banking production incident.

@@ -2,7 +2,7 @@
 
 ## Objective
 
-Reproduce a production-style failure in which an already-trained credit-risk model receives data from a migrated upstream vendor and materially loses discriminatory performance even though the external schema is still valid.
+Reproduce a controlled upstream-vendor failure in which an already-trained credit-risk model receives data from a migrated upstream vendor and materially loses discriminatory performance even though the external schema is still valid.
 
 ## Invariant
 

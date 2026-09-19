@@ -2,8 +2,7 @@
 
 ## Project scope
 
-CreditScoreV4 ML Governance is a production-style **synthetic** ML governance
-case study. It does not process real applicant PII, does not represent a live
+CreditScoreV4 ML Governance uses a **synthetic** ML governance environment. It does not process real applicant PII, does not represent a live
 banking decision system, and does not claim regulatory certification.
 
 The AWS deployment path is fail-closed by default. Reports that could enable
