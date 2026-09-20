@@ -1,116 +1,89 @@
-# Phase 10 — Root-Cause Ablation & Remediation Evidence
+# Phase 10 — Root-Cause Ablation & Remediation Governance
 
 Phase 10 extends the deterministic Vendor B incident with a controlled
-root-cause experiment. Its purpose is to measure which parts of the synthetic
-vendor migration contribute to the Phase 9 decision impact before making a
-mechanism-specific claim.
+root-cause experiment and evidence-backed remediation review. It does not alter
+the production preprocessing path.
 
 ## Controlled 2x2 experiment
 
 The Vendor B incident contains two synthetic interventions:
 
-1. a semantic score migration: attenuation, bias, and noise; and
+1. semantic score migration: attenuation, bias, and noise; and
 2. elevated non-random `device_risk_score` missingness.
 
-Phase 10 holds the applicant population, `default_30d` labels, trained model,
-and 0.50 decision threshold fixed while evaluating:
+The experiment holds the applicant population, `default_30d` labels, trained
+model artifact, and 0.50 decision threshold fixed.
 
-| Scenario | Semantic shift | Elevated missingness |
-|---|---:|---:|
-| healthy | no | no |
-| semantic_only | yes | no |
-| missingness_only | no | yes |
-| combined | yes | yes |
+| Scenario | Semantic shift | Elevated missingness | ROC-AUC | Approval | Approved default |
+|---|---:|---:|---:|---:|---:|
+| healthy | no | no | 0.8025 | 73.91% | 21.80% |
+| semantic_only | yes | no | 0.7452 | 75.94% | 25.12% |
+| missingness_only | no | yes | 0.7796 | 78.46% | 24.41% |
+| combined | yes | yes | 0.7329 | 78.60% | 26.37% |
 
-The missingness-only scenario uses the exact missingness mask from the combined
-Vendor B fixture while preserving healthy observed score values. The combined
-scenario must reproduce the existing Vendor B artifact.
+The missingness-only scenario reuses the exact Vendor B missingness mask while
+preserving healthy observed score semantics. The combined scenario must
+reproduce the stored Vendor B artifact.
 
-For each scenario the analyzer records ROC-AUC, PR-AUC, Brier score, approval
-rate, approved 30-day default rate, mean predicted risk, and decision
-transitions relative to the healthy scenario. It also reports average main
-effects and the semantic-by-missingness interaction.
+## Root-cause interpretation
 
-Because the model is non-linear, these effects are descriptive for this
-deterministic fixture and are not assumed to add linearly.
+Within this deterministic synthetic fixture, semantic migration is the larger
+contributor to ROC-AUC degradation while elevated missingness is the larger
+contributor to approval inflation. Both factors increase the approved-cohort
+30-day default rate. Their combined effect is not assumed to be additive
+because the model is non-linear.
 
 ## Median-imputation diagnostic
 
-The fitted baseline numeric pipeline uses median imputation with a missingness
-indicator. Phase 10 records the fitted training median and the counterfactual
-semantic Vendor B values for rows that become newly missing.
+For the 2,829 rows made newly missing by Vendor B:
 
-The counterfactual scorer preserves the fitted missingness indicator and
-changes only the transformed numeric `device_risk_score` value. A median
-control must reproduce the ordinary pipeline probabilities within numerical
-tolerance. That control prevents the ablation helper from silently changing
-other model inputs.
+- fitted training median: **0.4036**
+- semantic reference mean: **0.4721**
+- reference-minus-median gap: **+0.0685**
 
-## Counterfactual remediation candidates
+The counterfactual scorer preserves the fitted missingness indicator and changes
+only the transformed numeric `device_risk_score` value. The median control
+reproduces ordinary pipeline probabilities with zero measured delta.
 
-Phase 10 evaluates two categories without retraining the classifier.
+This supports a scoped conclusion: for this synthetic missingness pattern, the
+median numeric replacement path materially amplifies decision distortion. It
+does not support the claim that median imputation is the sole root cause.
 
-### Oracle semantic restoration
+## Fixed-model remediation counterfactuals
 
-For rows made newly missing by Vendor B, the analyzer restores the semantic
-Vendor B value that would have existed without the missingness intervention,
-while keeping the model's missingness indicator active.
+| Candidate | ROC-AUC | Approval | Approved default | Status |
+|---|---:|---:|---:|---|
+| Current combined Vendor B | 0.7329 | 78.60% | 26.37% | blocked incident |
+| Oracle semantic restore | 0.7451 | 75.96% | 25.13% | diagnostic only |
+| q60 | 0.7402 | 76.12% | 25.28% | measured only |
+| q75 | 0.7418 | 74.25% | 24.78% | validation candidate only |
+| q90 | 0.7375 | 68.01% | 23.46% | measured; large approval contraction |
 
-This is a diagnostic counterfactual only. It is not deployable because the
-lost value is known only inside the synthetic experiment.
+q75 is carried forward as a validation candidate because it reduces approval
+distortion without the much larger approval contraction observed for q90. It
+still leaves material ROC-AUC and approved-default gaps versus healthy
+behavior, so it is not treated as a complete repair.
 
-### Healthy-training quantile fallbacks
+## Governance outcome
 
-The analyzer also measures predeclared 60th, 75th, and 90th percentile values
-from observed healthy training `device_risk_score` data. Each candidate is
-applied to missing incident rows while the fitted missingness indicator remains
-active.
+Vendor B remains **BLOCKED** by the existing Phase 2 data-quality control.
+Phase 10 does not weaken that fail-closed boundary and does not change
+production preprocessing.
 
-No candidate is selected in the first pass. The evidence must be reviewed
-before freezing outcome-specific gates or changing the production-policy
-simulation.
+## Verification
 
-## Two-pass Phase 10 workflow
-
-The first pass verifies experiment integrity rather than choosing thresholds
-that force a desired conclusion:
-
-```text
-Phase 9 verified incident
-        |
-        v
-2x2 controlled ablation
-        |
-        +--> semantic-only contribution
-        +--> missingness-only contribution
-        +--> interaction
-        |
-        v
-median-control validation
-        |
-        v
-oracle + q60/q75/q90 counterfactuals
-        |
-        v
-review deterministic evidence
-        |
-        v
-freeze Phase 10 outcome gates
-        |
-        v
-promote CI/deploy preflight to phase10-verify
+```bash
+make quality
+make phase10-verify
+git diff --check
 ```
 
-This sequencing prevents the project from inventing a root-cause narrative or
-tuning an acceptance threshold to a preferred result.
+The cumulative gate preserves the Phase 1–9 chain, regenerates Phase 10
+evidence, evaluates frozen outcome thresholds, and runs root-cause plus workflow
+contract tests.
 
-## Operational boundary
+## Scope and non-claims
 
-The existing Phase 2 data-quality gate already blocks Vendor B because its
-missingness violates the project contract. Phase 10 does not weaken that
-fail-closed control. It provides mechanism evidence and remediation design for
-the synthetic case study.
-
-These measurements do not establish a real lending incident, real customer
-harm, regulatory compliance, or a general causal claim about median
-imputation.
+All evidence is deterministic and synthetic. Phase 10 does not establish a real
+lending incident, real customer harm, regulatory compliance, a deployable oracle
+fallback, or a universally safe q75 imputation policy.

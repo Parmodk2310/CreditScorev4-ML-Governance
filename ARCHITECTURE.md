@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 8
+# CreditScoreV4 ML Governance Architecture — Through Phase 10
 
 ```text
                            PHASE 1
@@ -101,7 +101,7 @@ Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and ca
 
 ```text
 GitHub PR / main
-  |-- CI: quality + cumulative Phase 9 verification
+  |-- CI: quality + cumulative Phase 10 verification
   |-- Security: Gitleaks + Trivy fs/config
   |-- Image: deterministic model generation -> Docker build -> smoke test
   `-- Terraform: fmt + init -backend=false + validate
@@ -117,7 +117,7 @@ Manual workflow_dispatch only
   -> release manifest evidence
 ```
 
-Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 9 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
+Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 10 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
 
 <!-- PHASE8_ARCHITECTURE -->
 ## Phase 8 evidence/reviewer plane
@@ -145,3 +145,38 @@ Phase 1-7 configs + source + tests + generated evidence
 The Phase 8 verifier checks documentation/visual presence, policy thresholds,
 registry transitions, release guardrails, fail-closed deployment behavior, and
 generated governance/release evidence.
+
+## Phase 9–10 incident-analysis plane
+
+Phase 9 measures decision/outcome impact for the exact Vendor B fixture. Phase
+10 then decomposes that same fixture without retraining the model:
+
+```text
+healthy -----------------------------+
+  |                                  |
+  +--> semantic-only                 |
+  +--> missingness-only              |
+  +--> combined Vendor B             |
+                                      v
+                              2x2 root-cause evidence
+                                      |
+                          +-----------+-----------+
+                          |                       |
+                          v                       v
+                 oracle restoration       q60/q75/q90
+                 diagnostic only          fixed-model candidates
+                          |                       |
+                          +-----------+-----------+
+                                      v
+                         q75 validation candidate only
+                                      |
+                                      v
+                         Vendor B remains BLOCKED
+                         production policy unchanged
+```
+
+The analysis keeps the applicant population, labels, baseline model artifact,
+and decision threshold fixed. The fitted missingness indicator is preserved
+during counterfactual value overrides so the experiment isolates the numeric
+replacement path rather than silently changing the fitted preprocessing
+contract.

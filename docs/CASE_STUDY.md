@@ -19,7 +19,7 @@ Incident reproduction
   -> Automated, fail-closed cloud delivery
 ```
 
-The v0.9.0 code line verifies the historical 63-test Phase 1–7 regression boundary, 6 Phase 8 evidence-contract tests, and 6 Phase 9 business-impact tests, together with quality, Terraform, container, secret-scanning, and IaC security controls.
+The v0.10.0 code line preserves the historical 63-test Phase 1–7 regression boundary and adds Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification together with quality, Terraform, container, secret-scanning, and IaC security controls.
 
 ## 2. Why I Built This
 
@@ -126,7 +126,34 @@ Because the applicant population and outcome labels are unchanged, this is a
 controlled decision-impact comparison. It remains synthetic evidence rather
 than a claim about real-world lending loss.
 
-## 9. Governance Architecture
+## 9. Root-Cause Ablation and Remediation
+
+Phase 10 decomposes Vendor B into semantic migration and elevated missingness
+while keeping the same 15,000 applicants, `default_30d` labels, trained model,
+and 0.50 decision threshold fixed.
+
+| Scenario | ROC-AUC | Approval rate | Approved 30-day default |
+|---|---:|---:|---:|
+| Healthy | 0.8025 | 73.91% | 21.80% |
+| Semantic-only | 0.7452 | 75.94% | 25.12% |
+| Missingness-only | 0.7796 | 78.46% | 24.41% |
+| Combined Vendor B | 0.7329 | 78.60% | 26.37% |
+| q75 validation candidate | 0.7418 | 74.25% | 24.78% |
+
+Semantic migration contributes more strongly to discrimination loss, while
+missingness contributes more strongly to approval inflation. The fitted
+`device_risk_score` median is 0.4036, below the 0.4721 semantic reference mean
+for newly missing rows.
+
+The q75 counterfactual reduces decision distortion but does not restore healthy
+model quality or approved-cohort outcomes. It is therefore retained only as a
+diagnostic validation candidate. Vendor B remains blocked by Phase 2 and the
+production preprocessing policy is unchanged.
+
+These conclusions are scoped to the deterministic synthetic fixture and are
+not claims about a real lending incident or regulatory compliance.
+
+## 10. Governance Architecture
 
 Phase 5 converts previously generated evidence into deterministic promotion decisions.
 
@@ -151,7 +178,7 @@ Key properties:
 - machine-readable decision artifacts
 - append-only audit evidence
 
-## 10. Model Registry
+## 11. Model Registry
 
 The project uses a project-owned registry/state machine rather than claiming MLflow integration.
 
@@ -167,7 +194,7 @@ Phase 5 verification also checks persistence, illegal transition blocking, 15 au
 
 A future production implementation could back this contract with MLflow or another model registry without changing the policy semantics.
 
-## 11. Serving Architecture
+## 12. Serving Architecture
 
 Phase 6 turns the approved model into a governed FastAPI service.
 
@@ -189,7 +216,7 @@ FastAPI service
 
 Verification confirms HTTP 200 behavior for all six endpoints.
 
-## 12. Shadow / Canary / Rollback
+## 13. Shadow / Canary / Rollback
 
 Approval is not equivalent to immediate production release. Phase 6 extends the lifecycle:
 
@@ -209,7 +236,7 @@ A degraded release intentionally fails release gates for:
 
 The result is a rollback to **STAGING** with a recorded reason. Direct `CANDIDATE -> PRODUCTION` promotion remains illegal.
 
-## 13. CI/CD and Security
+## 14. CI/CD and Security
 
 Phase 7 adds the delivery controls needed to make the previous phases repeatable in pull requests:
 
@@ -227,7 +254,7 @@ Phase 7 adds the delivery controls needed to make the previous phases repeatable
 
 The final Phase 7 pull request completed with **5/5 successful checks**.
 
-## 14. AWS/Terraform Architecture
+## 15. AWS/Terraform Architecture
 
 The Terraform design defines a gated AWS path:
 
@@ -259,7 +286,7 @@ AWS_DEPLOY_ENABLED=false
 
 Terraform is validated and security-scanned, but the repository does not claim that this release was applied to a live production AWS account.
 
-## 15. Verification Evidence
+## 16. Verification Evidence
 
 Release-level verified boundaries:
 
@@ -274,12 +301,15 @@ Release-level verified boundaries:
 | Phase 7 | CI/security/container/Terraform controls |
 | Phase 8 | reviewer evidence contract and documentation/configuration traceability |
 | Phase 9 | controlled business-impact and decision-transition evidence |
+| Phase 10 | controlled root-cause ablation and remediation counterfactual evidence |
 | Phase 1–7 regression suite | **63 passed** |
 | Phase 8 evidence-contract tests | **6 passed** |
-| Phase 1–9 test executions exercised by the cumulative gate | **75 passed** |
+| Phase 9 business-impact tests | **6 passed** |
+| Phase 10 root-cause/remediation tests | **6 passed** |
+| Phase 1–10 test executions exercised by the cumulative gate | **81 passed** |
 | Phase 8 implementation PR #9 checks | **5/5 successful** |
 
-## 16. Design Decisions
+## 17. Design Decisions
 
 ### Separate quality, drift, and fairness gates
 
@@ -301,7 +331,7 @@ Release transitions are constrained so a model cannot skip governance or safe ro
 
 The safest default is no AWS mutation unless prerequisites and explicit confirmation are present.
 
-## 17. Limitations
+## 18. Limitations
 
 - Synthetic data and incident fixtures, not a real lending dataset.
 - No claim of regulatory compliance or certified fairness.
@@ -309,9 +339,9 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - The registry/audit implementation is project-owned rather than a managed MLflow deployment.
 - Phase 7 defines and validates a cloud path; it does not prove a live production deployment.
 - The current repo does not rely on Airflow orchestration; GitHub Actions, scripts, and Make targets drive the verified lifecycle.
-- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.8.0.
+- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.10.0.
 
-## 18. What I Would Build Next
+## 19. What I Would Build Next
 
 The next iteration should deepen operational realism rather than add more isolated features:
 
@@ -324,7 +354,7 @@ The next iteration should deepen operational realism rather than add more isolat
 7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
 
 <!-- PHASE8_CASE_STUDY -->
-## 19. Evidence Traceability
+## 20. Evidence Traceability
 
 Phase 8 adds an evidence-traceability layer over the existing Phase 1–7
 implementation. It connects policy, release control, tests, screenshots, and
