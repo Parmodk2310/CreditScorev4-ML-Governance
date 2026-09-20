@@ -74,11 +74,17 @@ def test_phase8_deployment_contract_matches_phase7() -> None:
     deploy_workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text(encoding="utf-8")
 
     assert any(
-        gate in ci_workflow for gate in ("make phase8-verify", "make phase9-verify", "make phase10-verify", "make phase11-verify")
+        gate in ci_workflow
+        for gate in ("make phase8-verify", "make phase9-verify", "make phase10-verify", "make phase11-verify")
     )
     assert any(
         gate in deploy_workflow
-        for gate in ("make phase8-verify", "make phase9-verify", "make phase10-verify")
+        for gate in (
+            "make phase8-verify",
+            "make phase9-verify",
+            "make phase10-verify",
+            "make phase11-verify",
+        )
     )
     assert "make phase7-verify" not in ci_workflow
     assert "make phase7-verify" not in deploy_workflow
