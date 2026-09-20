@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Validate CreditScoreV4 architecture sources and rendered assets."""
+
 from __future__ import annotations
 
 import shutil
@@ -33,6 +34,11 @@ REQUIRED = (
 
 PHASE8_13 = REQUIRED[7:13]
 
+SUPPLEMENTAL = (
+    "phase1-7-end-to-end",
+    "release-state",
+)
+
 
 def fail(message: str) -> None:
     raise ValueError(message)
@@ -40,23 +46,39 @@ def fail(message: str) -> None:
 
 def validate_mermaid(path: Path, *, strict: bool) -> None:
     text = path.read_text(encoding="utf-8")
-    first = next((line.strip() for line in text.splitlines() if line.strip()), "")
-    if not first.startswith("flowchart "):
-        fail(f"{path}: expected Mermaid flowchart declaration")
+
+    first = next(
+        (line.strip() for line in text.splitlines() if line.strip()),
+        "",
+    )
 
     if strict:
+        if not first.startswith("flowchart "):
+            fail(f"{path}: recreated architecture must start " "with a Mermaid flowchart declaration")
+    else:
+        supported = first.startswith("flowchart ") or first == "stateDiagram-v2"
+        if not supported:
+            fail(f"{path}: unsupported Mermaid declaration " f"{first!r}")
+
+    if strict:
+        # Keep the recreated architecture sources inside a conservative,
+        # GitHub-safe Mermaid subset.
         if "|" in text:
-            fail(f"{path}: raw pipe character is not allowed in recreated Mermaid sources")
+            fail(f"{path}: raw pipe character is not allowed " "in recreated Mermaid sources")
+
         if r"\n" in text:
-            fail(f"{path}: use <br/> instead of literal Mermaid \\n label escapes")
+            fail(f"{path}: use <br/> rather than literal " r"Mermaid \n label escapes")
+
         if '["' not in text or '"]' not in text:
-            fail(f"{path}: recreated node labels must use quoted text")
+            fail(f"{path}: recreated node labels must use " "quoted Mermaid text")
 
 
 def validate_dot(path: Path) -> None:
     text = path.read_text(encoding="utf-8").strip()
+
     if not text.startswith("digraph "):
         fail(f"{path}: expected Graphviz digraph")
+
     if text.count("{") != text.count("}"):
         fail(f"{path}: unbalanced Graphviz braces")
 
@@ -66,23 +88,44 @@ def validate_svg(path: Path) -> None:
         root = ET.parse(path).getroot()
     except ET.ParseError as exc:
         fail(f"{path}: invalid SVG/XML: {exc}")
+
     if not root.tag.endswith("svg"):
         fail(f"{path}: root element is not SVG")
 
 
 def render_dot_if_available(path: Path) -> None:
     dot = shutil.which("dot")
+
     if dot is None:
         return
+
     with tempfile.NamedTemporaryFile(suffix=".svg") as tmp:
         subprocess.run(
             [dot, "-Tsvg", str(path), "-o", tmp.name],
             check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
         ET.parse(tmp.name)
+
+
+def validate_complete_set(
+    stem: str,
+    *,
+    strict_mermaid: bool,
+) -> None:
+    mmd = DIAGRAM_DIR / f"{stem}.mmd"
+    dot = DIAGRAM_DIR / f"{stem}.dot"
+    svg = DIAGRAM_DIR / f"{stem}.svg"
+
+    for path in (mmd, dot, svg):
+        if not path.exists():
+            fail(f"Missing architecture artifact: {path}")
+
+    validate_mermaid(mmd, strict=strict_mermaid)
+    validate_dot(dot)
+    validate_svg(svg)
+    render_dot_if_available(dot)
 
 
 def main() -> int:
@@ -91,49 +134,55 @@ def main() -> int:
     readme = README.read_text(encoding="utf-8")
 
     for stem in REQUIRED:
-        mmd = DIAGRAM_DIR / f"{stem}.mmd"
-        dot = DIAGRAM_DIR / f"{stem}.dot"
-        svg = DIAGRAM_DIR / f"{stem}.svg"
-
-        for path in (mmd, dot, svg):
-            if not path.exists():
-                fail(f"Missing architecture artifact: {path}")
-
-        validate_mermaid(mmd, strict=True)
-        validate_dot(dot)
-        validate_svg(svg)
-        render_dot_if_available(dot)
+        validate_complete_set(
+            stem,
+            strict_mermaid=True,
+        )
 
         if stem not in figure_index:
-            fail(f"{FIGURE_INDEX}: missing architecture entry for {stem}")
+            fail(f"{FIGURE_INDEX}: missing architecture " f"entry for {stem}")
 
         print(f"DIAGRAM VALID: {stem}")
 
     for stem in PHASE8_13:
         if stem not in phase8_13_index:
-            fail(f"{PHASE8_13_INDEX}: missing architecture entry for {stem}")
+            fail(f"{PHASE8_13_INDEX}: missing architecture " f"entry for {stem}")
 
-    for stem in ("phase1-7-end-to-end", "release-state"):
+    for stem in SUPPLEMENTAL:
         mmd = DIAGRAM_DIR / f"{stem}.mmd"
         dot = DIAGRAM_DIR / f"{stem}.dot"
         svg = DIAGRAM_DIR / f"{stem}.svg"
-        if all(path.exists() for path in (mmd, dot, svg)):
-            validate_mermaid(mmd, strict=False)
-            validate_dot(dot)
-            validate_svg(svg)
-            render_dot_if_available(dot)
+
+        existing = (
+            mmd.exists(),
+            dot.exists(),
+            svg.exists(),
+        )
+
+        if any(existing) and not all(existing):
+            fail(f"{stem}: supplemental diagram set is incomplete")
+
+        if all(existing):
+            validate_complete_set(
+                stem,
+                strict_mermaid=False,
+            )
             print(f"SUPPLEMENTAL DIAGRAM VALID: {stem}")
 
-    if "docs/assets/diagrams/phase1-13-end-to-end.svg" not in readme:
-        fail("README.md: current overview must reference phase1-13-end-to-end.svg")
+    current_overview = "docs/assets/diagrams/" "phase1-13-end-to-end.svg"
+
+    if current_overview not in readme:
+        fail("README.md: current overview must reference " "phase1-13-end-to-end.svg")
 
     renderer = shutil.which("dot")
+
     if renderer:
         print(f"Graphviz render check: PASS ({renderer})")
     else:
-        print("Graphviz render check: SKIPPED (dot not installed); committed SVG/XML validation passed")
+        print("Graphviz render check: SKIPPED " "(dot not installed); committed SVG/XML " "validation passed")
 
-    print(f"Validated {len(REQUIRED)} current architecture diagram sets.")
+    print(f"Validated {len(REQUIRED)} current " "architecture diagram sets.")
+
     return 0
 
 
