@@ -190,7 +190,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean phase12-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -261,3 +261,23 @@ phase11-verify:
 
 phase11-clean:
 	rm -f data/evidence/phase11/*.json data/evidence/phase11/*.jsonl
+
+
+# Phase 12 — intersectional fairness & proxy-risk evidence
+.PHONY: phase12-analyze phase12-test phase12-verify phase12-clean
+
+phase12-analyze:
+	$(PYTHON) scripts/analyze_fairness_proxy.py
+
+phase12-test:
+	$(PYTHON) -m pytest tests/fairness/test_expanded_fairness.py tests/proxy_risk tests/integration/test_phase12_fairness_proxy_pipeline.py
+
+phase12-verify:
+	$(MAKE) phase11-verify
+	$(PYTHON) scripts/analyze_fairness_proxy.py
+	$(PYTHON) scripts/verify_phase12.py
+	$(PYTHON) -m pytest tests/fairness/test_expanded_fairness.py tests/proxy_risk tests/integration/test_phase12_fairness_proxy_pipeline.py
+
+phase12-clean:
+	rm -f data/evidence/phase12/*.json data/evidence/phase12/*.csv
+	rm -f data/raw/vendor_e/*.csv
