@@ -37,9 +37,7 @@ def test_vendor_e_preserves_protected_values_and_creates_intersectional_stress()
     current = scenario.apply(frame)
 
     assert frame["sex"].equals(current["sex"])
-    assert frame["synthetic_demographic_group"].equals(
-        current["synthetic_demographic_group"]
-    )
+    assert frame["synthetic_demographic_group"].equals(current["synthetic_demographic_group"])
     assert frame["default_30d"].equals(current["default_30d"])
 
     reference_augmented = add_intersection_column(
@@ -54,17 +52,17 @@ def test_vendor_e_preserves_protected_values_and_creates_intersectional_stress()
         output_column="intersection",
         separator="|",
     )
-    assert reference_augmented["intersection"].equals(
-        current_augmented["intersection"]
-    )
+    assert reference_augmented["intersection"].equals(current_augmented["intersection"])
 
 
 def test_expanded_fairness_uses_favorable_approval_semantics() -> None:
     frame = pd.DataFrame(
         {
             "sex": ["female"] * 4 + ["male"] * 4,
-            "synthetic_demographic_group": ["group_c"] * 2 + ["group_a"] * 2
-            + ["group_c"] * 2 + ["group_a"] * 2,
+            "synthetic_demographic_group": ["group_c"] * 2
+            + ["group_a"] * 2
+            + ["group_c"] * 2
+            + ["group_a"] * 2,
             "intersection": [
                 "female|group_c",
                 "female|group_c",
@@ -121,10 +119,6 @@ def test_expanded_fairness_uses_favorable_approval_semantics() -> None:
         default_threshold=0.5,
     )
 
-    target = next(
-        group
-        for group in report.current_primary.group_metrics
-        if group.group == "female|group_c"
-    )
+    target = next(group for group in report.current_primary.group_metrics if group.group == "female|group_c")
     assert target.approval_rate == 0.0
     assert target.favorable_true_positive_rate == 0.0

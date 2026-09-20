@@ -28,39 +28,25 @@ def main() -> int:
     summary_path = ROOT / str(config["paths"]["summary_json"])
     if not summary_path.exists():
         raise FileNotFoundError(
-            f"Phase 12 summary missing: {summary_path.relative_to(ROOT)}. "
-            "Run make phase12-analyze first."
+            f"Phase 12 summary missing: {summary_path.relative_to(ROOT)}. " "Run make phase12-analyze first."
         )
 
     summary = _load_json(summary_path)
     metrics = summary["intersection_metrics"]
-    stressed_features = {
-        str(value) for value in proxy["stressed_proxy_features"]
-    }
+    stressed_features = {str(value) for value in proxy["stressed_proxy_features"]}
     stressed_deltas = {
-        str(feature): float(value)
-        for feature, value in summary["stressed_proxy_association_deltas"].items()
+        str(feature): float(value) for feature, value in summary["stressed_proxy_association_deltas"].items()
     }
-    top_association = {
-        str(value) for value in summary["top_association_features"]
-    }
-    review_priority = {
-        str(value) for value in summary["review_priority_features"]
-    }
+    top_association = {str(value) for value in summary["top_association_features"]}
+    review_priority = {str(value) for value in summary["review_priority_features"]}
     single_axis_statuses = {
-        str(feature): str(status)
-        for feature, status in summary["single_axis_statuses"].items()
+        str(feature): str(status) for feature, status in summary["single_axis_statuses"].items()
     }
-    evidence_hashes = {
-        str(name): str(value)
-        for name, value in summary["evidence_sha256"].items()
-    }
+    evidence_hashes = {str(name): str(value) for name, value in summary["evidence_sha256"].items()}
 
     minimum_delta = float(proxy["minimum_association_delta"])
     minimum_top = int(proxy["minimum_stressed_features_in_top_association"])
-    minimum_priority = int(
-        proxy["minimum_stressed_features_in_review_priority"]
-    )
+    minimum_priority = int(proxy["minimum_stressed_features_in_review_priority"])
 
     gates = {
         "phase2_pass": (
@@ -86,20 +72,12 @@ def main() -> int:
         < float(acceptance["maximum_intersection_demographic_parity_ratio"]),
         "selection_rate_difference": float(metrics["selection_rate_difference"])
         >= float(acceptance["minimum_intersection_selection_rate_difference"]),
-        "equal_opportunity_difference": float(
-            metrics["equal_opportunity_difference"]
-        )
-        >= float(
-            acceptance["minimum_intersection_equal_opportunity_difference"]
-        ),
+        "equal_opportunity_difference": float(metrics["equal_opportunity_difference"])
+        >= float(acceptance["minimum_intersection_equal_opportunity_difference"]),
         "equalized_odds_difference": float(metrics["equalized_odds_difference"])
         >= float(acceptance["minimum_intersection_equalized_odds_difference"]),
-        "false_approval_rate_difference": float(
-            metrics["false_approval_rate_difference"]
-        )
-        >= float(
-            acceptance["minimum_intersection_false_approval_rate_difference"]
-        ),
+        "false_approval_rate_difference": float(metrics["false_approval_rate_difference"])
+        >= float(acceptance["minimum_intersection_false_approval_rate_difference"]),
         "stressed_group_count": int(summary["target_intersection_count"])
         >= int(acceptance["minimum_stressed_group_count"]),
         "protected_values_preserved": (
@@ -107,8 +85,7 @@ def main() -> int:
             is bool(acceptance["require_protected_values_preserved"])
         ),
         "target_preserved": (
-            bool(summary["target_preserved"])
-            is bool(acceptance["require_target_preserved"])
+            bool(summary["target_preserved"]) is bool(acceptance["require_target_preserved"])
         ),
         "protected_absent_from_model": (
             bool(summary["protected_attributes_absent_from_model"])
@@ -116,14 +93,11 @@ def main() -> int:
         ),
         "intersection_absent_from_shap": (
             bool(summary["intersection_absent_from_shap_feature_space"])
-            is bool(
-                acceptance["require_intersection_absent_from_shap_feature_space"]
-            )
+            is bool(acceptance["require_intersection_absent_from_shap_feature_space"])
         ),
         "proxy_association_deltas": (
             all(
-                feature in stressed_deltas
-                and stressed_deltas[feature] >= minimum_delta
+                feature in stressed_deltas and stressed_deltas[feature] >= minimum_delta
                 for feature in stressed_features
             )
             if bool(acceptance["require_proxy_association_deltas"])
@@ -131,16 +105,12 @@ def main() -> int:
         ),
         "stressed_features_in_top_association": (
             len(stressed_features & top_association) >= minimum_top
-            if bool(
-                acceptance["require_stressed_features_in_top_association"]
-            )
+            if bool(acceptance["require_stressed_features_in_top_association"])
             else True
         ),
         "stressed_features_in_review_priority": (
             len(stressed_features & review_priority) >= minimum_priority
-            if bool(
-                acceptance["require_stressed_features_in_review_priority"]
-            )
+            if bool(acceptance["require_stressed_features_in_review_priority"])
             else True
         ),
         "traceability_hashes_present": bool(evidence_hashes)
@@ -153,18 +123,9 @@ def main() -> int:
     print(f"  target count...................... {summary['target_intersection_count']}")
     print(f"  aggregate drift................... {summary['aggregate_drift_status']}")
     print(f"  fairness status................... {summary['intersection_status']}")
-    print(
-        "  demographic parity ratio......... "
-        f"{float(metrics['demographic_parity_ratio']):.4f}"
-    )
-    print(
-        "  equal opportunity difference..... "
-        f"{float(metrics['equal_opportunity_difference']):.4f}"
-    )
-    print(
-        "  equalized odds difference......... "
-        f"{float(metrics['equalized_odds_difference']):.4f}"
-    )
+    print("  demographic parity ratio......... " f"{float(metrics['demographic_parity_ratio']):.4f}")
+    print("  equal opportunity difference..... " f"{float(metrics['equal_opportunity_difference']):.4f}")
+    print("  equalized odds difference......... " f"{float(metrics['equalized_odds_difference']):.4f}")
     print()
     print("Acceptance gates")
     for name, passed in gates.items():

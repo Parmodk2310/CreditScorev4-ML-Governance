@@ -81,10 +81,7 @@ def main() -> None:
     print(f"Saved Vendor E: {output_path}")
     print(f"Rows: {len(current):,}")
     print(f"Target intersection: {target} ({count:,} rows)")
-    print(
-        "Protected intersection preserved: "
-        f"{reference[derived].equals(current[derived])}"
-    )
+    print("Protected intersection preserved: " f"{reference[derived].equals(current[derived])}")
 
 
 if __name__ == "__main__":

@@ -119,9 +119,7 @@ class ExpandedFairnessEvaluator:
         intersection = config["intersection"]
         self.scenario = str(config["scenario"]["name"])
         self.primary_sensitive_feature = str(intersection["derived_feature"])
-        self.monitored_sensitive_features = [
-            str(value) for value in fairness["monitored_sensitive_features"]
-        ]
+        self.monitored_sensitive_features = [str(value) for value in fairness["monitored_sensitive_features"]]
         self.governance_sensitive_features = {
             str(value) for value in fairness["governance_sensitive_features"]
         }
@@ -205,18 +203,12 @@ class ExpandedFairnessEvaluator:
             )
 
         approval_rates = np.asarray([row.approval_rate for row in eligible], dtype=float)
-        opportunity_rates = np.asarray(
-            [row.favorable_true_positive_rate for row in eligible], dtype=float
-        )
-        false_approval_rates = np.asarray(
-            [row.false_approval_rate for row in eligible], dtype=float
-        )
+        opportunity_rates = np.asarray([row.favorable_true_positive_rate for row in eligible], dtype=float)
+        false_approval_rates = np.asarray([row.false_approval_rate for row in eligible], dtype=float)
 
         demographic_parity_ratio = float(approval_rates.min() / approval_rates.max())
         selection_rate_difference = float(approval_rates.max() - approval_rates.min())
-        equal_opportunity_difference = float(
-            np.nanmax(opportunity_rates) - np.nanmin(opportunity_rates)
-        )
+        equal_opportunity_difference = float(np.nanmax(opportunity_rates) - np.nanmin(opportunity_rates))
         false_approval_rate_difference = float(
             np.nanmax(false_approval_rates) - np.nanmin(false_approval_rates)
         )
@@ -304,20 +296,14 @@ class ExpandedFairnessEvaluator:
             current=current_results,
             metadata={
                 "minimum_group_size": self.minimum_group_size,
-                "governance_sensitive_features": sorted(
-                    self.governance_sensitive_features
-                ),
+                "governance_sensitive_features": sorted(self.governance_sensitive_features),
                 "monitored_sensitive_features": self.monitored_sensitive_features,
                 "thresholds": self.thresholds,
                 "decision_semantics": {
                     "model_positive_class": "default_30d=1",
                     "favorable_decision": "approved when risk_probability < threshold",
-                    "equal_opportunity": (
-                        "difference in approval rate among applicants with default_30d=0"
-                    ),
-                    "false_approval": (
-                        "approval rate among applicants with default_30d=1"
-                    ),
+                    "equal_opportunity": ("difference in approval rate among applicants with default_30d=0"),
+                    "false_approval": ("approval rate among applicants with default_30d=1"),
                 },
             },
         )

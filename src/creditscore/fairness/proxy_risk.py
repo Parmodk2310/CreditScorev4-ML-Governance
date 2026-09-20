@@ -40,8 +40,9 @@ def cramers_v(values: pd.Series, groups: pd.Series) -> float:
     table = pd.crosstab(groups.astype(str), values.astype(str))
     if table.empty or min(table.shape) < 2:
         return 0.0
-    chi2 = float(chi2_contingency(table, correction=False)[0])
-    n = float(table.to_numpy().sum())
+    result = chi2_contingency(table.to_numpy(), correction=False)
+    chi2 = float(np.asarray(result.statistic, dtype=np.float64).item())
+    n = float(np.asarray(table.to_numpy().sum(), dtype=np.float64).item())
     denominator = min(table.shape[0] - 1, table.shape[1] - 1)
     if n <= 0 or denominator <= 0:
         return 0.0
@@ -92,9 +93,7 @@ class ProxyRiskAnalyzer:
         self.sensitive_feature = str(proxy["sensitive_feature"])
         self.minimum_group_size = int(proxy["minimum_group_size"])
         self.numeric_features = [str(value) for value in proxy["numeric_features"]]
-        self.categorical_features = [
-            str(value) for value in proxy["categorical_features"]
-        ]
+        self.categorical_features = [str(value) for value in proxy["categorical_features"]]
         self.minimum_association_delta = float(proxy["minimum_association_delta"])
         self.top_association_k = int(proxy["top_association_k"])
         self.top_model_influence_k = int(proxy["top_model_influence_k"])
@@ -166,8 +165,7 @@ class ProxyRiskAnalyzer:
                         "feature_type": feature_type,
                         "reference_association": reference_association,
                         "current_association": current_association,
-                        "association_delta": current_association
-                        - reference_association,
+                        "association_delta": current_association - reference_association,
                         "model_mean_abs_shap": self._raw_feature_influence(
                             shap_global,
                             feature,
@@ -178,48 +176,40 @@ class ProxyRiskAnalyzer:
 
         table = pd.DataFrame(rows)
         table["association_rank"] = (
-            table["association_delta"]
-            .rank(method="first", ascending=False)
-            .astype(int)
+            table["association_delta"].rank(method="first", ascending=False).astype(int)
         )
         table["model_influence_rank"] = (
-            table["model_mean_abs_shap"]
-            .rank(method="first", ascending=False)
-            .astype(int)
+            table["model_mean_abs_shap"].rank(method="first", ascending=False).astype(int)
         )
-        table["review_priority"] = (
-            table["association_delta"].ge(self.minimum_association_delta)
-            & table["model_influence_rank"].le(self.top_model_influence_k)
-        )
+        table["review_priority"] = table["association_delta"].ge(self.minimum_association_delta) & table[
+            "model_influence_rank"
+        ].le(self.top_model_influence_k)
         table = table.sort_values(
             ["association_rank", "model_influence_rank"],
             ignore_index=True,
         )
 
+        records = table.to_dict(orient="records")
         signals = [
             ProxyRiskSignal(
-                feature=str(row.feature),
-                feature_type=str(row.feature_type),
-                reference_association=float(row.reference_association),
-                current_association=float(row.current_association),
-                association_delta=float(row.association_delta),
-                model_mean_abs_shap=float(row.model_mean_abs_shap),
-                association_rank=int(row.association_rank),
-                model_influence_rank=int(row.model_influence_rank),
-                review_priority=bool(row.review_priority),
+                feature=str(record["feature"]),
+                feature_type=str(record["feature_type"]),
+                reference_association=float(record["reference_association"]),
+                current_association=float(record["current_association"]),
+                association_delta=float(record["association_delta"]),
+                model_mean_abs_shap=float(record["model_mean_abs_shap"]),
+                association_rank=int(record["association_rank"]),
+                model_influence_rank=int(record["model_influence_rank"]),
+                review_priority=bool(record["review_priority"]),
             )
-            for row in table.itertuples(index=False)
+            for record in records
         ]
         return ProxyRiskReport(
             sensitive_feature=self.sensitive_feature,
             primary_group=primary_group,
-            review_priority_features=[
-                signal.feature for signal in signals if signal.review_priority
-            ],
+            review_priority_features=[signal.feature for signal in signals if signal.review_priority],
             top_association_features=[
-                signal.feature
-                for signal in signals
-                if signal.association_rank <= self.top_association_k
+                signal.feature for signal in signals if signal.association_rank <= self.top_association_k
             ],
             signals=signals,
             metadata={

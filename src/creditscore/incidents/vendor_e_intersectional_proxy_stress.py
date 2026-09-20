@@ -42,15 +42,12 @@ class VendorEIntersectionalProxyStressScenario:
 
         present_device = stressed & shifted["device_risk_score"].notna()
         shifted.loc[present_device, "device_risk_score"] = (
-            shifted.loc[present_device, "device_risk_score"]
-            + self.config.device_risk_score_shift
+            shifted.loc[present_device, "device_risk_score"] + self.config.device_risk_score_shift
         ).clip(0.0, 1.0)
         shifted.loc[stressed, "credit_utilization"] = (
-            shifted.loc[stressed, "credit_utilization"]
-            + self.config.credit_utilization_shift
+            shifted.loc[stressed, "credit_utilization"] + self.config.credit_utilization_shift
         ).clip(0.01, 0.99)
         shifted.loc[stressed, "bank_transaction_risk"] = (
-            shifted.loc[stressed, "bank_transaction_risk"]
-            + self.config.bank_transaction_risk_shift
+            shifted.loc[stressed, "bank_transaction_risk"] + self.config.bank_transaction_risk_shift
         ).clip(0.0, 1.0)
         return shifted

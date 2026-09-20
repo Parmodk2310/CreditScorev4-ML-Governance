@@ -9,7 +9,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 from simulate_intersectional_stress import generate_vendor_e, target_group_name
 
 from creditscore.data.preprocessing import (
@@ -136,25 +135,14 @@ def main() -> int:
         for item in fairness.current
         if item.sensitive_feature != fairness.primary_sensitive_feature
     }
-    target_count = next(
-        item.sample_count
-        for item in primary.group_metrics
-        if item.group == target
-    )
-    stressed_features = [
-        str(value) for value in config["proxy_risk"]["stressed_proxy_features"]
-    ]
+    target_count = next(item.sample_count for item in primary.group_metrics if item.group == target)
+    stressed_features = [str(value) for value in config["proxy_risk"]["stressed_proxy_features"]]
     signal_by_feature = {signal.feature: signal for signal in proxy.signals}
-    stressed_deltas = {
-        feature: signal_by_feature[feature].association_delta
-        for feature in stressed_features
-    }
+    stressed_deltas = {feature: signal_by_feature[feature].association_delta for feature in stressed_features}
 
     shap_features = set(shap_analysis.global_importance["feature"].astype(str))
     derived = str(config["intersection"]["derived_feature"])
-    intersection_absent_from_shap = not any(
-        derived in feature for feature in shap_features
-    )
+    intersection_absent_from_shap = not any(derived in feature for feature in shap_features)
 
     summary = {
         "schema_version": 1,
@@ -165,15 +153,11 @@ def main() -> int:
         "data_quality_decision": quality.decision,
         "aggregate_drift_status": drift.overall_status,
         "protected_values_preserved": all(
-            reference_raw[column].equals(current_raw[column])
-            for column in PROTECTED_EVALUATION_COLUMNS
+            reference_raw[column].equals(current_raw[column]) for column in PROTECTED_EVALUATION_COLUMNS
         ),
-        "target_preserved": reference_raw["default_30d"].equals(
-            current_raw["default_30d"]
-        ),
+        "target_preserved": reference_raw["default_30d"].equals(current_raw["default_30d"]),
         "protected_attributes_absent_from_model": all(
-            column not in MODEL_INPUT_FEATURES
-            for column in PROTECTED_EVALUATION_COLUMNS
+            column not in MODEL_INPUT_FEATURES for column in PROTECTED_EVALUATION_COLUMNS
         ),
         "intersection_absent_from_shap_feature_space": intersection_absent_from_shap,
         "reference_intersection_status": reference_primary.status,
@@ -191,22 +175,16 @@ def main() -> int:
         "review_priority_features": proxy.review_priority_features,
         "evidence_sha256": {
             "model": file_sha256(model_path),
-            "reference_batch": file_sha256(
-                ROOT / str(config["scenario"]["input"])
-            ),
+            "reference_batch": file_sha256(ROOT / str(config["scenario"]["input"])),
             "current_batch": file_sha256(output_path),
             "fairness_json": file_sha256(fairness_json),
             "fairness_csv": file_sha256(fairness_csv),
             "proxy_json": file_sha256(proxy_json),
             "proxy_csv": file_sha256(proxy_csv),
-            "shap_summary": file_sha256(
-                ROOT / str(config["paths"]["shap_summary_json"])
-            ),
+            "shap_summary": file_sha256(ROOT / str(config["paths"]["shap_summary_json"])),
         },
         "interpretation": {
-            "intersectional_metrics": (
-                "project governance signals for a deterministic synthetic fixture"
-            ),
+            "intersectional_metrics": ("project governance signals for a deterministic synthetic fixture"),
             "proxy_risk": (
                 "statistical association plus SHAP influence supports review; "
                 "it does not prove causal proxy use or legal discrimination"
@@ -228,26 +206,11 @@ def main() -> int:
     print(f"Reference intersection status...... {reference_primary.status}")
     print(f"Current intersection status........ {fairness.overall_status}")
     print()
-    print(
-        "Demographic parity ratio.......... "
-        f"{primary.demographic_parity_ratio:.4f}"
-    )
-    print(
-        "Selection-rate difference......... "
-        f"{primary.selection_rate_difference:.4f}"
-    )
-    print(
-        "Equal-opportunity difference...... "
-        f"{primary.equal_opportunity_difference:.4f}"
-    )
-    print(
-        "Equalized-odds difference......... "
-        f"{primary.equalized_odds_difference:.4f}"
-    )
-    print(
-        "False-approval-rate difference.... "
-        f"{primary.false_approval_rate_difference:.4f}"
-    )
+    print("Demographic parity ratio.......... " f"{primary.demographic_parity_ratio:.4f}")
+    print("Selection-rate difference......... " f"{primary.selection_rate_difference:.4f}")
+    print("Equal-opportunity difference...... " f"{primary.equal_opportunity_difference:.4f}")
+    print("Equalized-odds difference......... " f"{primary.equalized_odds_difference:.4f}")
+    print("False-approval-rate difference.... " f"{primary.false_approval_rate_difference:.4f}")
     print()
     print("Single-axis statuses")
     for feature, status in single_axis_statuses.items():
