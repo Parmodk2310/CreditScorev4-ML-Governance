@@ -6,17 +6,20 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_phase13_is_current_cumulative_workflow_gate() -> None:
+def test_release_verify_wraps_phase13_boundary() -> None:
     ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     deploy = (ROOT / ".github/workflows/deploy.yml").read_text(encoding="utf-8")
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 
-    assert "make phase13-verify" in ci
-    assert "make phase13-verify" in deploy
-    assert "make phase12-verify" not in ci
-    assert "make phase12-verify" not in deploy
+    assert "make release-verify" in ci
+    assert "make release-verify" in deploy
+    assert "make phase13-verify" not in ci
+    assert "make phase13-verify" not in deploy
 
+    release_target = makefile.split("release-verify:", 1)[1].split("\n\n", 1)[0]
     phase13_target = makefile.split("phase13-verify:", 1)[1].split("\n\n", 1)[0]
+
+    assert "$(MAKE) phase13-verify" in release_target
     assert "$(MAKE) phase12-verify" in phase13_target
 
 

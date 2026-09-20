@@ -17,7 +17,7 @@ format:
 typecheck:
 	mypy -p creditscore
 
-quality: lint typecheck
+quality: lint typecheck workflow-validate
 	black --check src/creditscore scripts tests
 	$(PYTHON) -m compileall -q src/creditscore scripts tests
 
@@ -300,3 +300,14 @@ phase13-verify:
 
 phase13-clean:
 	rm -f data/evidence/phase13/*.json data/evidence/phase13/*.jsonl
+
+
+# Stable product-level verification interface.
+# Historical phase targets remain available for reproducibility.
+.PHONY: workflow-validate release-verify
+
+workflow-validate:
+	$(PYTHON) scripts/validate_workflows.py
+
+release-verify:
+	$(MAKE) phase13-verify

@@ -41,6 +41,24 @@ live lending system, or regulatory certification.
        width="100%" />
 </p>
 
+## Review this project
+
+You do not need to follow the implementation phases to understand the current
+system.
+
+| Review goal | Recommended path |
+|---|---|
+| **60-second overview** | README problem statement → failure scenarios → verification status |
+| **Recruiter / hiring review** | [`CASE_STUDY.md`](docs/CASE_STUDY.md) → [`REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) |
+| **ML / MLOps engineering review** | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) → source/tests |
+| **Model/governance review** | [`MODEL_CARD.md`](docs/MODEL_CARD.md) → [`MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
+| **Evidence / reproducibility** | [`EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) → `make release-verify` |
+| **Phase 8–13 architecture** | [`PHASE8_13_ARCHITECTURE.md`](docs/PHASE8_13_ARCHITECTURE.md) |
+| **Historical engineering evolution** | [`docs/phases/`](docs/phases/README.md) |
+
+The numbered phases are retained as engineering history. The current repository
+is one integrated governance, release, monitoring, and incident-evidence system.
+
 ## Why CreditScoreV4
 
 Many ML projects end after model training and evaluation. In a production ML
@@ -262,7 +280,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 13 verification
+   +--> current release verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -325,31 +343,20 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase13-verify
+make release-verify
 make phase7-terraform
 ```
 
-### Run focused phase verification
+### Historical milestone verification
+
+Individual phase verification commands remain available for debugging and
+historical reproducibility. They are documented in
+[`docs/phases/README.md`](docs/phases/README.md).
+
+For normal reviewer and release verification, use:
 
 ```bash
-python scripts/verify_phase1.py
-python scripts/verify_phase2.py
-python scripts/verify_phase3.py
-python scripts/verify_phase4.py
-python scripts/verify_phase5.py
-python scripts/verify_phase6.py
-python scripts/verify_phase7.py
-python scripts/verify_phase8.py
-python scripts/analyze_business_impact.py
-python scripts/verify_phase9.py
-python scripts/analyze_root_cause.py
-python scripts/verify_phase10.py
-python scripts/run_monitoring_cycle.py --run-id reviewer-demo
-python scripts/verify_phase11.py
-python scripts/analyze_fairness_proxy.py
-python scripts/verify_phase12.py
-python scripts/analyze_incident_sla.py
-python scripts/verify_phase13.py
+make release-verify
 ```
 
 ### Run the test suite
@@ -395,10 +402,8 @@ You do not need to read every document to understand the project.
 - [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) — performance and validation evidence
 - [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) — operational monitoring and escalation plan
 - [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — generated evidence and reviewer map
-- [`docs/PHASE10.md`](docs/PHASE10.md) — root-cause ablation, remediation evidence, and non-claims
-- [`docs/PHASE11.md`](docs/PHASE11.md) — scheduled monitoring, dependency semantics, evidence, and safety boundaries
-- [`docs/PHASE12.md`](docs/PHASE12.md) — intersectional fairness, equal-opportunity evidence, and proxy-risk screening
-- [`docs/PHASE13.md`](docs/PHASE13.md) — simulated incident timeline, alert evidence, SLA evaluation, and lineage
+- [`docs/PHASE8_13_ARCHITECTURE.md`](docs/PHASE8_13_ARCHITECTURE.md) — Phase 8–13 architecture diagrams in DOT, Mermaid, and SVG
+- [`docs/phases/README.md`](docs/phases/README.md) — historical engineering milestones and phase-specific implementation notes
 - [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
 
@@ -406,6 +411,12 @@ Repository security and contribution controls are documented in
 [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md),
 [`docs/ACTION_PINNING.md`](docs/ACTION_PINNING.md), and
 [`docs/BRANCH_PROTECTION.md`](docs/BRANCH_PROTECTION.md).
+
+
+> **Repository enforcement note:** `docs/BRANCH_PROTECTION.md` documents the
+> intended required-check policy. At the current private-repository state,
+> GitHub does not report `main` as protected, so the repository does not claim
+> that those checks are technically enforced by branch protection.
 
 ## Repository boundaries
 

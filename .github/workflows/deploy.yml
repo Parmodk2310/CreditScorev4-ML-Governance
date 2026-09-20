@@ -70,7 +70,7 @@ jobs:
       - name: Re-run quality and cumulative governed release gates
         run: |
           make quality
-          make phase13-verify
+          make release-verify
 
       - name: Re-run secret scan before cloud mutation
         uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3

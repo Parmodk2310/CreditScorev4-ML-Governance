@@ -175,6 +175,21 @@ Infrastructure code should not mutate a cloud account merely because a
 developer runs local verification. `AWS_DEPLOY_ENABLED=false` makes no-mutation
 the safe default and requires explicit deployment configuration.
 
+## Why incident operations are evidence-only
+
+Phase 13 deliberately models detection, alert creation, governance blocking,
+triage, and root-cause timing as deterministic operational evidence rather than
+claiming a real production incident-response system.
+
+The incident event stream is linked to existing Phase 2, Phase 9, and Phase 10
+evidence with SHA-256 hashes. Configured project SLAs can therefore be evaluated
+reproducibly without granting the alerting path authority to retrain, promote,
+or remediate a model.
+
+This keeps detection and evidence generation separate from remediation
+authority, and avoids presenting synthetic timing measurements as production
+MTTR or on-call performance.
+
 ## What changes for real production
 
 A real deployment would need durable shared registry/audit/evidence storage,

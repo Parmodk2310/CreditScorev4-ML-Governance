@@ -1,0 +1,9 @@
+flowchart LR
+  A[Same 15,000 applicants\nSame default_30d labels] --> B[Vendor A healthy inputs]
+  A --> C[Vendor B incident inputs]
+  B --> D[Same persisted model\nthreshold 0.50]
+  C --> D
+  D --> E[Decision comparison]
+  E --> F[Approval rate • Approved default rate\nRisk delta • Decision flips]
+  F --> G[Phase 9 JSON/CSV evidence]
+  G --> H[Phase 9 verifier]

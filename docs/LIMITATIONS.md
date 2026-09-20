@@ -40,7 +40,7 @@ environment so failure modes and governance behavior are reproducible.
 
 - Shadow/canary behavior is exercised through deterministic controlled simulations/tests.
 - It is not equivalent to large-scale live production traffic mirroring.
-- Performance under high concurrency has not been established by v0.12.0.
+- Performance under high concurrency has not been established in this repository.
 - Multi-region resilience and disaster recovery are outside the current scope.
 
 ## Monitoring and orchestration

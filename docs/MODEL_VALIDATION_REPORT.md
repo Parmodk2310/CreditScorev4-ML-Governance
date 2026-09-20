@@ -123,6 +123,62 @@ Cloud deployment remains disabled by default.
 
 Evidence: `data/evidence/phase7/release_manifest.json`
 
+## Phase 8 — reviewer/evidence contracts
+
+Phase 8 verifies that reviewer-facing documentation, policy thresholds,
+registry transitions, release controls, deployment defaults, and generated
+evidence remain consistent with executable configuration.
+
+Evidence: `data/evidence/phase8/reviewer_evidence_manifest.json`
+
+## Phase 9 — business-impact validation
+
+The same 15,000 synthetic applicants and outcome labels are preserved while
+healthy and Vendor B inputs are compared. Verified evidence includes 2,500
+decision flips, approval-rate movement from 73.91% to 78.60%, and an
+approved-cohort 30-day default-rate increase from 21.80% to 26.37%.
+
+Evidence: `data/evidence/phase9/`
+
+## Phase 10 — root-cause validation
+
+Controlled ablation separates semantic migration from elevated missingness.
+The q75 counterfactual remains diagnostic-only; Vendor B stays blocked and
+production preprocessing remains unchanged.
+
+Evidence: `data/evidence/phase10/`
+
+## Phase 11 — orchestration validation
+
+The scheduled governance run verifies dependency ordering, fail-closed task
+behavior, required evidence production, SHA-256 evidence capture, and disabled
+automatic retraining/promotion.
+
+Evidence: `data/evidence/phase11/`
+
+## Phase 12 — intersectional fairness and proxy-risk validation
+
+Vendor E passes data quality and keeps aggregate drift STABLE while the
+supported `female|group_c` intersection fails configured project fairness
+thresholds. Proxy-risk screening combines statistical association with SHAP
+model influence and remains investigative evidence rather than causal or legal
+proof.
+
+Evidence: `data/evidence/phase12/`
+
+## Phase 13 — incident-operations validation
+
+The deterministic Vendor B incident timeline records 184 minutes to detection,
+185 minutes to synthetic alert evidence, 186 minutes to governance block,
+360 minutes to triage, and 690 minutes to root-cause completion. The configured
+root-cause project SLA is 2,880 minutes (48 hours) and passes.
+
+Phase 13 additionally verifies cross-phase evidence hashes, timeline ordering,
+timezone-aware timestamps, synthetic alert scope, and disabled live paging,
+automatic retraining, and automatic promotion.
+
+Evidence: `data/evidence/phase13/`
+
 ## Validation conclusion
 
 The validation results show layered controls: obvious upstream failure is stopped

@@ -4,7 +4,7 @@ version: "0.8.0"
 
 documents:
   required:
-    - docs/PHASE8.md
+    - docs/phases/PHASE8.md
     - docs/GOVERNANCE_POLICY.md
     - docs/MODEL_CARD.md
     - docs/MODEL_VALIDATION_REPORT.md
