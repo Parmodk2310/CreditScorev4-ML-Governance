@@ -95,11 +95,33 @@ Output: `data/evidence/phase8/reviewer_evidence_manifest.json`.
 The Phase 8 manifest summarizes the evidence contract and acceptance results; it
 does not replace the source evidence.
 
+## Phase 9 — business-impact evidence
+
+Run `python scripts/analyze_business_impact.py` followed by
+`python scripts/verify_phase9.py`.
+
+Generated evidence:
+
+- `data/evidence/phase9/business_impact.json`
+- `data/evidence/phase9/cohort_summary.csv`
+- `data/evidence/phase9/decision_transition_summary.json`
+
+The controlled Vendor A/Vendor B comparison preserves the same 15,000
+applicants and identical `default_30d` labels. Verified effects include an
+approval-rate increase from 73.91% to 78.60%, approved-cohort 30-day default
+increase from 21.80% to 26.37%, 2,500 decision flips, and 1,602 newly approved
+applicants. The newly approved synthetic cohort has a 61.99% observed 30-day
+default rate.
+
+These are deterministic synthetic case-study measurements, not estimates of
+real-world lending loss or customer harm.
+
+
 ## Cumulative verification
 
 ```bash
 make quality
-make phase8-verify
+make phase9-verify
 git diff --check
 ```
 

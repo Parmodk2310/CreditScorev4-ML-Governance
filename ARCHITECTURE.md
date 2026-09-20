@@ -101,7 +101,7 @@ Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and ca
 
 ```text
 GitHub PR / main
-  |-- CI: quality + cumulative Phase 8 verification
+  |-- CI: quality + cumulative Phase 9 verification
   |-- Security: Gitleaks + Trivy fs/config
   |-- Image: deterministic model generation -> Docker build -> smoke test
   `-- Terraform: fmt + init -backend=false + validate
@@ -117,7 +117,7 @@ Manual workflow_dispatch only
   -> release manifest evidence
 ```
 
-Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 8 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
+Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 9 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
 
 <!-- PHASE8_ARCHITECTURE -->
 ## Phase 8 evidence/reviewer plane

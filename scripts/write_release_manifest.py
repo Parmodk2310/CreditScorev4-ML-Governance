@@ -6,13 +6,18 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import tomllib
 from datetime import UTC, datetime
-from importlib.metadata import version
 from pathlib import Path
 
 
 def application_version() -> str:
-    return version("creditscorev4-ml-governance")
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+
+    with pyproject.open("rb") as handle:
+        metadata = tomllib.load(handle)
+
+    return str(metadata["project"]["version"])
 
 
 def git_commit() -> str:

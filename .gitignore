@@ -93,3 +93,8 @@ models/baseline/*.joblib
 # Phase 8 generated reviewer evidence
 /data/evidence/phase8/*.json
 !data/evidence/phase8/.gitkeep
+
+# Phase 9 generated business-impact evidence
+/data/evidence/phase9/*.json
+/data/evidence/phase9/*.csv
+!data/evidence/phase9/.gitkeep

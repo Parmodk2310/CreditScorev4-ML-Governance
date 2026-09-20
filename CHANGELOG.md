@@ -4,6 +4,27 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+<!-- PHASE9_CHANGELOG -->
+## v0.9.0 — Business Impact & Incident Outcome Evidence
+
+- Added deterministic business-impact analysis for the Vendor B incident.
+- Preserved the same 15,000-applicant population and identical `default_30d`
+  labels across healthy and incident scenarios.
+- Measured approval-rate inflation from 73.91% to 78.60% (+4.69 percentage
+  points).
+- Measured approved-cohort 30-day default increase from 21.80% to 26.37%
+  (+4.57 percentage points).
+- Measured 2,500 decision flips across the 15,000-applicant holdout.
+- Identified 1,602 newly approved applicants and 898 newly rejected applicants.
+- Measured a 61.99% observed 30-day default rate in the newly approved
+  synthetic cohort.
+- Added traceable Phase 9 JSON/CSV evidence with source/model SHA-256 hashes.
+- Added executable Phase 9 acceptance gates and business-impact regression
+  tests.
+- Promoted `make phase9-verify` to the current cumulative CI and deployment
+  preflight gate.
+- Preserved the Phase 1–7 historical 63-test verification boundary.
+
 <!-- PHASE8_CHANGELOG -->
 ## v0.8.1 — Public Repository & Consistency Hardening
 

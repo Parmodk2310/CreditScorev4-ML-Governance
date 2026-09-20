@@ -104,6 +104,27 @@ of 0.2269**.
 These thresholds and scenarios are project governance heuristics for the
 synthetic case study; they are not legal or regulatory standards.
 
+## Business-impact evidence
+
+Phase 9 connects the Vendor B technical incident to measurable decision and
+observed-outcome effects. The healthy and incident fixtures preserve the same
+**15,000 applicants** and identical `default_30d` labels.
+
+| Metric | Healthy Vendor A | Vendor B incident | Change |
+|---|---:|---:|---:|
+| Approval rate | **73.91%** | **78.60%** | **+4.69 pp** |
+| Approved 30-day default rate | **21.80%** | **26.37%** | **+4.57 pp** |
+| Mean predicted risk | **0.3414** | **0.3274** | **-0.0140** |
+| `device_risk_score` missingness | **3.14%** | **22.00%** | **+18.86 pp** |
+
+The incident changes **2,500 / 15,000 decisions (16.67%)**: **1,602**
+previously rejected applicants become approved and **898** previously approved
+applicants become rejected. The newly approved synthetic cohort records a
+**61.99% observed 30-day default rate**.
+
+These are deterministic synthetic case-study measurements, not estimates of
+real-world lending loss, customer harm, or regulatory impact.
+
 ## Failure scenarios and controls
 
 ### Data-quality governance
@@ -186,7 +207,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 8 verification
+   +--> cumulative Phase 9 verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -206,8 +227,10 @@ The repository currently verifies the following boundaries:
 | Verification | Result |
 |---|---:|
 | Ruff / Black / mypy / compile | **PASS** |
-| Phase 1–7 regression suite | **63 passed** |
+| Phase 1–7 historical regression suite | **63 passed** |
 | Phase 8 evidence-contract suite | **6 passed** |
+| Phase 9 business-impact suite | **6 passed** |
+| Current cumulative test executions | **75 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
@@ -243,7 +266,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase8-verify
+make phase9-verify
 make phase7-terraform
 ```
 
@@ -258,6 +281,8 @@ python scripts/verify_phase5.py
 python scripts/verify_phase6.py
 python scripts/verify_phase7.py
 python scripts/verify_phase8.py
+python scripts/analyze_business_impact.py
+python scripts/verify_phase9.py
 ```
 
 ### Run the test suite
