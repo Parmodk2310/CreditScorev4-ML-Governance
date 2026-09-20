@@ -4,6 +4,26 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+## v0.10.0 — Root-Cause Ablation & Remediation Governance
+
+- Added a controlled 2x2 Vendor B ablation separating semantic score migration
+  from elevated non-random missingness.
+- Preserved the same applicants, labels, trained model, and decision threshold
+  across root-cause scenarios.
+- Measured semantic-only ROC-AUC at 0.7452 and missingness-only approval at
+  78.46%, compared with 0.8025 AUC / 73.91% approval for healthy behavior.
+- Validated the fitted median counterfactual control exactly.
+- Recorded a fitted device-score median of 0.4036 versus a 0.4721 semantic
+  reference mean for newly missing rows.
+- Evaluated oracle restoration plus q60/q75/q90 fixed-model counterfactuals.
+- Carried q75 forward only as a diagnostic validation candidate; no production
+  preprocessing policy was changed.
+- Kept Vendor B fail-closed at the existing Phase 2 data-quality gate.
+- Added evidence-backed Phase 10 outcome gates and workflow-contract tests.
+- Promoted `make phase10-verify` to the current cumulative CI and deployment
+  preflight gate.
+- Bumped the application release line to 0.10.0.
+
 <!-- PHASE9_CHANGELOG -->
 ## v0.9.0 — Business Impact & Incident Outcome Evidence
 

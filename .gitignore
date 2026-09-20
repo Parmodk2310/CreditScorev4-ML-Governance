@@ -98,3 +98,8 @@ models/baseline/*.joblib
 /data/evidence/phase9/*.json
 /data/evidence/phase9/*.csv
 !data/evidence/phase9/.gitkeep
+
+# Phase 10 generated root-cause/remediation evidence
+/data/evidence/phase10/*.json
+/data/evidence/phase10/*.csv
+!data/evidence/phase10/.gitkeep

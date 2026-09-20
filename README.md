@@ -125,6 +125,30 @@ applicants become rejected. The newly approved synthetic cohort records a
 These are deterministic synthetic case-study measurements, not estimates of
 real-world lending loss, customer harm, or regulatory impact.
 
+## Root-cause ablation and remediation evidence
+
+Phase 10 decomposes Vendor B into two controlled factors while keeping the same
+15,000 applicants, outcome labels, trained model, and 0.50 decision threshold.
+
+| Scenario | ROC-AUC | Approval rate | Approved 30-day default |
+|---|---:|---:|---:|
+| Healthy | **0.8025** | **73.91%** | **21.80%** |
+| Semantic-only | **0.7452** | **75.94%** | **25.12%** |
+| Missingness-only | **0.7796** | **78.46%** | **24.41%** |
+| Combined Vendor B | **0.7329** | **78.60%** | **26.37%** |
+| q75 validation candidate | **0.7418** | **74.25%** | **24.78%** |
+
+Semantic migration is the larger contributor to discrimination loss, while
+elevated missingness is the larger contributor to approval inflation. For rows
+made newly missing, the semantic reference mean is **0.4721** versus the fitted
+training median of **0.4036**. Fixed-model counterfactuals show that the numeric
+replacement path materially changes decisions, but q75 still leaves material
+quality and approved-outcome gaps versus healthy behavior.
+
+Therefore q75 is retained only as a **diagnostic validation candidate**.
+Vendor B remains **BLOCKED** by the existing Phase 2 data-quality control and
+the production preprocessing path is unchanged.
+
 ## Failure scenarios and controls
 
 ### Data-quality governance
@@ -207,7 +231,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 9 verification
+   +--> cumulative Phase 10 verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -230,7 +254,8 @@ The repository currently verifies the following boundaries:
 | Phase 1–7 historical regression suite | **63 passed** |
 | Phase 8 evidence-contract suite | **6 passed** |
 | Phase 9 business-impact suite | **6 passed** |
-| Current cumulative test executions | **75 passed** |
+| Phase 10 root-cause/remediation suite | **6 passed** |
+| Current cumulative test executions | **81 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
@@ -266,7 +291,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase9-verify
+make phase10-verify
 make phase7-terraform
 ```
 
@@ -283,6 +308,8 @@ python scripts/verify_phase7.py
 python scripts/verify_phase8.py
 python scripts/analyze_business_impact.py
 python scripts/verify_phase9.py
+python scripts/analyze_root_cause.py
+python scripts/verify_phase10.py
 ```
 
 ### Run the test suite
@@ -327,6 +354,7 @@ You do not need to read every document to understand the project.
 - [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) — performance and validation evidence
 - [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) — operational monitoring and escalation plan
 - [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — generated evidence and reviewer map
+- [`docs/PHASE10.md`](docs/PHASE10.md) — root-cause ablation, remediation evidence, and non-claims
 - [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
 

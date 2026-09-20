@@ -116,12 +116,28 @@ default rate.
 These are deterministic synthetic case-study measurements, not estimates of
 real-world lending loss or customer harm.
 
+## Phase 10 — root-cause and remediation evidence
+
+Run `python scripts/analyze_root_cause.py` followed by
+`python scripts/verify_phase10.py`.
+
+Generated evidence:
+
+- `data/evidence/phase10/root_cause_ablation.json`
+- `data/evidence/phase10/scenario_summary.csv`
+- `data/evidence/phase10/factorial_effects.csv`
+- `data/evidence/phase10/remediation_summary.csv`
+
+The 2x2 ablation separates Vendor B semantic migration from elevated
+missingness. q75 is recorded as a diagnostic validation candidate only; Vendor
+B remains blocked by Phase 2 and the production preprocessing policy is
+unchanged.
 
 ## Cumulative verification
 
 ```bash
 make quality
-make phase9-verify
+make phase10-verify
 git diff --check
 ```
 

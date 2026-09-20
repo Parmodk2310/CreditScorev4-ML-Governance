@@ -95,6 +95,36 @@ python scripts/verify_phase8.py
 
 Evidence: `data/evidence/phase8/reviewer_evidence_manifest.json`
 
+## 9. Business-impact evidence
+
+```bash
+python scripts/analyze_business_impact.py
+python scripts/verify_phase9.py
+```
+
+Explain: the same 15,000 synthetic applicants and labels are scored under
+healthy and Vendor B inputs. Approval rises from 73.91% to 78.60% and approved
+30-day default rises from 21.80% to 26.37%.
+
+## 10. Root-cause ablation
+
+```bash
+python scripts/analyze_root_cause.py
+python scripts/verify_phase10.py
+```
+
+Explain: semantic migration drives the larger AUC loss, elevated missingness
+drives the larger approval inflation, and the fitted median pathway amplifies
+the synthetic incident. q75 is a diagnostic validation candidate only; Vendor B
+remains blocked and production preprocessing is unchanged.
+
+For the complete release gate:
+
+```bash
+make quality
+make phase10-verify
+```
+
 ## 3–5 minute speaking sequence
 
 ```text
@@ -104,8 +134,10 @@ Evidence: `data/evidence/phase8/reviewer_evidence_manifest.json`
 1:30  Vendor D: aggregate-stable fairness failure
 2:00  Evidence-backed governance decisions
 2:45  Shadow/canary/rollback lifecycle
-3:30  CI/security/Terraform fail-closed delivery
-4:15  Limitations and production-hardening path
+3:15  Business impact and decision flips
+3:40  Root-cause ablation + q75 diagnostic candidate
+4:20  CI/security/Terraform fail-closed delivery
+4:45  Limitations and production-hardening path
 ```
 
 Useful close:
