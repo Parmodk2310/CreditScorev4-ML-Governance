@@ -190,7 +190,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -242,3 +242,21 @@ phase10-verify:
 
 phase10-clean:
 	rm -f data/evidence/phase10/*.json data/evidence/phase10/*.csv
+
+
+# Phase 11 — scheduled monitoring & orchestration
+.PHONY: phase11-run phase11-test phase11-verify phase11-clean
+
+phase11-run:
+	$(PYTHON) scripts/run_monitoring_cycle.py
+
+phase11-test:
+	$(PYTHON) -m pytest tests/orchestration tests/integration/test_phase11_monitoring_pipeline.py
+
+phase11-verify:
+	$(PYTHON) scripts/run_monitoring_cycle.py --run-id phase11-acceptance
+	$(PYTHON) scripts/verify_phase11.py
+	$(PYTHON) -m pytest tests/orchestration tests/integration/test_phase11_monitoring_pipeline.py
+
+phase11-clean:
+	rm -f data/evidence/phase11/*.json data/evidence/phase11/*.jsonl

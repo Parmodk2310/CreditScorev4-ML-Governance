@@ -1,0 +1,97 @@
+phase: 11
+name: scheduled-monitoring-orchestration
+target_release: "0.11.0"
+
+scheduler:
+  provider: github_actions
+  cron_utc: "17 2 * * *"
+  workflow: .github/workflows/monitoring.yml
+  concurrency_group: creditscorev4-monitoring
+
+orchestration:
+  fail_closed: true
+  automatic_retraining: false
+  automatic_promotion: false
+  tasks:
+    - id: phase1_baseline
+      command: ["python", "scripts/verify_phase1.py"]
+      evidence:
+        - data/evidence/phase1/performance_comparison.json
+    - id: phase2_data_quality
+      depends_on: [phase1_baseline]
+      command: ["python", "scripts/verify_phase2.py"]
+      evidence:
+        - data/evidence/phase2/phase2_verification_summary.json
+    - id: phase3_drift
+      depends_on: [phase2_data_quality]
+      command: ["python", "scripts/verify_phase3.py"]
+      evidence:
+        - data/evidence/phase3/drift_report.json
+    - id: phase4_fairness
+      depends_on: [phase3_drift]
+      command: ["python", "scripts/verify_phase4.py"]
+      evidence:
+        - data/evidence/phase4/fairness_report.json
+        - data/evidence/phase4/shap_summary.json
+    - id: phase5_governance
+      depends_on: [phase4_fairness]
+      command: ["python", "scripts/verify_phase5.py"]
+      evidence:
+        - data/evidence/phase5/healthy/governance_decision.json
+        - data/evidence/phase5/vendor_c/governance_decision.json
+        - data/evidence/phase5/vendor_d/governance_decision.json
+    - id: phase6_safe_release
+      depends_on: [phase5_governance]
+      command: ["python", "scripts/verify_phase6.py"]
+      evidence:
+        - data/evidence/phase6/phase6_release_report.json
+    - id: phase7_delivery
+      depends_on: [phase6_safe_release]
+      command: ["python", "scripts/verify_phase7.py"]
+      evidence:
+        - data/evidence/phase7/release_manifest.json
+    - id: phase8_evidence_review
+      depends_on: [phase7_delivery]
+      command: ["python", "scripts/verify_phase8.py"]
+      evidence:
+        - data/evidence/phase8/reviewer_evidence_manifest.json
+    - id: phase9_business_impact
+      depends_on: [phase8_evidence_review]
+      command: ["python", "scripts/analyze_business_impact.py"]
+      evidence:
+        - data/evidence/phase9/business_impact.json
+    - id: phase9_verify
+      depends_on: [phase9_business_impact]
+      command: ["python", "scripts/verify_phase9.py"]
+      evidence:
+        - data/evidence/phase9/decision_transition_summary.json
+    - id: phase10_root_cause
+      depends_on: [phase9_verify]
+      command: ["python", "scripts/analyze_root_cause.py"]
+      evidence:
+        - data/evidence/phase10/root_cause_ablation.json
+    - id: phase10_verify
+      depends_on: [phase10_root_cause]
+      command: ["python", "scripts/verify_phase10.py"]
+      evidence:
+        - data/evidence/phase10/root_cause_ablation.json
+
+execution:
+  max_attempts: 1
+  retry_delay_seconds: 0
+  stdout_tail_lines: 1
+  stderr_tail_lines: 1
+
+evidence:
+  manifest: data/evidence/phase11/monitoring_run.json
+  events: data/evidence/phase11/monitoring_events.jsonl
+
+acceptance:
+  require_final_status: PASS
+  require_all_tasks_pass: true
+  require_no_skipped_tasks: true
+  require_evidence_hashes: true
+  require_fail_closed: true
+  require_automatic_retraining_disabled: true
+  require_automatic_promotion_disabled: true
+  require_scheduled_workflow: true

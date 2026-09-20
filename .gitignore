@@ -103,3 +103,8 @@ models/baseline/*.joblib
 /data/evidence/phase10/*.json
 /data/evidence/phase10/*.csv
 !data/evidence/phase10/.gitkeep
+
+# Phase 11 generated monitoring/orchestration evidence
+/data/evidence/phase11/*.json
+/data/evidence/phase11/*.jsonl
+!data/evidence/phase11/.gitkeep
