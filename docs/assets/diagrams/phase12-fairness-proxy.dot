@@ -1,18 +1,21 @@
-digraph Phase12 {
-  graph [rankdir=LR, labelloc="t", label="Phase 12 — Intersectional Fairness & Proxy-Risk Evidence", fontsize=20];
-  node [shape=box, style="rounded", fontsize=11];
-  vendor [label="Vendor E\nnon-protected feature stress\nfor female|group_c"];
-  quality [label="Data quality\nPASS"];
-  drift [label="Aggregate drift\nSTABLE"];
-  fairness [label="Fairness evaluator\nsex • demographic group\nintersection"];
-  intersection [label="female|group_c\nFAIL"];
-  assoc [label="Association screening\nη² / Cramér's V"];
-  shap [label="SHAP mean |attribution|"];
-  proxy [label="Proxy-risk review priority\ndevice_risk_score\ncredit_utilization\nbank_transaction_risk"];
-  evidence [label="Expanded fairness + proxy\n+ SHAP evidence"];
-  boundary [label="Protected attributes excluded\nfrom model + SHAP features"];
-  vendor -> quality -> drift -> fairness -> intersection -> evidence;
-  vendor -> assoc -> proxy;
-  shap -> proxy -> evidence;
-  boundary -> fairness [style=dashed];
+digraph G {
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 12 - Intersectional Fairness and Proxy Risk"];
+  node [shape=box, style="rounded,filled", fillcolor="#fff2f8", color="#c25488"];
+  edge [color="#c25488"];
+  A [label="Vendor E
+candidate"];
+  B [label="Intersectional
+fairness evaluation"];
+  C [label="Target subgroup
+female + group_c"];
+  D [label="Single-axis
+fairness review"];
+  E [label="Proxy association
+screening"];
+  F [label="Review priority
+features"];
+  G [label="Fairness + proxy-risk
+evidence"];
+  A -> B -> C -> D -> E -> F -> G;
 }

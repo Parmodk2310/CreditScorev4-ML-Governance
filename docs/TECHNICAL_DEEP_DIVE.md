@@ -14,6 +14,13 @@ Healthy candidate -> governed release
 Runtime degradation -> rollback
 ```
 
+
+## Architecture maps
+
+- Complete figure index: [`ARCHITECTURE_FIGURES.md`](ARCHITECTURE_FIGURES.md)
+- Phase 8–13 detail: [`PHASE8_13_ARCHITECTURE.md`](PHASE8_13_ARCHITECTURE.md)
+- End-to-end rendered view: [`assets/diagrams/phase1-13-end-to-end.svg`](assets/diagrams/phase1-13-end-to-end.svg)
+
 ## Why evaluate the same model after Vendor B?
 
 Retraining would mix two changes: upstream vendor behavior and model parameters.

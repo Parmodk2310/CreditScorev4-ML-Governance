@@ -1,15 +1,8 @@
 flowchart LR
-  A[Phase 2\nVendor B BLOCK] --> D[Deterministic incident timeline]
-  B[Phase 9\nBusiness impact] --> D
-  C[Phase 10\nRoot cause] --> D
-  D --> E[incident_events.jsonl]
-  D --> F[Synthetic HIGH alert\nBLOCK_AND_QUARANTINE]
-  D --> G[SLA evaluator\nDetection 184m • Block 186m\nRoot cause 690m ≤ 2880m]
-  A --> H[Cross-phase SHA-256 lineage]
-  B --> H
-  C --> H
-  E --> I[incident_report.json]
-  F --> I
-  G --> I
-  H --> I
-  J[live_paging = false\nauto retraining = false\nauto promotion = false] -. safety boundary .-> F
+    A["Vendor B incident signal"] --> B["Detection event"]
+    B --> C["Alert generation"]
+    C --> D["Governance block confirmation"]
+    D --> E["Triage and root-cause investigation"]
+    E --> F["SLA evaluation within 48 hours"]
+    F --> G["Write incident report and event log"]
+    G --> H["Synthetic incident-operations evidence"]

@@ -1,6 +1,8 @@
 flowchart LR
-  A[Vendor A<br/>healthy synthetic data] --> B[Train baseline<br/>CreditScoreV4]
-  B --> C[Healthy evidence<br/>AUC 0.8025<br/>NULL 3.14%]
-  C -->|controlled incident| D[Vendor B incident fixture<br/>NULL stress]
-  D --> E[Incident evidence<br/>AUC 0.7329<br/>NULL 22.00%]
-  E --> F[Acceptance gates<br/>PHASE 1 VERIFIED]
+    A["Vendor A train set and holdout set"] --> B["Train baseline credit model"]
+    B --> C["Measure healthy metrics
+ROC-AUC and missing-rate baseline"]
+    C --> D["Create Vendor B incident fixture"]
+    D --> E["Replay incident on baseline model"]
+    E --> F["Compare healthy vs incident evidence"]
+    F --> G["Output deterministic Phase 1 evidence"]

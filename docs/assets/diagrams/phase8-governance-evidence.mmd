@@ -1,8 +1,6 @@
 flowchart LR
-  A[Verified Phase 1–7\ncontrols + evidence] --> D[Phase 8 evidence contract]
-  B[Reviewer docs\nPolicy • Model Card • Validation\nMonitoring • Limitations] --> D
-  C[Executable contracts\nconfigs • source • tests] --> D
-  D --> E[verify_phase8.py]
-  E --> F[reviewer_evidence_manifest.json]
-  F --> G[Recruiter / Engineer / Governance review]
-  E --> H[CI / deployment preflight]
+    A["Phase 1 to 7 evidence artifacts"] --> B["Reviewer evidence manifest"]
+    B --> C["Policy and threshold cross-checks"]
+    C --> D["Release-state contract validation"]
+    D --> E["Expected governance outcome review"]
+    E --> F["Write reviewer-ready evidence bundle"]

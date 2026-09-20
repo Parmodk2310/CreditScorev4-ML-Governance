@@ -1,19 +1,26 @@
-digraph Phase11 {
-  graph [rankdir=TB, labelloc="t", label="Phase 11 — Scheduled Monitoring & Governance Orchestration", fontsize=20];
-  node [shape=box, style="rounded", fontsize=11];
-  trigger [label="GitHub Actions schedule\n+ workflow_dispatch"];
-  orch [label="Scheduler-independent\nPython orchestrator"];
-  graphnode [label="Dependency-ordered task graph\nPhase 1 → … → Phase 10"];
-  checks [label="Per-task command result\n+ required evidence existence"];
-  fail [label="Fail closed\nfailed dependency → SKIPPED"];
-  hashes [label="SHA-256 evidence capture"];
-  manifest [label="monitoring_run.json"];
-  events [label="monitoring_events.jsonl"];
-  boundary [label="automatic_retraining = false\nautomatic_promotion = false"];
-  trigger -> orch -> graphnode -> checks;
-  checks -> fail;
-  checks -> hashes;
-  hashes -> manifest;
-  hashes -> events;
-  boundary -> orch [style=dashed];
+digraph G {
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 11 - Scheduled Monitoring Orchestration"];
+  node [shape=box, style="rounded,filled", fillcolor="#eef7ff", color="#4279c9"];
+  edge [color="#4279c9"];
+  A [label="Scheduled monitoring
+workflow"];
+  B [label="Run fail-closed
+governance cycle"];
+  C [label="Execute Phase 1-10
+tasks in order"];
+  D [label="Persist monitoring
+manifest + events"];
+  E [label="All tasks pass?", shape=diamond, fillcolor="#fff7d6", color="#aa8a2e"];
+  F [label="Final monitoring
+status PASS"];
+  G [label="Final monitoring
+status FAIL"];
+  H [label="Auto retraining +
+promotion disabled"];
+  A -> B -> C -> D -> E;
+  E -> F [label="Yes"];
+  E -> G [label="No"];
+  F -> H;
+  G -> H;
 }

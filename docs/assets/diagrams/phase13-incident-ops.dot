@@ -1,28 +1,23 @@
-digraph Phase13 {
-  graph [rankdir=LR, labelloc="t", label="Phase 13 — Incident SLA, Alerting & Operational Evidence", fontsize=20];
-  node [shape=box, style="rounded", fontsize=11];
-  p2 [label="Phase 2\nVendor B BLOCK"];
-  p9 [label="Phase 9\nBusiness impact"];
-  p10 [label="Phase 10\nRoot cause"];
-  timeline [label="Deterministic incident timeline"];
-  events [label="incident_events.jsonl"];
-  alert [label="Synthetic HIGH alert\nBLOCK_AND_QUARANTINE"];
-  sla [label="SLA evaluator\nDetection 184m\nBlock 186m\nRoot cause 690m ≤ 2880m"];
-  lineage [label="Cross-phase SHA-256 lineage"];
-  report [label="incident_report.json"];
-  safety [label="live_paging = false\nauto retraining = false\nauto promotion = false"];
-  p2 -> timeline;
-  p9 -> timeline;
-  p10 -> timeline;
-  timeline -> events;
-  timeline -> alert;
-  timeline -> sla;
-  p2 -> lineage;
-  p9 -> lineage;
-  p10 -> lineage;
-  events -> report;
-  alert -> report;
-  sla -> report;
-  lineage -> report;
-  safety -> alert [style=dashed];
+digraph G {
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 13 - Incident Operations and SLA Evidence"];
+  node [shape=box, style="rounded,filled", fillcolor="#fff7ef", color="#c77934"];
+  edge [color="#c77934"];
+  A [label="Vendor B
+incident signal"];
+  B [label="Detection
+event"];
+  C [label="Alert
+generation"];
+  D [label="Governance block
+confirmation"];
+  E [label="Triage + root-cause
+investigation"];
+  F [label="SLA evaluation
+within 48h"];
+  G [label="Incident report
+and event log"];
+  H [label="Synthetic incident-ops
+evidence"];
+  A -> B -> C -> D -> E -> F -> G -> H;
 }

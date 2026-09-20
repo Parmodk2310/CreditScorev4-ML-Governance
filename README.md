@@ -36,7 +36,7 @@ complete lifecycle can be reproduced without claiming a real banking incident,
 live lending system, or regulatory certification.
 
 <p align="center">
-  <img src="docs/assets/diagrams/phase1-7-end-to-end.svg"
+  <img src="docs/assets/diagrams/phase1-13-end-to-end.svg"
        alt="CreditScoreV4 end-to-end ML governance architecture"
        width="100%" />
 </p>
@@ -53,7 +53,7 @@ system.
 | **ML / MLOps engineering review** | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) → source/tests |
 | **Model/governance review** | [`MODEL_CARD.md`](docs/MODEL_CARD.md) → [`MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
 | **Evidence / reproducibility** | [`EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) → `make release-verify` |
-| **Phase 8–13 architecture** | [`PHASE8_13_ARCHITECTURE.md`](docs/PHASE8_13_ARCHITECTURE.md) |
+| **Architecture — Phase 1–13** | [`ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) → [`PHASE8_13_ARCHITECTURE.md`](docs/PHASE8_13_ARCHITECTURE.md) |
 | **Historical engineering evolution** | [`docs/phases/`](docs/phases/README.md) |
 
 The numbered phases are retained as engineering history. The current repository

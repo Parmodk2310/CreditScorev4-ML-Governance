@@ -1,11 +1,7 @@
 flowchart LR
-  A[Vendor E\nnon-protected feature stress\nfor female|group_c] --> B[Data quality PASS]
-  B --> C[Aggregate drift STABLE]
-  C --> D[Fairness evaluator\nsex • demographic group • intersection]
-  D --> E[female|group_c FAIL]
-  E --> I[Expanded fairness + proxy + SHAP evidence]
-  A --> F[Association screening\nη² / Cramér's V]
-  G[SHAP mean absolute attribution] --> H[Proxy-risk review priority\ndevice_risk_score • credit_utilization • bank_transaction_risk]
-  F --> H
-  H --> I
-  J[Protected attributes excluded\nfrom model + SHAP features] -. boundary .-> D
+    A["Vendor E candidate"] --> B["Intersectional fairness evaluation"]
+    B --> C["Target subgroup: female plus group_c"]
+    C --> D["Single-axis fairness review"]
+    D --> E["Proxy association screening"]
+    E --> F["Review priority features"]
+    F --> G["Fairness and proxy-risk evidence"]

@@ -23,13 +23,16 @@ def test_release_verify_wraps_phase13_boundary() -> None:
     assert "$(MAKE) phase12-verify" in phase13_target
 
 
-def test_phase13_release_version_contract() -> None:
+def test_release_metadata_and_phase13_history_contract() -> None:
     with (ROOT / "pyproject.toml").open("rb") as handle:
         project = tomllib.load(handle)["project"]
 
     config = yaml.safe_load((ROOT / "configs/phase13.yaml").read_text(encoding="utf-8"))
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
 
-    assert project["version"] == "0.13.0"
+    current_version = str(project["version"])
+
+    assert f"## v{current_version} " in changelog
     assert config["target_release"] == "0.13.0"
 
 

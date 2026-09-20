@@ -1,0 +1,35 @@
+digraph G {
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 1-13 - End-to-End ML Governance System"];
+  node [shape=box, style="rounded,filled", fillcolor="#f5f7fb", color="#5c6f91"];
+  edge [color="#5c6f91"];
+  P1 [label="P1
+Baseline + incident reproduction"];
+  P2 [label="P2
+Data-quality governance"];
+  P3 [label="P3
+Drift governance"];
+  P4 [label="P4
+Fairness + explainability"];
+  P5 [label="P5
+Governance registry decisions"];
+  P6 [label="P6
+Serving + safe release"];
+  P7 [label="P7
+Automation + deployment controls"];
+  P8 [label="P8
+Governance evidence review"];
+  P9 [label="P9
+Business impact analysis"];
+  P10 [label="P10
+Root-cause ablation"];
+  P11 [label="P11
+Monitoring orchestration"];
+  P12 [label="P12
+Intersectional fairness + proxy risk"];
+  P13 [label="P13
+Incident ops + SLA evidence"];
+  OUT [label="Stable reviewer-facing
+ML governance case study", fillcolor="#eefaf0", color="#3c8c5a"];
+  P1 -> P2 -> P3 -> P4 -> P5 -> P6 -> P7 -> P8 -> P9 -> P10 -> P11 -> P12 -> P13 -> OUT;
+}

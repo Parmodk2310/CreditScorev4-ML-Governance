@@ -1,16 +1,25 @@
 digraph G {
-  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.55, ranksep=0.8, fontname="DejaVu Sans"];
-  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
-  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
-  in [label="Incoming vendor batch"];
-  contract [label="Versioned data contract\n+ Great Expectations"];
-  pass [label="PASS\nVendor A", fillcolor="#ecfdf5", color="#047857"];
-  block [label="BLOCK\nVendor B", fillcolor="#fff1f2", color="#be123c"];
-  quarantine [label="Quarantine + evidence"];
-  downstream [label="Eligible for downstream\nmonitoring"];
-  in -> contract;
-  contract -> pass [label="healthy"];
-  contract -> block [label="material failure"];
-  block -> quarantine;
-  pass -> downstream;
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 2 - Data Quality Governance"];
+  node [shape=box, style="rounded,filled", fillcolor="#eefaf0", color="#3c8c5a"];
+  edge [color="#3c8c5a"];
+  A [label="Vendor B
+incident fixture"];
+  B [label="Quality contract
+checks"];
+  C [label="Schema + completeness
+validation"];
+  D [label="device_risk_score
+null-rate gate"];
+  E [label="Contract passes?", shape=diamond, fillcolor="#fff7d6", color="#aa8a2e"];
+  F [label="Allow candidate
+to proceed"];
+  G [label="Block vendor +
+quarantine dataset"];
+  H [label="Write Phase 2
+evidence"];
+  A -> B -> C -> D -> E;
+  E -> F [label="Yes"];
+  E -> G [label="No"];
+  G -> H;
 }

@@ -1,7 +1,9 @@
 flowchart LR
-  A[STAGING] --> B[FastAPI serving<br/>health / ready / predict<br/>batch / model / metrics]
-  B --> C[SHADOW]
-  C --> D[CANARY<br/>10% -> 25% -> 50% -> 100%]
-  D --> E[Release gates<br/>errors / risk delta / p95 latency]
-  E -->|pass| F[PRODUCTION]
-  E -->|fail| G[ROLLBACK -> STAGING]
+    A["Staging model"] --> B["Serving API and metrics endpoints"]
+    B --> C["Shadow release"]
+    C --> D["Canary checkpoints 10 to 100 percent"]
+    D --> E{"Release gates healthy?"}
+    E --> F["Promote to production when release gates are healthy"]
+    E --> G["Rollback to staging when release gates fail"]
+    F --> H["Write safe-release evidence"]
+    G --> H
