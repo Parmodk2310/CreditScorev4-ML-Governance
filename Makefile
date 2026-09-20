@@ -17,7 +17,7 @@ format:
 typecheck:
 	mypy -p creditscore
 
-quality: lint typecheck workflow-validate
+quality: lint typecheck workflow-validate diagram-validate
 	black --check src/creditscore scripts tests
 	$(PYTHON) -m compileall -q src/creditscore scripts tests
 
@@ -304,10 +304,13 @@ phase13-clean:
 
 # Stable product-level verification interface.
 # Historical phase targets remain available for reproducibility.
-.PHONY: workflow-validate release-verify
+.PHONY: workflow-validate diagram-validate release-verify
 
 workflow-validate:
 	$(PYTHON) scripts/validate_workflows.py
+
+diagram-validate:
+	$(PYTHON) scripts/validate_diagrams.py
 
 release-verify:
 	$(MAKE) phase13-verify

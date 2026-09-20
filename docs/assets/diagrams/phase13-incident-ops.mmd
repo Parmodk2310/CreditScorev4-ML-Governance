@@ -1,15 +1,15 @@
 flowchart LR
-  A[Phase 2\nVendor B BLOCK] --> D[Deterministic incident timeline]
-  B[Phase 9\nBusiness impact] --> D
-  C[Phase 10\nRoot cause] --> D
-  D --> E[incident_events.jsonl]
-  D --> F[Synthetic HIGH alert\nBLOCK_AND_QUARANTINE]
-  D --> G[SLA evaluator\nDetection 184m • Block 186m\nRoot cause 690m ≤ 2880m]
-  A --> H[Cross-phase SHA-256 lineage]
+  A["Phase 2<br/>Vendor B BLOCK"] --> D["Deterministic incident timeline"]
+  B["Phase 9<br/>Business impact"] --> D
+  C["Phase 10<br/>Root cause"] --> D
+  D --> E["incident_events.jsonl"]
+  D --> F["Synthetic HIGH alert<br/>BLOCK_AND_QUARANTINE"]
+  D --> G["SLA evaluator<br/>Detection 184m / Block 186m<br/>Root cause 690m / target 2880m"]
+  A --> H["Cross-phase SHA-256 lineage"]
   B --> H
   C --> H
-  E --> I[incident_report.json]
+  E --> I["incident_report.json"]
   F --> I
   G --> I
   H --> I
-  J[live_paging = false\nauto retraining = false\nauto promotion = false] -. safety boundary .-> F
+  J["Safety boundary<br/>live_paging = false<br/>automatic retraining = false<br/>automatic promotion = false"] -.-> F
