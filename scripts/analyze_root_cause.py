@@ -488,9 +488,8 @@ def main() -> int:
 
     print(f"\nEvidence report......................... " f"{report_path.relative_to(root)}")
     print(
-        "NOTE: Phase 10 does not select a remediation candidate yet. "
-        "Review this evidence before freezing outcome gates or promoting "
-        "CI to phase10-verify."
+        "NOTE: training_q75 is retained as a diagnostic validation candidate only. "
+        "Vendor B remains BLOCKED and production preprocessing is unchanged."
     )
 
     return 0
