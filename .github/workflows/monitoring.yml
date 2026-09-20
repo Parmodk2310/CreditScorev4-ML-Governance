@@ -29,6 +29,9 @@ jobs:
       - name: Run scheduled governance monitoring
         run: make phase11-run
 
+      - name: Verify scheduled monitoring evidence
+        run: python scripts/verify_phase11.py
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:

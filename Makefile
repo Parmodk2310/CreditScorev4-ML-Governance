@@ -254,6 +254,7 @@ phase11-test:
 	$(PYTHON) -m pytest tests/orchestration tests/integration/test_phase11_monitoring_pipeline.py
 
 phase11-verify:
+	$(MAKE) phase10-verify
 	$(PYTHON) scripts/run_monitoring_cycle.py --run-id phase11-acceptance
 	$(PYTHON) scripts/verify_phase11.py
 	$(PYTHON) -m pytest tests/orchestration tests/integration/test_phase11_monitoring_pipeline.py
