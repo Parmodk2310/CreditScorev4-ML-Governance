@@ -1,0 +1,49 @@
+phase: 9
+name: business-impact-incident-evidence
+target_release: "0.9.0"
+
+decision:
+  target_column: default_30d
+  approval_threshold: 0.50
+
+evidence:
+  report: data/evidence/phase9/business_impact.json
+  cohort_summary: data/evidence/phase9/cohort_summary.csv
+  transition_summary: data/evidence/phase9/decision_transition_summary.json
+
+acceptance:
+  # Deterministic Vendor A baseline contract.
+  healthy_approval_rate:
+    minimum: 0.72
+    maximum: 0.76
+
+  # Deterministic Vendor B incident contract.
+  incident_approval_rate:
+    minimum: 0.77
+    maximum: 0.80
+
+  # Vendor B must materially inflate approvals.
+  minimum_approval_rate_increase: 0.04
+
+  # Observed 30-day default among applicants approved by the model.
+  healthy_approved_default_rate:
+    minimum: 0.20
+    maximum: 0.23
+
+  incident_approved_default_rate:
+    minimum: 0.25
+    maximum: 0.28
+
+  minimum_approved_default_rate_increase: 0.04
+
+  # Vendor B currently makes the model underestimate average risk.
+  maximum_mean_predicted_risk_change: -0.01
+
+  # 3.14% -> 22.00% = +18.86 percentage points.
+  minimum_device_null_rate_increase: 0.18
+
+  # The experiment must preserve the underlying outcome population.
+  maximum_overall_default_rate_delta: 0.000001
+
+  require_same_population: true
+  require_same_labels: true

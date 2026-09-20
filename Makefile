@@ -180,7 +180,7 @@ phase7-verify:
 	$(PYTHON) scripts/verify_phase5.py
 	$(PYTHON) scripts/verify_phase6.py
 	$(PYTHON) scripts/verify_phase7.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/serving tests/release tests/automation tests/deployment tests/integration
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/serving tests/release tests/automation tests/deployment tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py tests/integration/test_phase6_safe_release_pipeline.py tests/integration/test_phase7_automation_pipeline.py
 
 phase7-terraform:
 	terraform fmt -check -recursive infra/terraform
@@ -190,7 +190,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -206,3 +206,21 @@ phase8-verify:
 
 phase8-clean:
 	rm -f data/evidence/phase8/*.json
+
+# Phase 9 — business impact & incident outcome evidence
+.PHONY: phase9-analyze phase9-test phase9-verify phase9-clean
+
+phase9-analyze:
+	$(PYTHON) scripts/analyze_business_impact.py
+
+phase9-test:
+	$(PYTHON) -m pytest tests/business_impact tests/integration/test_phase9_business_impact_pipeline.py
+
+phase9-verify:
+	$(MAKE) phase8-verify
+	$(PYTHON) scripts/analyze_business_impact.py
+	$(PYTHON) scripts/verify_phase9.py
+	$(PYTHON) -m pytest tests/business_impact tests/integration/test_phase9_business_impact_pipeline.py
+
+phase9-clean:
+	rm -f data/evidence/phase9/*.json data/evidence/phase9/*.csv
