@@ -156,11 +156,41 @@ The scheduled workflow runs with read-only repository permissions and validates
 the manifest before uploading Phase 11 evidence. It does not automatically
 retrain or promote a model.
 
+## Phase 12 — intersectional fairness and proxy-risk evidence
+
+Run:
+
+```bash
+python scripts/analyze_fairness_proxy.py
+python scripts/verify_phase12.py
+```
+
+Generated evidence:
+
+- `data/evidence/phase12/expanded_fairness.json`
+- `data/evidence/phase12/expanded_fairness_by_group.csv`
+- `data/evidence/phase12/proxy_risk.json`
+- `data/evidence/phase12/proxy_risk.csv`
+- `data/evidence/phase12/shap_summary.json`
+- SHAP global/group/delta CSVs
+- `data/evidence/phase12/phase12_summary.json`
+
+Verified Vendor E measurements include aggregate drift **STABLE**, reference
+intersection **PASS**, current `female|group_c` intersection **FAIL**,
+demographic-parity ratio **0.7479**, equal-opportunity difference **0.1956**,
+equalized-odds difference **0.2600**, and false-approval-rate difference
+**0.2600**. `sex` remains PASS and `synthetic_demographic_group` remains
+WARNING.
+
+Proxy-review priorities are `device_risk_score`, `credit_utilization`, and
+`bank_transaction_risk`. These are review signals from association plus model
+influence, not causal or legal conclusions.
+
 ## Cumulative verification
 
 ```bash
 make quality
-make phase11-verify
+make phase12-verify
 git diff --check
 ```
 

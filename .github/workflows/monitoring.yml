@@ -32,8 +32,20 @@ jobs:
       - name: Verify scheduled monitoring evidence
         run: python scripts/verify_phase11.py
 
+      - name: Run Phase 12 fairness and proxy-risk analysis
+        run: make phase12-analyze
+
+      - name: Verify Phase 12 fairness and proxy-risk evidence
+        run: python scripts/verify_phase12.py
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: phase11-monitoring-evidence
           path: data/evidence/phase11
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: phase12-fairness-proxy-evidence
+          path: data/evidence/phase12

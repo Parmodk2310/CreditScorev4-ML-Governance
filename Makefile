@@ -1,5 +1,6 @@
 PYTHON ?= python
 export PYTHONPATH := src$(if $(PYTHONPATH),:$(PYTHONPATH))
+PHASE4_FAIRNESS_TESTS := tests/fairness/test_evaluator.py tests/fairness/test_metrics.py tests/fairness/test_vendor_d.py
 
 .PHONY: setup lint format typecheck quality phase1-generate phase1-train phase1-incident phase1-test phase1-verify phase1-clean phase2-healthy phase2-incident phase2-test phase2-verify phase2-clean phase3-simulate phase3-drift phase3-test phase3-verify phase3-clean phase4-simulate phase4-fairness phase4-explain phase4-test phase4-verify phase4-clean phase5-register phase5-evaluate phase5-demo phase5-test phase5-verify phase5-clean phase6-serve phase6-shadow phase6-canary phase6-rollback phase6-demo phase6-test phase6-verify phase6-clean phase7-manifest phase7-gate phase7-test phase7-verify phase7-terraform phase7-clean clean
 
@@ -90,14 +91,14 @@ phase4-explain: phase4-simulate
 	$(PYTHON) scripts/explain_model.py
 
 phase4-test:
-	$(PYTHON) -m pytest tests/fairness tests/explainability tests/integration/test_phase4_fairness_pipeline.py
+	$(PYTHON) -m pytest $(PHASE4_FAIRNESS_TESTS) tests/explainability tests/integration/test_phase4_fairness_pipeline.py
 
 phase4-verify:
 	$(PYTHON) scripts/verify_phase1.py
 	$(PYTHON) scripts/verify_phase2.py
 	$(PYTHON) scripts/verify_phase3.py
 	$(PYTHON) scripts/verify_phase4.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift $(PHASE4_FAIRNESS_TESTS) tests/explainability tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py
 
 phase4-clean:
 	rm -f data/raw/vendor_d/*.csv
@@ -123,7 +124,7 @@ phase5-verify:
 	$(PYTHON) scripts/verify_phase3.py
 	$(PYTHON) scripts/verify_phase4.py
 	$(PYTHON) scripts/verify_phase5.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift $(PHASE4_FAIRNESS_TESTS) tests/explainability tests/governance tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py
 
 phase5-clean:
 	rm -rf data/evidence/phase5/*
@@ -156,7 +157,7 @@ phase6-verify:
 	$(PYTHON) scripts/verify_phase4.py
 	$(PYTHON) scripts/verify_phase5.py
 	$(PYTHON) scripts/verify_phase6.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/serving tests/release tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py tests/integration/test_phase6_safe_release_pipeline.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift $(PHASE4_FAIRNESS_TESTS) tests/explainability tests/governance tests/serving tests/release tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py tests/integration/test_phase6_safe_release_pipeline.py
 
 phase6-clean:
 	rm -f data/evidence/phase6/*.json
@@ -180,7 +181,7 @@ phase7-verify:
 	$(PYTHON) scripts/verify_phase5.py
 	$(PYTHON) scripts/verify_phase6.py
 	$(PYTHON) scripts/verify_phase7.py
-	$(PYTHON) -m pytest tests/unit tests/quality tests/drift tests/fairness tests/explainability tests/governance tests/serving tests/release tests/automation tests/deployment tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py tests/integration/test_phase6_safe_release_pipeline.py tests/integration/test_phase7_automation_pipeline.py
+	$(PYTHON) -m pytest tests/unit tests/quality tests/drift $(PHASE4_FAIRNESS_TESTS) tests/explainability tests/governance tests/serving tests/release tests/automation tests/deployment tests/integration/test_incident_pipeline.py tests/integration/test_phase2_quality_gate.py tests/integration/test_phase3_drift_pipeline.py tests/integration/test_phase4_fairness_pipeline.py tests/integration/test_phase5_governance_pipeline.py tests/integration/test_phase6_safe_release_pipeline.py tests/integration/test_phase7_automation_pipeline.py
 
 phase7-terraform:
 	terraform fmt -check -recursive infra/terraform
@@ -190,7 +191,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean phase12-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -261,3 +262,23 @@ phase11-verify:
 
 phase11-clean:
 	rm -f data/evidence/phase11/*.json data/evidence/phase11/*.jsonl
+
+
+# Phase 12 — intersectional fairness & proxy-risk evidence
+.PHONY: phase12-analyze phase12-test phase12-verify phase12-clean
+
+phase12-analyze:
+	$(PYTHON) scripts/analyze_fairness_proxy.py
+
+phase12-test:
+	$(PYTHON) -m pytest tests/fairness/test_expanded_fairness.py tests/proxy_risk tests/integration/test_phase12_fairness_proxy_pipeline.py
+
+phase12-verify:
+	$(MAKE) phase11-verify
+	$(PYTHON) scripts/analyze_fairness_proxy.py
+	$(PYTHON) scripts/verify_phase12.py
+	$(PYTHON) -m pytest tests/fairness/test_expanded_fairness.py tests/proxy_risk tests/integration/test_phase12_fairness_proxy_pipeline.py
+
+phase12-clean:
+	rm -f data/evidence/phase12/*.json data/evidence/phase12/*.csv
+	rm -f data/raw/vendor_e/*.csv

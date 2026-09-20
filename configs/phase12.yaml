@@ -1,0 +1,120 @@
+phase: 12
+name: intersectional-fairness-proxy-risk
+target_release: "0.12.0"
+
+scenario:
+  name: vendor_e_intersectional_proxy_stress
+  source: vendor_e
+  reference_source: vendor_a
+  input: data/raw/vendor_a/holdout.csv
+  output: data/raw/vendor_e/holdout.csv
+
+intersection:
+  derived_feature: sex_demographic_intersection
+  components:
+    - sex
+    - synthetic_demographic_group
+  separator: "|"
+  stressed_values:
+    sex: female
+    synthetic_demographic_group: group_c
+  minimum_group_size: 500
+
+vendor_e:
+  device_risk_score_shift: 0.12
+  credit_utilization_shift: 0.06
+  bank_transaction_risk_shift: 0.05
+
+prediction:
+  default_threshold: 0.50
+  approval_threshold: 0.50
+
+fairness:
+  monitored_sensitive_features:
+    - sex
+    - synthetic_demographic_group
+    - sex_demographic_intersection
+  governance_sensitive_features:
+    - sex_demographic_intersection
+  thresholds:
+    demographic_parity_ratio:
+      warning_below: 0.90
+      fail_below: 0.80
+    selection_rate_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.15
+    equal_opportunity_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.15
+    equalized_odds_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.20
+    false_approval_rate_difference:
+      warning_at_or_above: 0.10
+      fail_at_or_above: 0.15
+
+proxy_risk:
+  sensitive_feature: sex_demographic_intersection
+  minimum_group_size: 500
+  numeric_features:
+    - age
+    - annual_income
+    - employment_length_years
+    - debt_to_income
+    - credit_utilization
+    - credit_history_years
+    - delinquencies_2y
+    - inquiries_6m
+    - open_credit_accounts
+    - device_risk_score
+    - bank_transaction_risk
+    - employment_verification_score
+  categorical_features:
+    - region
+    - employment_type
+  stressed_proxy_features:
+    - device_risk_score
+    - credit_utilization
+    - bank_transaction_risk
+  minimum_association_delta: 0.001
+  top_association_k: 5
+  top_model_influence_k: 8
+  minimum_stressed_features_in_top_association: 3
+  minimum_stressed_features_in_review_priority: 3
+  shap:
+    sample_size: 3000
+    random_seed: 27182
+    top_k: 10
+    local_examples: 3
+
+paths:
+  model: models/baseline/creditscorev4.joblib
+  fairness_json: data/evidence/phase12/expanded_fairness.json
+  fairness_csv: data/evidence/phase12/expanded_fairness_by_group.csv
+  proxy_json: data/evidence/phase12/proxy_risk.json
+  proxy_csv: data/evidence/phase12/proxy_risk.csv
+  shap_summary_json: data/evidence/phase12/shap_summary.json
+  shap_global_csv: data/evidence/phase12/shap_global_importance.csv
+  shap_group_csv: data/evidence/phase12/shap_group_importance.csv
+  shap_delta_csv: data/evidence/phase12/shap_group_delta.csv
+  summary_json: data/evidence/phase12/phase12_summary.json
+
+acceptance:
+  require_phase2_pass: true
+  require_phase3_status: STABLE
+  require_reference_intersection_not_fail: true
+  require_intersection_status: FAIL
+  require_single_axis_not_fail: true
+  maximum_intersection_demographic_parity_ratio: 0.80
+  minimum_intersection_selection_rate_difference: 0.15
+  minimum_intersection_equal_opportunity_difference: 0.15
+  minimum_intersection_equalized_odds_difference: 0.20
+  minimum_intersection_false_approval_rate_difference: 0.15
+  minimum_stressed_group_count: 900
+  require_protected_values_preserved: true
+  require_target_preserved: true
+  require_protected_attributes_absent_from_model: true
+  require_intersection_absent_from_shap_feature_space: true
+  require_proxy_association_deltas: true
+  require_stressed_features_in_top_association: true
+  require_stressed_features_in_review_priority: true

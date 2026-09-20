@@ -22,6 +22,11 @@ environment so failure modes and governance behavior are reproducible.
 - Fairness metrics are synthetic governance signals.
 - They do not establish legal fairness, non-discrimination, or regulatory conformity.
 - SHAP is explanatory/investigative evidence, not causal proof.
+- Phase 12 proxy-risk ranking combines statistical association with SHAP model
+  influence; it does not establish that a feature is a causal or legally
+  prohibited proxy.
+- Intersectional thresholds and minimum-support rules are project engineering
+  heuristics, not regulatory standards.
 
 ## Governance
 
@@ -35,7 +40,7 @@ environment so failure modes and governance behavior are reproducible.
 
 - Shadow/canary behavior is exercised through deterministic controlled simulations/tests.
 - It is not equivalent to large-scale live production traffic mirroring.
-- Performance under high concurrency has not been established by v0.11.0.
+- Performance under high concurrency has not been established by v0.12.0.
 - Multi-region resilience and disaster recovery are outside the current scope.
 
 ## Monitoring and orchestration

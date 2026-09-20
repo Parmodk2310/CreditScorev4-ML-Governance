@@ -108,3 +108,10 @@ models/baseline/*.joblib
 /data/evidence/phase11/*.json
 /data/evidence/phase11/*.jsonl
 !data/evidence/phase11/.gitkeep
+
+# Phase 12 generated intersectional fairness/proxy-risk evidence
+/data/raw/vendor_e/*.csv
+/data/evidence/phase12/*.json
+/data/evidence/phase12/*.csv
+!data/raw/vendor_e/.gitkeep
+!data/evidence/phase12/.gitkeep
