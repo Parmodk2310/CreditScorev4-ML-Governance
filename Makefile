@@ -190,7 +190,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -224,3 +224,21 @@ phase9-verify:
 
 phase9-clean:
 	rm -f data/evidence/phase9/*.json data/evidence/phase9/*.csv
+
+# Phase 10 — root-cause ablation & remediation evidence
+.PHONY: phase10-analyze phase10-test phase10-verify phase10-clean
+
+phase10-analyze:
+	$(PYTHON) scripts/analyze_root_cause.py
+
+phase10-test:
+	$(PYTHON) -m pytest tests/root_cause tests/integration/test_phase10_root_cause_pipeline.py
+
+phase10-verify:
+	$(MAKE) phase9-verify
+	$(PYTHON) scripts/analyze_root_cause.py
+	$(PYTHON) scripts/verify_phase10.py
+	$(PYTHON) -m pytest tests/root_cause tests/integration/test_phase10_root_cause_pipeline.py
+
+phase10-clean:
+	rm -f data/evidence/phase10/*.json data/evidence/phase10/*.csv

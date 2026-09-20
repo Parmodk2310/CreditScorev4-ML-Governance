@@ -1,0 +1,34 @@
+phase: 10
+name: root-cause-ablation-and-remediation
+target_release: "0.10.0"
+
+decision:
+  target_column: default_30d
+  approval_threshold: 0.50
+
+ablation:
+  feature: device_risk_score
+
+remediation:
+  # Predeclared healthy-training quantiles. Phase 10 measures all candidates;
+  # it does not select a production policy before evidence review.
+  training_quantiles:
+    - 0.60
+    - 0.75
+    - 0.90
+
+evidence:
+  report: data/evidence/phase10/root_cause_ablation.json
+  scenario_summary: data/evidence/phase10/scenario_summary.csv
+  factorial_effects: data/evidence/phase10/factorial_effects.csv
+  remediation_summary: data/evidence/phase10/remediation_summary.csv
+
+acceptance:
+  # First-pass gates protect experiment integrity only. Outcome-specific
+  # remediation gates are frozen after reviewing deterministic evidence.
+  require_same_population: true
+  require_same_labels: true
+  require_generated_combined_matches_vendor_b: true
+  require_phase9_consistency: true
+  minimum_newly_missing_rows: 1
+  median_control_max_probability_delta: 0.000000000001
