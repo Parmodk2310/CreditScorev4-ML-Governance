@@ -4,6 +4,63 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+## v1.0.0 — Stable ML Governance Case Study
+
+CreditScoreV4 reaches its first stable portfolio/reviewer release after the
+Phase 1–13 engineering sequence.
+
+This release does not introduce new model behavior. It consolidates the
+verified system into a stable product-level review and release boundary.
+
+### Release interface
+
+- Added `make release-verify` as the stable cumulative verification command.
+- Preserved Phase 1–13 verification targets for historical reproducibility.
+- Updated CI and deployment preflight to use the stable release interface.
+- Added structural validation for all GitHub Actions workflows.
+
+### Reviewer experience
+
+- Reframed the repository as one integrated ML-governance system rather than
+  thirteen separate implementation phases.
+- Moved Phase 1–13 implementation history under `docs/phases/`.
+- Added recruiter, ML/MLOps, governance, and evidence-specific review paths.
+- Added Phase 8–13 architecture diagrams in DOT, Mermaid, and rendered SVG.
+- Updated case-study, monitoring, validation, limitations, and evidence
+  documentation to the current release boundary.
+
+### Verified engineering boundary
+
+The stable release demonstrates:
+
+- deterministic synthetic incident reproduction;
+- fail-closed data-quality governance;
+- feature and prediction drift governance;
+- single-axis and intersectional fairness review;
+- SHAP-supported proxy-risk investigation;
+- deterministic evidence-backed promotion decisions;
+- governed registry state transitions;
+- shadow/canary release and rollback;
+- business-impact evidence;
+- root-cause ablation and remediation diagnostics;
+- scheduled fail-closed governance orchestration;
+- deterministic incident-response and simulated SLA evidence;
+- GitHub Actions, security scanning, container verification, Terraform, and
+  gated AWS ECS/Fargate delivery architecture.
+
+### Claim boundaries
+
+v1.0.0 remains a deterministic synthetic engineering case study.
+
+It does not claim:
+
+- a real banking production incident;
+- real customer or applicant data;
+- regulatory certification or legal compliance;
+- live production paging/on-call operations;
+- automatic model retraining or promotion;
+- an active production AWS deployment.
+
 ## v0.13.0 — Incident SLA & Operational Evidence
 
 - Added deterministic Vendor B incident timeline and machine-readable event log.
