@@ -1,8 +1,7 @@
 flowchart LR
-  A[Vendor C<br/>contract-valid batch] --> B[Phase 2 quality gate<br/>PASS]
-  R[Reference distributions<br/>+ prediction baseline] --> C[Feature drift<br/>PSI / KS]
-  R --> D[Prediction drift<br/>PSI 0.2379<br/>KS 0.1863]
-  B --> C
-  B --> D
-  C --> E[Overall drift<br/>CRITICAL]
-  D --> E
+    A["Reference healthy dataset"] --> C["Feature and prediction drift analysis"]
+    B["Vendor C candidate dataset"] --> C
+    C --> D["PSI and KS evaluation"]
+    D --> E["Aggregate drift status"]
+    E --> F["Identify critical drifted features"]
+    F --> G["Write drift evidence and governance result"]

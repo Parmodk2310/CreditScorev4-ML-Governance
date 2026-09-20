@@ -1,6 +1,8 @@
 flowchart LR
-  A[Incoming vendor batch] --> B[Versioned data contract<br/>+ Great Expectations]
-  B -->|healthy| C[PASS<br/>Vendor A]
-  B -->|material failure| D[BLOCK<br/>Vendor B]
-  D --> E[Quarantine + evidence]
-  C --> F[Eligible for downstream monitoring]
+    A["Vendor B incident fixture"] --> B["Quality contract checks"]
+    B --> C["Schema and completeness validation"]
+    C --> D["Required device_risk_score null-rate gate"]
+    D --> E{"Contract passes?"}
+    E --> F["Allow candidate to proceed when contract passes"]
+    E --> G["Block vendor and quarantine dataset when contract fails"]
+    G --> H["Write data-quality evidence"]

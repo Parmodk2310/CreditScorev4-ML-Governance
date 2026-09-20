@@ -1,15 +1,24 @@
 digraph G {
-  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.45, ranksep=0.8, fontname="DejaVu Sans"];
-  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
-  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
-  st [label="STAGING"];
-  api [label="FastAPI serving\nhealth / ready / predict\nbatch / model / metrics"];
-  sh [label="SHADOW"];
-  ca [label="CANARY\n10% -> 25% -> 50% -> 100%"];
-  pr [label="PRODUCTION", fillcolor="#ecfdf5", color="#047857"];
-  gates [label="Release gates\nerrors / risk delta / p95 latency"];
-  rb [label="ROLLBACK -> STAGING", fillcolor="#fff1f2", color="#be123c"];
-  st -> api -> sh -> ca -> gates;
-  gates -> pr [label="pass"];
-  gates -> rb [label="fail"];
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 6 - Serving API and Safe Release"];
+  node [shape=box, style="rounded,filled", fillcolor="#eefaf7", color="#2e9b7f"];
+  edge [color="#2e9b7f"];
+  A [label="STAGING model"];
+  B [label="Serving API
+/health /ready /predict /metrics"];
+  C [label="Shadow release"];
+  D [label="Canary checkpoints
+10% -> 25% -> 50% -> 100%"];
+  E [label="Release gates healthy?", shape=diamond, fillcolor="#fff7d6", color="#aa8a2e"];
+  F [label="Promote to
+PRODUCTION"];
+  G [label="Rollback to
+STAGING"];
+  H [label="Write safe-release
+evidence"];
+  A -> B -> C -> D -> E;
+  E -> F [label="Yes"];
+  E -> G [label="No"];
+  F -> H;
+  G -> H;
 }

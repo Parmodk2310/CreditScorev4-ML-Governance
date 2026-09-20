@@ -1,13 +1,9 @@
 flowchart LR
-  A[Pull request] --> B[Quality + cumulative verification]
-  A --> C[Gitleaks + Trivy]
-  A --> D[Docker build + smoke test]
-  A --> E[Terraform fmt + validate]
-  B --> F[Deployment gate<br/>AWS_DEPLOY_ENABLED=false]
-  C --> F
-  D --> F
-  E --> F
-  F -->|explicit opt-in| G[GitHub OIDC]
-  G --> H[Immutable ECR]
-  H --> I[ECS/Fargate]
-  I --> J[HTTPS ALB<br/>restricted service ingress]
+    A["GitHub Actions quality and security workflows"] --> B["Container image build and scan"]
+    B --> C["Deploy preflight checks"]
+    C --> D["Terraform and AWS ECS Fargate architecture"]
+    D --> E{"AWS_DEPLOY_ENABLED true?"}
+    E --> F["Controlled deployment path when deployment is enabled"]
+    E --> G["Fail-closed safe default when deployment is disabled"]
+    F --> H["Release manifest and delivery evidence"]
+    G --> H

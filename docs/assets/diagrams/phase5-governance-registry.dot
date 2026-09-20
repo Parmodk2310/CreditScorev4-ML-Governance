@@ -1,19 +1,24 @@
 digraph G {
-  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.48, ranksep=0.85, fontname="DejaVu Sans"];
-  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
-  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
-  e [label="Evidence bundle\nquality / drift / performance\ncalibration / fairness"];
-  h [label="SHA-256\nintegrity verification"];
-  p [label="Versioned policy\nblocking gates"];
-  dec [label="Deterministic decision"];
-  app [label="APPROVE", fillcolor="#ecfdf5", color="#047857"];
-  rej [label="REJECT", fillcolor="#fff1f2", color="#be123c"];
-  st [label="Registry\nCANDIDATE -> STAGING"];
-  rr [label="Registry\nREJECTED"];
-  audit [label="Audit record\n+ decision artifact"];
-  e -> h -> p -> dec;
-  dec -> app;
-  dec -> rej;
-  app -> st -> audit;
-  rej -> rr -> audit;
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 5 - Governance Registry and Promotion Decisions"];
+  node [shape=box, style="rounded,filled", fillcolor="#eff9ff", color="#2f8ab8"];
+  edge [color="#2f8ab8"];
+  A [label="Candidate model
+package"];
+  B [label="Aggregate governance
+gates"];
+  C [label="Quality, drift, fairness,
+explainability evidence"];
+  D [label="Approve candidate?", shape=diamond, fillcolor="#fff7d6", color="#aa8a2e"];
+  E [label="Promote to
+STAGING registry state"];
+  F [label="Reject candidate
+and persist decision"];
+  G [label="Write release
+and audit artifacts"];
+  A -> B -> C -> D;
+  D -> E [label="Yes"];
+  D -> F [label="No"];
+  E -> G;
+  F -> G;
 }

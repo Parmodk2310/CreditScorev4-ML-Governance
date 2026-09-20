@@ -16,6 +16,7 @@ For the current product-level view, start with:
 5. [`../MODEL_VALIDATION_REPORT.md`](../MODEL_VALIDATION_REPORT.md)
 6. [`../EVIDENCE_INDEX.md`](../EVIDENCE_INDEX.md)
 7. [`../LIMITATIONS.md`](../LIMITATIONS.md)
+8. [`../ARCHITECTURE_FIGURES.md`](../ARCHITECTURE_FIGURES.md)
 
 The stable current release verification command is:
 

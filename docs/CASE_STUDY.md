@@ -22,6 +22,9 @@ Incident reproduction
 
 The current release preserves the historical 63-test Phase 1–7 regression boundary, then layers reviewer-evidence contracts, business-impact analysis, root-cause ablation, scheduled fail-closed governance monitoring, intersectional fairness/proxy-risk review, and deterministic incident-operations SLA evidence on top. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
 
+
+Current architecture: [`ARCHITECTURE_FIGURES.md`](ARCHITECTURE_FIGURES.md), including the complete Phase 1–13 view.
+
 ## 2. Why I Built This
 
 Typical ML projects answer: “Can I train a model?” Production ML systems must answer harder questions:

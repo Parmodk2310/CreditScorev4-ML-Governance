@@ -1,5 +1,10 @@
 # CreditScoreV4 ML Governance Architecture — Through Phase 13
 
+
+![CreditScoreV4 Phase 1–13 architecture](docs/assets/diagrams/phase1-13-end-to-end.svg)
+
+Architecture sources: [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md).
+
 ```text
                            PHASE 1
 Vendor A train ----------------------> CreditScoreV4

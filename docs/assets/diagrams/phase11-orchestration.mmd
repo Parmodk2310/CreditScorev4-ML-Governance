@@ -1,9 +1,9 @@
-flowchart TB
-  A["GitHub Actions schedule<br/>+ workflow_dispatch"] --> B["Scheduler-independent Python orchestrator"]
-  B --> C["Dependency-ordered task graph<br/>Phase 1 through Phase 10"]
-  C --> D["Per-task command result<br/>+ required evidence existence"]
-  D --> E["Fail closed<br/>failed dependency becomes SKIPPED"]
-  D --> F["SHA-256 evidence capture"]
-  F --> G["monitoring_run.json"]
-  F --> H["monitoring_events.jsonl"]
-  I["Safety boundary<br/>automatic_retraining = false<br/>automatic_promotion = false"] -.-> B
+flowchart LR
+    A["Scheduled monitoring workflow"] --> B["Run fail-closed governance cycle"]
+    B --> C["Execute Phase 1 to 10 tasks in order"]
+    C --> D["Persist monitoring manifest and events"]
+    D --> E{"All tasks pass?"}
+    E --> F["Final monitoring status PASS when all tasks pass"]
+    E --> G["Final monitoring status FAIL when a task fails"]
+    F --> H["Automatic retraining and promotion remain disabled"]
+    G --> H

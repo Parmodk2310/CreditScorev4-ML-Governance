@@ -1,13 +1,27 @@
 digraph G {
-  graph [rankdir=LR, bgcolor="transparent", pad=0.3, nodesep=0.55, ranksep=0.8, fontname="DejaVu Sans"];
-  node [shape=box, style="rounded,filled", fillcolor="#f7f9fc", color="#64748b", fontname="DejaVu Sans", fontsize=11];
-  edge [color="#475569", penwidth=1.4, arrowsize=0.8];
-  v [label="Vendor D\nsubgroup proxy stress"];
-  q [label="Phase 2 quality\nPASS", fillcolor="#ecfdf5", color="#047857"];
-  d [label="Phase 3 aggregate drift\nSTABLE", fillcolor="#ecfdf5", color="#047857"];
-  f [label="Fairness metrics\nDP ratio 0.7480\nSelection diff 0.1860\nEO diff 0.2269", fillcolor="#fff1f2", color="#be123c"];
-  s [label="SHAP investigation\nproxy feature importance"];
-  r [label="Fairness governance\nFAIL", fillcolor="#fff1f2", color="#be123c"];
-  v -> q -> d -> f -> r;
-  d -> s -> r;
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 4 - Fairness and Explainability"];
+  node [shape=box, style="rounded,filled", fillcolor="#fff1f1", color="#c25a5a"];
+  edge [color="#c25a5a"];
+  A [label="Vendor D
+candidate"];
+  B [label="Protected-group
+fairness evaluation"];
+  C [label="DP ratio + EO/EOdds
+checks"];
+  D [label="SHAP explainability
+review"];
+  E [label="Proxy feature
+investigation"];
+  F [label="Fairness passes?", shape=diamond, fillcolor="#fff7d6", color="#aa8a2e"];
+  G [label="Allow governance
+progression"];
+  H [label="Fail fairness
+governance"];
+  I [label="Write fairness
+and SHAP evidence"];
+  A -> B -> C -> D -> E -> F;
+  F -> G [label="Yes"];
+  F -> H [label="No"];
+  H -> I;
 }

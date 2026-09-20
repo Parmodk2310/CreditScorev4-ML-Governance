@@ -1,17 +1,21 @@
-digraph Phase9 {
-  graph [rankdir=LR, labelloc="t", label="Phase 9 — Business Impact & Incident Outcome Evidence", fontsize=20];
-  node [shape=box, style="rounded", fontsize=11];
-  population [label="Same 15,000 applicants\nSame default_30d labels"];
-  healthy [label="Vendor A\nhealthy inputs"];
-  incident [label="Vendor B\nincident inputs"];
-  model [label="Same persisted model\nthreshold = 0.50"];
-  compare [label="Decision comparison"];
-  metrics [label="Approval rate\nApproved default rate\nRisk delta\nDecision flips"];
-  evidence [label="business_impact.json\ncohort_summary.csv\ndecision_transition_summary.json"];
-  verify [label="Phase 9 verifier"];
-  population -> healthy;
-  population -> incident;
-  healthy -> model;
-  incident -> model;
-  model -> compare -> metrics -> evidence -> verify;
+digraph G {
+  rankdir=LR;
+  graph [fontsize=10, labelloc=t, label="Phase 9 - Business Impact Analysis"];
+  node [shape=box, style="rounded,filled", fillcolor="#eefbf7", color="#2b9774"];
+  edge [color="#2b9774"];
+  A [label="Healthy population
+scoring"];
+  B [label="Incident population
+scoring"];
+  C [label="Compare decision
+outcomes"];
+  D [label="Approval rate +
+approved-default analysis"];
+  E [label="Decision flips +
+risk shift"];
+  F [label="Business-impact
+evidence report"];
+  A -> C;
+  B -> C;
+  C -> D -> E -> F;
 }
