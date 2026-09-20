@@ -1,7 +1,13 @@
 # Main Branch Protection
 
-This policy is designed for a single-maintainer repository while still forcing
-changes through a pull request and required CI.
+This file defines the intended protection policy for a single-maintainer
+repository. It describes the checks that should be required before merge; it
+does not itself enable GitHub branch protection.
+
+At the current private-repository state, GitHub does not report `main`
+as protected. The repository therefore does not claim that the checks below
+are technically enforced by branch protection. Pull-request CI still executes
+the same quality, Terraform, security, and container checks.
 
 ## Required checks
 
@@ -13,7 +19,7 @@ changes through a pull request and required CI.
 | Security | `trivy` |
 | Container image | `build-smoke` |
 
-These names match the current v0.8.0 workflows.
+These names match the current workflow job names.
 
 ## Protection behavior
 

@@ -190,7 +190,7 @@ influence, not causal or legal conclusions.
 
 ```bash
 make quality
-make phase12-verify
+make release-verify
 git diff --check
 ```
 

@@ -262,7 +262,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 13 verification
+   +--> current release verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -325,7 +325,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase13-verify
+make release-verify
 make phase7-terraform
 ```
 
@@ -406,6 +406,12 @@ Repository security and contribution controls are documented in
 [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md),
 [`docs/ACTION_PINNING.md`](docs/ACTION_PINNING.md), and
 [`docs/BRANCH_PROTECTION.md`](docs/BRANCH_PROTECTION.md).
+
+
+> **Repository enforcement note:** `docs/BRANCH_PROTECTION.md` documents the
+> intended required-check policy. At the current private-repository state,
+> GitHub does not report `main` as protected, so the repository does not claim
+> that those checks are technically enforced by branch protection.
 
 ## Repository boundaries
 

@@ -82,6 +82,7 @@ def test_phase8_deployment_contract_matches_phase7() -> None:
             "make phase11-verify",
             "make phase12-verify",
             "make phase13-verify",
+            "make release-verify",
         )
     )
     assert any(
@@ -93,6 +94,7 @@ def test_phase8_deployment_contract_matches_phase7() -> None:
             "make phase11-verify",
             "make phase12-verify",
             "make phase13-verify",
+            "make release-verify",
         )
     )
     assert "make phase7-verify" not in ci_workflow

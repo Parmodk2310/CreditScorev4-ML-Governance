@@ -20,7 +20,7 @@ Incident reproduction
   -> Scheduled, fail-closed governance monitoring
 ```
 
-The v0.12.0 code line preserves the historical 63-test Phase 1–7 regression boundary, Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification, then adds scheduled fail-closed governance monitoring with evidence hashing and orchestration-level run records. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
+The current release preserves the historical 63-test Phase 1–7 regression boundary, then layers reviewer-evidence contracts, business-impact analysis, root-cause ablation, scheduled fail-closed governance monitoring, intersectional fairness/proxy-risk review, and deterministic incident-operations SLA evidence on top. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
 
 ## 2. Why I Built This
 
@@ -312,7 +312,8 @@ Release-level verified boundaries:
 | Phase 10 root-cause/remediation tests | **6 passed** |
 | Phase 11 orchestration/integration/workflow-contract tests | **10 passed** |
 | Phase 12 fairness/proxy-risk tests | **11 passed** |
-| Focused test executions exercised by the cumulative Phase 12 gate | **102 passed** |
+| Phase 13 incident-operations tests | **16 passed** |
+| Focused test executions exercised by the cumulative current release gate | **118 passed** |
 | Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 17. Design Decisions
@@ -347,7 +348,7 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - Phase 11 uses GitHub Actions as the concrete scheduler around a Python orchestration engine; it does not claim a managed Airflow deployment.
 - Scheduled runs are deterministic synthetic governance-control executions, not continuous monitoring of live lending traffic.
 - No production paging/on-call integration or automatic retraining/promotion is implemented.
-- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.12.0.
+- Load, fault-injection, multi-region resilience, and long-running SLO evidence remain outside the current scope.
 
 ## 19. What I Would Build Next
 

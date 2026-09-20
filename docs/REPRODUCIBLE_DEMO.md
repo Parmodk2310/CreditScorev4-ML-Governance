@@ -164,7 +164,7 @@ For the complete release gate:
 
 ```bash
 make quality
-make phase12-verify
+make release-verify
 ```
 
 ## 3–5 minute speaking sequence
