@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 10
+# CreditScoreV4 ML Governance Architecture — Through Phase 11
 
 ```text
                            PHASE 1
@@ -101,7 +101,7 @@ Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and ca
 
 ```text
 GitHub PR / main
-  |-- CI: quality + cumulative Phase 10 verification
+  |-- CI: quality + cumulative Phase 11 verification
   |-- Security: Gitleaks + Trivy fs/config
   |-- Image: deterministic model generation -> Docker build -> smoke test
   `-- Terraform: fmt + init -backend=false + validate
@@ -117,7 +117,7 @@ Manual workflow_dispatch only
   -> release manifest evidence
 ```
 
-Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 10 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
+Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 11 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
 
 <!-- PHASE8_ARCHITECTURE -->
 ## Phase 8 evidence/reviewer plane
@@ -180,3 +180,49 @@ and decision threshold fixed. The fitted missingness indicator is preserved
 during counterfactual value overrides so the experiment isolates the numeric
 replacement path rather than silently changing the fitted preprocessing
 contract.
+
+
+## Phase 11 scheduled monitoring/orchestration plane
+
+Phase 11 adds a control-plane scheduler around the existing verified lifecycle;
+it does not create a second promotion authority.
+
+```text
+GitHub Actions schedule / workflow_dispatch
+                  |
+                  v
+        run_monitoring_cycle.py
+                  |
+                  v
+        dependency-ordered tasks
+ Phase 1 -> ... -> Phase 10 verification
+                  |
+        +---------+----------+
+        |                    |
+        v                    v
+ command status       required evidence
+        |                    |
+        +---------+----------+
+                  |
+                  v
+       SHA-256 evidence hashes
+                  |
+        +---------+----------+
+        |                    |
+        v                    v
+ monitoring_run.json   monitoring_events.jsonl
+                  |
+                  v
+          verify_phase11.py
+```
+
+The orchestration contract is fail closed. A failed prerequisite prevents its
+dependents from running and records them as `SKIPPED`. A command that exits
+successfully but fails to produce configured evidence is also treated as a
+failed task.
+
+The scheduled workflow has read-only repository permissions and verifies the
+generated monitoring manifest before uploading the Phase 11 evidence artifact.
+`automatic_retraining=false` and `automatic_promotion=false` are explicit
+release contracts. Governance eligibility remains owned by Phase 5, and runtime
+promotion remains owned by Phase 6.

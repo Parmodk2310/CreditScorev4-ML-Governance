@@ -133,11 +133,34 @@ missingness. q75 is recorded as a diagnostic validation candidate only; Vendor
 B remains blocked by Phase 2 and the production preprocessing policy is
 unchanged.
 
+## Phase 11 — scheduled monitoring/orchestration evidence
+
+Run:
+
+```bash
+python scripts/run_monitoring_cycle.py --run-id reviewer-demo
+python scripts/verify_phase11.py
+```
+
+Generated evidence:
+
+- `data/evidence/phase11/monitoring_run.json`
+- `data/evidence/phase11/monitoring_events.jsonl`
+
+The manifest records the source commit, final status, fail-closed state,
+automatic-retraining/promotion flags, per-task status/attempts, command result,
+and SHA-256 hashes for configured evidence artifacts. The event log preserves
+one machine-readable record per task.
+
+The scheduled workflow runs with read-only repository permissions and validates
+the manifest before uploading Phase 11 evidence. It does not automatically
+retrain or promote a model.
+
 ## Cumulative verification
 
 ```bash
 make quality
-make phase10-verify
+make phase11-verify
 git diff --check
 ```
 

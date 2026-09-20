@@ -68,6 +68,28 @@ Drift or fairness findings remain investigation/governance inputs. The
 scheduler cannot create a production promotion shortcut around the existing
 Phase 5 governance authority or Phase 6 safe-release state machine.
 
+## Verified task chain
+
+The Phase 11 acceptance cycle currently executes 12 dependency-ordered tasks:
+
+```text
+phase1_baseline
+  -> phase2_data_quality
+  -> phase3_drift
+  -> phase4_fairness
+  -> phase5_governance
+  -> phase6_safe_release
+  -> phase7_delivery
+  -> phase8_evidence_review
+  -> phase9_business_impact
+  -> phase9_verify
+  -> phase10_root_cause
+  -> phase10_verify
+```
+
+The verified acceptance run completed all 12 tasks with `PASS`, with
+fail-closed mode enabled and automatic retraining/promotion disabled.
+
 ## Evidence
 
 Each run writes:
@@ -84,7 +106,13 @@ SHA-256 hashes, fail-closed state, and the source commit.
 make phase11-run
 python scripts/verify_phase11.py
 make phase11-test
+make phase11-verify
 ```
+
+The cumulative `phase11-verify` target first executes the historical
+`phase10-verify` boundary, then runs the Phase 11 monitoring cycle, validates
+the generated manifest, and executes the focused Phase 11 tests. CI and the
+gated deployment preflight use this cumulative Phase 11 boundary.
 
 The first implementation is a deterministic synthetic control-monitoring
 workflow. It is not a claim of live bank monitoring, real alert routing, or a

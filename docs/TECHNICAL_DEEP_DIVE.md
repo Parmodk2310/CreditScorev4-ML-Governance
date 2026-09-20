@@ -106,6 +106,34 @@ immutable containers, registry-backed images, service deployment, ALB health
 checks, IAM/OIDC deployment controls, and Terraform-managed infrastructure with
 less operational complexity.
 
+## Why Phase 11 uses a scheduler-independent orchestrator
+
+The core orchestration semantics—task dependencies, fail-closed skipping,
+command result handling, required evidence, SHA-256 capture, and run
+serialization—live in Python rather than in a particular scheduler.
+
+GitHub Actions is the concrete scheduler for this phase because the repository
+needs one lightweight scheduled control run, not a separate scheduler database,
+executor, worker fleet, and backfill control plane. The same task contract could
+later be driven by Airflow, Dagster, Argo Workflows, or another system without
+moving model-promotion authority into that scheduler.
+
+## Why monitoring fails closed
+
+A zero exit code is not sufficient evidence. Phase 11 also requires configured
+evidence files after successful tasks. Missing evidence changes the task to
+`FAIL`, and failed prerequisites cause dependent tasks to be `SKIPPED`.
+
+This prevents a later governance step from appearing healthy when an earlier
+control failed or failed to produce auditable evidence.
+
+## Why scheduled monitoring does not retrain automatically
+
+The Phase 11 configuration explicitly sets `automatic_retraining=false` and
+`automatic_promotion=false`. A scheduler can detect and preserve evidence, but
+it does not get a shortcut around the Phase 5 governance policy or Phase 6
+safe-release state machine.
+
 ## Why AWS deployment is disabled by default
 
 Infrastructure code should not mutate a cloud account merely because a

@@ -35,8 +35,20 @@ environment so failure modes and governance behavior are reproducible.
 
 - Shadow/canary behavior is exercised through deterministic controlled simulations/tests.
 - It is not equivalent to large-scale live production traffic mirroring.
-- Performance under high concurrency has not been established by v0.8.0.
+- Performance under high concurrency has not been established by v0.11.0.
 - Multi-region resilience and disaster recovery are outside the current scope.
+
+## Monitoring and orchestration
+
+- Phase 11 uses GitHub Actions as the concrete scheduler around a
+  scheduler-independent Python orchestrator.
+- The repository does not claim a durable Airflow/Dagster/Argo control plane,
+  scheduler database, worker fleet, or historical backfill service.
+- Scheduled runs are synthetic governance-control executions, not continuous
+  monitoring of a live lending system.
+- No PagerDuty/Slack/on-call alert routing or incident acknowledgment workflow
+  is implemented.
+- Automatic retraining and automatic promotion are deliberately disabled.
 
 ## Cloud
 

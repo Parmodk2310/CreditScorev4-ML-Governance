@@ -2,7 +2,7 @@
   <h1 align="center">CreditScoreV4 ML Governance</h1>
   <p align="center">
     Evidence-backed ML governance for data quality, drift, fairness, model promotion,
-    progressive delivery, rollback, and fail-closed AWS deployment.
+    scheduled monitoring, progressive delivery, rollback, and fail-closed AWS deployment.
   </p>
 </p>
 
@@ -81,6 +81,13 @@ Model registry
 STAGING -> SHADOW -> CANARY -> PRODUCTION
                \          \
                 \-----------> STAGING (rollback)
+
+Scheduled governance monitoring
+    |
+    +--> deterministic task graph
+    +--> evidence SHA-256 verification
+    +--> fail-closed dependency handling
+    `--> no automatic retraining or promotion
 ```
 
 ## Failure scenarios
@@ -222,6 +229,19 @@ GET  /metrics
 The serving layer exposes Prometheus-compatible operational metrics and model
 metadata, including artifact traceability.
 
+### Scheduled monitoring and orchestration
+
+Phase 11 adds a scheduler-independent Python orchestration layer and a
+GitHub Actions schedule. One monitoring cycle runs the existing Phase 1–10
+controls as a dependency-ordered task graph, requires configured evidence
+artifacts, hashes the generated evidence, and writes a run manifest plus JSONL
+event log.
+
+If a prerequisite task fails, dependent tasks are marked `SKIPPED` and the
+run fails closed. The scheduler is deliberately not allowed to retrain or
+promote a model automatically; those actions remain behind the existing
+governance and safe-release boundaries.
+
 ### CI/CD and cloud controls
 
 Pull requests exercise quality, governance, security, container, and
@@ -231,7 +251,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 10 verification
+   +--> cumulative Phase 11 verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -255,7 +275,8 @@ The repository currently verifies the following boundaries:
 | Phase 8 evidence-contract suite | **6 passed** |
 | Phase 9 business-impact suite | **6 passed** |
 | Phase 10 root-cause/remediation suite | **6 passed** |
-| Current cumulative test executions | **81 passed** |
+| Phase 11 orchestration suite | **10 passed** |
+| Focused tests exercised by cumulative Phase 11 gate | **91 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
@@ -291,7 +312,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase10-verify
+make phase11-verify
 make phase7-terraform
 ```
 
@@ -310,6 +331,8 @@ python scripts/analyze_business_impact.py
 python scripts/verify_phase9.py
 python scripts/analyze_root_cause.py
 python scripts/verify_phase10.py
+python scripts/run_monitoring_cycle.py --run-id reviewer-demo
+python scripts/verify_phase11.py
 ```
 
 ### Run the test suite
@@ -320,7 +343,7 @@ python -m pytest -q
 
 ## Architecture
 
-The system is split into four control planes:
+The system is split into five control planes:
 
 | Plane | Responsibility |
 |---|---|
@@ -328,6 +351,7 @@ The system is split into four control planes:
 | **Governance** | Policy evaluation, evidence integrity, registry transitions and audit records |
 | **Release** | FastAPI serving, shadow evaluation, deterministic canary routing and rollback |
 | **Delivery** | CI/security checks, immutable Action references, Terraform and gated AWS deployment |
+| **Orchestration** | Scheduled fail-closed control execution, evidence hashing, run manifests and event logs |
 
 For implementation details, see
 [`ARCHITECTURE.md`](ARCHITECTURE.md) and
@@ -355,6 +379,7 @@ You do not need to read every document to understand the project.
 - [`docs/MONITORING_PLAN.md`](docs/MONITORING_PLAN.md) — operational monitoring and escalation plan
 - [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — generated evidence and reviewer map
 - [`docs/PHASE10.md`](docs/PHASE10.md) — root-cause ablation, remediation evidence, and non-claims
+- [`docs/PHASE11.md`](docs/PHASE11.md) — scheduled monitoring, dependency semantics, evidence, and safety boundaries
 - [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
 
@@ -376,6 +401,7 @@ It **does demonstrate**:
 - FastAPI serving and operational metrics;
 - progressive shadow/canary release with rollback;
 - CI/security/container/Terraform verification;
+- scheduled, fail-closed governance monitoring with evidence hashes;
 - a gated AWS ECS/Fargate deployment architecture.
 
 It **does not claim**:
@@ -385,7 +411,8 @@ It **does not claim**:
 - regulatory certification or legal compliance;
 - causal conclusions from SHAP or fairness metrics;
 - a currently active production AWS environment;
-- a managed MLflow/Airflow/Kubernetes platform.
+- a managed MLflow/Airflow/Kubernetes platform;
+- live production monitoring, paging/on-call integration, or automatic retraining.
 
 ## Project structure
 
@@ -398,8 +425,8 @@ It **does not claim**:
 ├── docs/                     # governance, validation and operations documentation
 ├── infra/terraform/          # AWS ECR/ECS/Fargate/ALB infrastructure
 ├── models/baseline/          # deterministic persisted baseline artifact
-├── scripts/                  # phase verification and release/deployment tooling
-├── src/creditscore/          # application and governance implementation
+├── scripts/                  # phase verification, monitoring and release/deployment tooling
+├── src/creditscore/          # application, governance and orchestration implementation
 └── tests/                    # quality, governance, serving, release and automation tests
 ```
 
