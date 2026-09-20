@@ -4,6 +4,22 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+## v0.11.0 — Scheduled Monitoring & Governance Orchestration
+
+- Added a scheduler-independent Python orchestration layer for the existing
+  Phase 1–10 governance controls.
+- Added an explicit dependency graph with fail-closed downstream skipping.
+- Required configured evidence artifacts after each successful monitoring task.
+- Added SHA-256 evidence capture, a monitoring-run manifest, and JSONL event log.
+- Added a scheduled/read-only GitHub Actions monitoring workflow with manual
+  dispatch support.
+- Added post-run manifest verification before evidence upload.
+- Kept automatic retraining and automatic model promotion disabled.
+- Promoted `make phase11-verify` to the cumulative CI and deployment preflight
+  boundary while preserving Phase 10 as the historical predecessor.
+- Added 10 focused orchestration/integration/workflow-contract tests.
+- Bumped the application release line to 0.11.0.
+
 ## v0.10.0 — Root-Cause Ablation & Remediation Governance
 
 - Added a controlled 2x2 Vendor B ablation separating semantic score migration

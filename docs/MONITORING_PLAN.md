@@ -107,13 +107,32 @@ smoke tests, Terraform validation, and explicit AWS deployment enablement.
 
 Default cloud behavior is deny/no-mutation.
 
-## 8. Evidence retention
+## 8. Scheduled governance monitoring
+
+Phase 11 schedules one fail-closed control run through GitHub Actions using the
+configured UTC cron plus manual `workflow_dispatch`.
+
+The Python orchestrator is scheduler-independent and executes a declared task
+dependency graph across the existing Phase 1–10 controls. For each successful
+task, configured evidence paths must exist and are recorded with SHA-256 hashes.
+
+If a prerequisite fails, dependent tasks are marked `SKIPPED`; the monitoring
+run fails rather than continuing with incomplete evidence. The generated
+`monitoring_run.json` and `monitoring_events.jsonl` make the execution
+reviewable after the job completes.
+
+Phase 11 explicitly keeps automatic retraining and automatic promotion
+disabled. Drift/fairness findings remain investigation and governance inputs,
+not direct retraining or deployment triggers.
+
+## 9. Evidence retention
 
 Each monitoring layer writes machine-readable evidence under `data/evidence/`.
 The Phase 8 evidence manifest summarizes where evidence exists; it does not
-replace source artifacts.
+replace source artifacts. Phase 11 additionally captures orchestration-level
+status and hashes under `data/evidence/phase11/`.
 
-## 9. Future production hardening
+## 10. Future production hardening
 
 A production system would additionally need durable shared metric history,
 alert routing/on-call ownership, explicit SLOs/error budgets, long-running trend

@@ -17,9 +17,10 @@ Incident reproduction
   -> Governed serving
   -> Shadow / canary / rollback
   -> Automated, fail-closed cloud delivery
+  -> Scheduled, fail-closed governance monitoring
 ```
 
-The v0.10.0 code line preserves the historical 63-test Phase 1–7 regression boundary and adds Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification together with quality, Terraform, container, secret-scanning, and IaC security controls.
+The v0.11.0 code line preserves the historical 63-test Phase 1–7 regression boundary, Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification, then adds scheduled fail-closed governance monitoring with evidence hashing and orchestration-level run records. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
 
 ## 2. Why I Built This
 
@@ -302,11 +303,13 @@ Release-level verified boundaries:
 | Phase 8 | reviewer evidence contract and documentation/configuration traceability |
 | Phase 9 | controlled business-impact and decision-transition evidence |
 | Phase 10 | controlled root-cause ablation and remediation counterfactual evidence |
+| Phase 11 | scheduled fail-closed monitoring, evidence hashing, manifest/event-log verification |
 | Phase 1–7 regression suite | **63 passed** |
 | Phase 8 evidence-contract tests | **6 passed** |
 | Phase 9 business-impact tests | **6 passed** |
 | Phase 10 root-cause/remediation tests | **6 passed** |
-| Phase 1–10 test executions exercised by the cumulative gate | **81 passed** |
+| Phase 11 orchestration/integration/workflow-contract tests | **10 passed** |
+| Focused test executions exercised by the cumulative Phase 11 gate | **91 passed** |
 | Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 17. Design Decisions
@@ -338,15 +341,17 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - Protected attributes are evaluation/governance-only and excluded from model inputs.
 - The registry/audit implementation is project-owned rather than a managed MLflow deployment.
 - Phase 7 defines and validates a cloud path; it does not prove a live production deployment.
-- The current repo does not rely on Airflow orchestration; GitHub Actions, scripts, and Make targets drive the verified lifecycle.
-- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.10.0.
+- Phase 11 uses GitHub Actions as the concrete scheduler around a Python orchestration engine; it does not claim a managed Airflow deployment.
+- Scheduled runs are deterministic synthetic governance-control executions, not continuous monitoring of live lending traffic.
+- No production paging/on-call integration or automatic retraining/promotion is implemented.
+- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.11.0.
 
 ## 19. What I Would Build Next
 
 The next iteration should deepen operational realism rather than add more isolated features:
 
 1. **Managed registry backend** — MLflow or equivalent while keeping the current evidence/policy contract.
-2. **Workflow orchestration** — Airflow for scheduled quality/drift/fairness jobs and retraining workflows.
+2. **Durable orchestration backend when scale warrants it** — Airflow, Dagster, or Argo with backfill/history while preserving the current task/governance contract.
 3. **Durable control-plane storage** — S3/PostgreSQL-backed registry, audit, and evidence metadata.
 4. **Artifact provenance** — SBOM, image signing, attestations, and verifiable build provenance.
 5. **Observability** — OpenTelemetry traces, SLOs, error budgets, and alert routing.
@@ -377,3 +382,44 @@ with executable Phase 5–7 configuration and generated Phase 1–7 evidence. Th
 reduces documentation drift: a README or case study should not silently claim a
 threshold, state transition, release outcome, or deployment property the
 repository no longer implements.
+
+
+## 21. Scheduled Monitoring and Governance Orchestration
+
+Phase 11 moves the verified controls from an entirely manual execution model to
+a scheduled, auditable control run without changing model-promotion authority.
+
+```text
+GitHub Actions schedule / manual dispatch
+                  |
+                  v
+       Phase 11 Python orchestrator
+                  |
+                  v
+      dependency-ordered Phase 1–10 tasks
+                  |
+          +-------+-------+
+          |               |
+          v               v
+      task status     evidence paths
+          |               |
+          +-------+-------+
+                  |
+                  v
+           SHA-256 evidence
+                  |
+          +-------+-------+
+          |               |
+          v               v
+ monitoring_run.json  monitoring_events.jsonl
+```
+
+The acceptance run executes 12 tasks and requires every task to pass. A failed
+dependency causes downstream work to be recorded as `SKIPPED`, and a command
+that does not produce configured evidence is treated as failed even if its
+process exit code is zero.
+
+The scheduler is intentionally not a retraining or promotion authority:
+`automatic_retraining=false` and `automatic_promotion=false`. Findings feed
+the existing governance path rather than creating a scheduler-to-production
+shortcut.

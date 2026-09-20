@@ -118,11 +118,32 @@ drives the larger approval inflation, and the fitted median pathway amplifies
 the synthetic incident. q75 is a diagnostic validation candidate only; Vendor B
 remains blocked and production preprocessing is unchanged.
 
+## 11. Scheduled monitoring orchestration
+
+```bash
+python scripts/run_monitoring_cycle.py --run-id reviewer-demo
+python scripts/verify_phase11.py
+```
+
+Explain: Phase 11 wraps the existing governance controls in a dependency-ordered
+scheduled run. Each task must succeed and produce its configured evidence.
+Failures block dependent tasks, the run fails closed, and evidence hashes are
+recorded in the monitoring manifest.
+
+Also point out that automatic retraining and automatic promotion remain
+disabled; the scheduler cannot bypass the Phase 5 governance decision or Phase
+6 release state machine.
+
+Evidence:
+
+- `data/evidence/phase11/monitoring_run.json`
+- `data/evidence/phase11/monitoring_events.jsonl`
+
 For the complete release gate:
 
 ```bash
 make quality
-make phase10-verify
+make phase11-verify
 ```
 
 ## 3–5 minute speaking sequence
@@ -136,8 +157,9 @@ make phase10-verify
 2:45  Shadow/canary/rollback lifecycle
 3:15  Business impact and decision flips
 3:40  Root-cause ablation + q75 diagnostic candidate
-4:20  CI/security/Terraform fail-closed delivery
-4:45  Limitations and production-hardening path
+4:10  Scheduled fail-closed monitoring orchestration
+4:35  CI/security/Terraform fail-closed delivery
+4:50  Limitations and production-hardening path
 ```
 
 Useful close:

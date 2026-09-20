@@ -1,0 +1,39 @@
+name: Scheduled governance monitoring
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: creditscorev4-monitoring
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run scheduled governance monitoring
+        run: make phase11-run
+
+      - name: Verify scheduled monitoring evidence
+        run: python scripts/verify_phase11.py
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: phase11-monitoring-evidence
+          path: data/evidence/phase11
