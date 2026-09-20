@@ -6,21 +6,17 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_phase11_is_current_cumulative_workflow_gate() -> None:
-    ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
-    deploy = (ROOT / ".github/workflows/deploy.yml").read_text(encoding="utf-8")
+def test_phase11_remains_historical_cumulative_boundary() -> None:
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 
-    assert "make phase11-verify" in ci
-    assert "make phase11-verify" in deploy
-    assert "make phase10-verify" not in ci
-    assert "make phase10-verify" not in deploy
-
     phase11_target = makefile.split("phase11-verify:", 1)[1].split("\n\n", 1)[0]
+    phase12_target = makefile.split("phase12-verify:", 1)[1].split("\n\n", 1)[0]
+
     assert "$(MAKE) phase10-verify" in phase11_target
+    assert "$(MAKE) phase11-verify" in phase12_target
 
 
-def test_phase11_monitoring_workflow_matches_schedule_contract() -> None:
+def test_phase11_monitoring_workflow_contract_remains_present() -> None:
     config = yaml.safe_load((ROOT / "configs/phase11.yaml").read_text(encoding="utf-8"))
     workflow = (ROOT / ".github/workflows/monitoring.yml").read_text(encoding="utf-8")
 
@@ -45,13 +41,9 @@ def test_phase11_monitoring_workflow_matches_schedule_contract() -> None:
         assert all(character in "0123456789abcdef" for character in ref)
 
 
-def test_phase11_release_version_and_safety_contract() -> None:
-    with (ROOT / "pyproject.toml").open("rb") as handle:
-        project = tomllib.load(handle)["project"]
-
+def test_phase11_release_contract_remains_frozen() -> None:
     config = yaml.safe_load((ROOT / "configs/phase11.yaml").read_text(encoding="utf-8"))
 
-    assert project["version"] == "0.11.0"
     assert config["target_release"] == "0.11.0"
     assert config["orchestration"]["fail_closed"] is True
     assert config["orchestration"]["automatic_retraining"] is False
