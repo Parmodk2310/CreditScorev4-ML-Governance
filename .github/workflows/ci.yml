@@ -20,7 +20,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install project
-        run: python -m pip install -e ".[dev]"O
+        run: python -m pip install -e ".[dev]"
       - name: Quality gate
         run: make quality
       - name: Cumulative Phase 9 governance gate
