@@ -33,7 +33,7 @@ Before opening a pull request:
 
 ```bash
 make quality
-make phase9-verify
+make phase10-verify
 make phase7-terraform
 git diff --check
 ```
