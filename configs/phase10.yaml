@@ -10,12 +10,14 @@ ablation:
   feature: device_risk_score
 
 remediation:
-  # Predeclared healthy-training quantiles. Phase 10 measures all candidates;
-  # it does not select a production policy before evidence review.
+  # Predeclared healthy-training quantiles are measured as fixed-model
+  # counterfactuals. q75 is carried forward only as a validation candidate.
   training_quantiles:
     - 0.60
     - 0.75
     - 0.90
+  validation_candidate: training_q75
+  validation_candidate_status: diagnostic_only
 
 evidence:
   report: data/evidence/phase10/root_cause_ablation.json
@@ -24,11 +26,30 @@ evidence:
   remediation_summary: data/evidence/phase10/remediation_summary.csv
 
 acceptance:
-  # First-pass gates protect experiment integrity only. Outcome-specific
-  # remediation gates are frozen after reviewing deterministic evidence.
   require_same_population: true
   require_same_labels: true
   require_generated_combined_matches_vendor_b: true
   require_phase9_consistency: true
-  minimum_newly_missing_rows: 1
+
+  minimum_newly_missing_rows: 2500
   median_control_max_probability_delta: 0.000000000001
+
+  minimum_semantic_auc_drop: 0.045
+  minimum_missingness_approval_increase: 0.040
+  minimum_semantic_approved_default_increase: 0.025
+  minimum_missingness_approved_default_increase: 0.020
+  minimum_semantic_reference_minus_median: 0.050
+
+  minimum_oracle_auc_improvement: 0.010
+  minimum_oracle_approval_reduction: 0.020
+  minimum_oracle_approved_default_reduction: 0.010
+
+  minimum_candidate_auc_improvement: 0.005
+  maximum_candidate_approval_gap_from_healthy: 0.010
+  minimum_candidate_approved_default_reduction: 0.010
+
+  minimum_candidate_residual_auc_gap: 0.050
+  minimum_candidate_residual_approved_default_gap: 0.020
+
+  require_production_policy_unchanged: true
+  require_vendor_b_still_blocked: true

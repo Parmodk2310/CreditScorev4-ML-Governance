@@ -141,6 +141,8 @@ def main() -> int:
     target_column = str(phase10["decision"]["target_column"])
     threshold = float(phase10["decision"]["approval_threshold"])
     quantiles = [float(value) for value in phase10["remediation"]["training_quantiles"]]
+    validation_candidate = str(phase10["remediation"]["validation_candidate"])
+    validation_candidate_status = str(phase10["remediation"]["validation_candidate_status"])
 
     healthy_path = root / "data/raw/vendor_a/holdout.csv"
     incident_path = root / "data/raw/vendor_b/holdout.csv"
@@ -385,6 +387,8 @@ def main() -> int:
             "phase9_report_sha256": file_sha256(phase9_path),
         },
         "scope": {
+            "validation_candidate": validation_candidate,
+            "validation_candidate_status": validation_candidate_status,
             "candidate_selected": False,
             "production_policy_changed": False,
             "claim": (
