@@ -64,6 +64,17 @@ Project thresholds:
 
 A fairness `FAIL` blocks promotion.
 
+Phase 12 extends this layer with intersectional monitoring for
+`sex|synthetic_demographic_group`, minimum group support, explicit
+equal-opportunity difference, and false-approval-rate difference. The Vendor E
+fixture is designed so aggregate drift stays STABLE, the single protected axes
+avoid a blocking FAIL, and the supported `female|group_c` intersection fails.
+
+Phase 12 also screens potential proxy risk by pairing incident-induced
+statistical association changes with SHAP model influence. Numeric association
+uses eta-squared and categorical association uses Cramér's V. Review priority is
+an investigation signal only.
+
 These metrics are synthetic governance signals, not a legal fairness
 determination.
 
@@ -125,12 +136,19 @@ Phase 11 explicitly keeps automatic retraining and automatic promotion
 disabled. Drift/fairness findings remain investigation and governance inputs,
 not direct retraining or deployment triggers.
 
+For v0.12.0 the scheduled workflow preserves the Phase 11 monitoring cycle and
+manifest verification, then runs `make phase12-analyze` followed by
+`verify_phase12.py`. Phase 12 evidence is uploaded separately so the released
+Phase 11 manifest contract remains historical and intact.
+
 ## 9. Evidence retention
 
 Each monitoring layer writes machine-readable evidence under `data/evidence/`.
 The Phase 8 evidence manifest summarizes where evidence exists; it does not
 replace source artifacts. Phase 11 additionally captures orchestration-level
-status and hashes under `data/evidence/phase11/`.
+status and hashes under `data/evidence/phase11/`. Phase 12 stores expanded
+fairness, proxy-risk, SHAP, and summary evidence under
+`data/evidence/phase12/`.
 
 ## 10. Future production hardening
 

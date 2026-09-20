@@ -1,4 +1,4 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 11
+# CreditScoreV4 ML Governance Architecture — Through Phase 12
 
 ```text
                            PHASE 1
@@ -101,7 +101,7 @@ Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and ca
 
 ```text
 GitHub PR / main
-  |-- CI: quality + cumulative Phase 11 verification
+  |-- CI: quality + cumulative Phase 12 verification
   |-- Security: Gitleaks + Trivy fs/config
   |-- Image: deterministic model generation -> Docker build -> smoke test
   `-- Terraform: fmt + init -backend=false + validate
@@ -117,7 +117,7 @@ Manual workflow_dispatch only
   -> release manifest evidence
 ```
 
-Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 11 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
+Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 12 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
 
 <!-- PHASE8_ARCHITECTURE -->
 ## Phase 8 evidence/reviewer plane
@@ -226,3 +226,52 @@ generated monitoring manifest before uploading the Phase 11 evidence artifact.
 `automatic_retraining=false` and `automatic_promotion=false` are explicit
 release contracts. Governance eligibility remains owned by Phase 5, and runtime
 promotion remains owned by Phase 6.
+
+
+## Phase 12 intersectional fairness and proxy-risk plane
+
+Phase 12 extends the model-risk plane without changing the fitted model or
+adding protected attributes to model inputs.
+
+```text
+Vendor A reference ------------------------------+
+                                                  |
+Vendor E: targeted non-protected input stress     |
+  female AND synthetic_demographic_group=group_c  |
+          |                                       |
+          +--> Phase 2 data quality -> PASS       |
+          +--> Phase 3 aggregate drift -> STABLE  |
+          |                                       |
+          v                                       |
+ intersectional fairness <------------------------+
+          |
+          +--> sex axis -> PASS
+          +--> synthetic_demographic_group -> WARNING
+          `--> female|group_c -> FAIL
+                       |
+                       v
+              proxy-risk screening
+          +------------+-------------+
+          |                          |
+          v                          v
+ statistical association       SHAP influence
+ eta² / Cramér's V              mean |attribution|
+          |                          |
+          +------------+-------------+
+                       |
+                       v
+             review-priority evidence
+```
+
+The Phase 12 fairness evaluator uses approval as the favorable decision and
+separates equal-opportunity difference from equalized-odds difference. Only
+groups meeting the configured minimum support participate in governance
+comparisons.
+
+The proxy-risk layer is intentionally a screening mechanism. Association plus
+model influence identifies features that deserve review; it does not establish
+causality, legal proxy status, discrimination, or regulatory non-compliance.
+
+The current scheduled workflow preserves the released Phase 11 monitoring
+manifest contract, verifies it, then runs Phase 12 analysis and verification as
+an additional current control layer.

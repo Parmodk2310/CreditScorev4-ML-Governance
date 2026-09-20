@@ -4,6 +4,28 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+## v0.12.0 — Intersectional Fairness & Proxy-Risk Governance
+
+- Added deterministic Vendor E intersectional proxy-stress evidence while
+  preserving the trained model, labels, and protected/evaluation columns.
+- Added intersectional fairness evaluation across
+  `sex|synthetic_demographic_group` with minimum-support governance.
+- Added favorable-decision demographic parity, selection-rate difference,
+  equal-opportunity difference, equalized-odds difference, and
+  false-approval-rate difference.
+- Demonstrated an aggregate-STABLE fixture where `sex` is PASS,
+  `synthetic_demographic_group` is WARNING, and `female|group_c` is FAIL.
+- Added statistical proxy-risk screening using eta-squared for numeric features
+  and Cramér's V for categorical features.
+- Paired association shifts with SHAP model influence to produce review-priority
+  signals without claiming causal or legal proxy status.
+- Preserved the historical Phase 1–7 regression boundary at 63 tests and added
+  8 focused Phase 12 tests.
+- Promoted `make phase12-verify` to the CI and deployment preflight boundary.
+- Extended scheduled monitoring to run and verify Phase 12 after the historical
+  Phase 11 monitoring manifest is validated.
+- Bumped the application release line to 0.12.0.
+
 ## v0.11.0 — Scheduled Monitoring & Governance Orchestration
 
 - Added a scheduler-independent Python orchestration layer for the existing

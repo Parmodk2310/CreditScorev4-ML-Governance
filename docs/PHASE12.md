@@ -71,6 +71,44 @@ The release target is a synthetic fixture where:
   evidence;
 - protected attributes remain outside the model and SHAP feature spaces.
 
+## Verified deterministic evidence
+
+The accepted Vendor E fixture measures:
+
+| Signal | Result |
+|---|---:|
+| Phase 2 data-quality decision | **PASS** |
+| Aggregate Phase 3 drift | **STABLE** |
+| Target intersection support | **1,058** |
+| Reference `female|group_c` | **PASS** |
+| Current `female|group_c` | **FAIL** |
+| Demographic-parity ratio | **0.7479** |
+| Selection-rate difference | **0.1873** |
+| Equal-opportunity difference | **0.1956** |
+| Equalized-odds difference | **0.2600** |
+| False-approval-rate difference | **0.2600** |
+| `sex` axis | **PASS** |
+| `synthetic_demographic_group` axis | **WARNING** |
+
+Proxy-review priority features:
+
+- `device_risk_score`
+- `credit_utilization`
+- `bank_transaction_risk`
+
+All configured Phase 12 acceptance gates pass for this deterministic fixture.
+
+## Release integration
+
+The v0.12.0 boundary promotes `make phase12-verify` into CI and the gated
+deployment preflight. The scheduled workflow first preserves and verifies the
+Phase 11 monitoring contract, then runs Phase 12 analysis/verification and
+uploads Phase 12 evidence separately.
+
+The historical Phase 1–7 regression target is frozen to the original Phase 4
+fairness tests so later Phase 12 tests do not silently rewrite the historical
+63-test boundary.
+
 ## Verification
 
 ```bash

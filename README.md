@@ -101,12 +101,16 @@ the outside but require different controls.
 | **Vendor B — data-quality failure** | `device_risk_score` nulls rise from **3.14%** to **22.00%** | Data contract + Great Expectations | **BLOCK + quarantine** |
 | **Vendor C — contract-valid drift** | Schema remains valid while feature/prediction distributions shift | PSI + KS drift governance | **CRITICAL → REJECT** |
 | **Vendor D — subgroup stress** | Aggregate drift remains stable while subgroup outcomes degrade | Fairlearn + SHAP-supported review | **FAIRNESS FAIL → REJECT** |
+| **Vendor E — intersectional proxy stress** | Single axes avoid blocking FAIL while `female|group_c` degrades | Intersectional fairness + proxy-risk screening | **INTERSECTION FAIL → review/block** |
 
 The baseline model records **ROC-AUC 0.8025**. Under the Vendor B incident
 fixture, ROC-AUC falls to **0.7329**. Vendor C produces **prediction PSI 0.2379**
 and **KS 0.1863**. Vendor D reaches a **demographic-parity ratio of 0.7480**,
 a **selection-rate difference of 0.1860**, and an **equalized-odds difference
-of 0.2269**.
+of 0.2269**. Vendor E keeps aggregate drift **STABLE** and the single-axis
+statuses at **PASS** / **WARNING**, while the `female|group_c` intersection
+reaches demographic-parity ratio **0.7479**, equal-opportunity difference
+**0.1956**, and equalized-odds difference **0.2600**.
 
 These thresholds and scenarios are project governance heuristics for the
 synthetic case study; they are not legal or regulatory standards.
@@ -170,12 +174,19 @@ Contract-valid data is compared with the healthy reference using feature and
 prediction drift checks. This demonstrates why schema validation and
 distribution monitoring are separate controls.
 
-### Fairness and explainability
+### Fairness, intersections, and proxy-risk review
 
 Protected attributes are used for evaluation scenarios and excluded from model
-features. Fairness checks can reject a candidate even when aggregate drift is
-stable, while SHAP explains the non-protected proxy features driving the
-stressed scenario.
+features. Phase 4 demonstrates a single-axis fairness failure even when
+aggregate drift is stable. Phase 12 adds intersectional governance for
+`sex|synthetic_demographic_group`, explicit equal-opportunity and
+false-approval-rate evidence, and minimum-support rules.
+
+Proxy-risk screening pairs statistical association with SHAP model influence.
+It surfaces `device_risk_score`, `credit_utilization`, and
+`bank_transaction_risk` for review in Vendor E. This is investigative
+evidence, not proof of causal proxy use, unlawful discrimination, or regulatory
+non-compliance.
 
 ### Evidence-backed promotion
 
@@ -276,7 +287,8 @@ The repository currently verifies the following boundaries:
 | Phase 9 business-impact suite | **6 passed** |
 | Phase 10 root-cause/remediation suite | **6 passed** |
 | Phase 11 orchestration suite | **10 passed** |
-| Focused tests exercised by cumulative Phase 11 gate | **91 passed** |
+| Phase 12 fairness/proxy-risk suite | **8 passed** |
+| Focused tests exercised by cumulative Phase 12 gate | **99 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
@@ -312,7 +324,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase11-verify
+make phase12-verify
 make phase7-terraform
 ```
 
@@ -333,6 +345,8 @@ python scripts/analyze_root_cause.py
 python scripts/verify_phase10.py
 python scripts/run_monitoring_cycle.py --run-id reviewer-demo
 python scripts/verify_phase11.py
+python scripts/analyze_fairness_proxy.py
+python scripts/verify_phase12.py
 ```
 
 ### Run the test suite
@@ -380,6 +394,7 @@ You do not need to read every document to understand the project.
 - [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — generated evidence and reviewer map
 - [`docs/PHASE10.md`](docs/PHASE10.md) — root-cause ablation, remediation evidence, and non-claims
 - [`docs/PHASE11.md`](docs/PHASE11.md) — scheduled monitoring, dependency semantics, evidence, and safety boundaries
+- [`docs/PHASE12.md`](docs/PHASE12.md) — intersectional fairness, equal-opportunity evidence, and proxy-risk screening
 - [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
 

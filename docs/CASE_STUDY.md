@@ -20,7 +20,7 @@ Incident reproduction
   -> Scheduled, fail-closed governance monitoring
 ```
 
-The v0.11.0 code line preserves the historical 63-test Phase 1–7 regression boundary, Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification, then adds scheduled fail-closed governance monitoring with evidence hashing and orchestration-level run records. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
+The v0.12.0 code line preserves the historical 63-test Phase 1–7 regression boundary, Phase 8 evidence, Phase 9 business-impact, and Phase 10 root-cause/remediation verification, then adds scheduled fail-closed governance monitoring with evidence hashing and orchestration-level run records. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
 
 ## 2. Why I Built This
 
@@ -45,6 +45,7 @@ Vendor A = healthy reference
 Vendor B = material data-quality degradation
 Vendor C = contract-valid distribution drift
 Vendor D = aggregate-stable subgroup/fairness stress
+Vendor E = aggregate-stable intersectional proxy stress
 ```
 
 The purpose is not to imitate a real bank dataset. The purpose is to create deterministic evidence that exercises each governance boundary.
@@ -304,12 +305,14 @@ Release-level verified boundaries:
 | Phase 9 | controlled business-impact and decision-transition evidence |
 | Phase 10 | controlled root-cause ablation and remediation counterfactual evidence |
 | Phase 11 | scheduled fail-closed monitoring, evidence hashing, manifest/event-log verification |
+| Phase 12 | intersectional fairness, equal-opportunity evidence, and proxy-risk screening |
 | Phase 1–7 regression suite | **63 passed** |
 | Phase 8 evidence-contract tests | **6 passed** |
 | Phase 9 business-impact tests | **6 passed** |
 | Phase 10 root-cause/remediation tests | **6 passed** |
 | Phase 11 orchestration/integration/workflow-contract tests | **10 passed** |
-| Focused test executions exercised by the cumulative Phase 11 gate | **91 passed** |
+| Phase 12 fairness/proxy-risk tests | **8 passed** |
+| Focused test executions exercised by the cumulative Phase 12 gate | **99 passed** |
 | Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 17. Design Decisions
@@ -344,7 +347,7 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - Phase 11 uses GitHub Actions as the concrete scheduler around a Python orchestration engine; it does not claim a managed Airflow deployment.
 - Scheduled runs are deterministic synthetic governance-control executions, not continuous monitoring of live lending traffic.
 - No production paging/on-call integration or automatic retraining/promotion is implemented.
-- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.11.0.
+- Load, fault-injection, multi-region resilience, and long-running SLO evidence are outside v0.12.0.
 
 ## 19. What I Would Build Next
 
@@ -423,3 +426,49 @@ The scheduler is intentionally not a retraining or promotion authority:
 `automatic_retraining=false` and `automatic_promotion=false`. Findings feed
 the existing governance path rather than creating a scheduler-to-production
 shortcut.
+
+
+## 22. Vendor E — Intersectional Fairness and Proxy-Risk Review
+
+Phase 12 adds a deterministic failure mode that is intentionally harder to
+detect with single-axis monitoring.
+
+Vendor E preserves the protected/evaluation columns and `default_30d` labels,
+but increases three non-protected model inputs only for the supported
+`female|group_c` intersection:
+
+```text
+device_risk_score      +0.12
+credit_utilization     +0.06
+bank_transaction_risk  +0.05
+```
+
+The batch still passes the data-quality gate and aggregate drift remains
+STABLE. The `sex` axis remains PASS and
+`synthetic_demographic_group` is WARNING, while the supported intersection
+fails the project fairness thresholds.
+
+Measured intersectional evidence:
+
+| Metric | Vendor E |
+|---|---:|
+| Target support | 1,058 |
+| Demographic-parity ratio | 0.7479 |
+| Selection-rate difference | 0.1873 |
+| Equal-opportunity difference | 0.1956 |
+| Equalized-odds difference | 0.2600 |
+| False-approval-rate difference | 0.2600 |
+
+Proxy-risk analysis then asks two separate questions: whether each model input
+became more statistically associated with the protected intersection, and
+whether the fitted model materially uses that input. Numeric association uses
+eta-squared; categorical association uses Cramér's V; model influence uses SHAP
+mean absolute attribution.
+
+The three intentionally stressed inputs surface as review priorities:
+`device_risk_score`, `credit_utilization`, and
+`bank_transaction_risk`.
+
+This evidence supports investigation and governance review. It does not prove
+causality, legal proxy status, unlawful discrimination, or regulatory
+non-compliance.

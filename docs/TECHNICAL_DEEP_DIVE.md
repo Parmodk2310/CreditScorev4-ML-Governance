@@ -39,6 +39,41 @@ Aggregate metrics can hide concentrated subgroup impact. Vendor D deliberately
 creates that failure mode: aggregate drift remains stable while subgroup outcome
 metrics cross project fairness thresholds.
 
+## Why add intersectional fairness after single-axis fairness
+
+A single protected dimension can look acceptable while a supported
+intersection of dimensions experiences materially different outcomes. Phase 12
+therefore evaluates `sex`, `synthetic_demographic_group`, and their
+intersection separately.
+
+Vendor E is intentionally constructed so aggregate drift is STABLE and the
+single axes avoid blocking FAIL, while `female|group_c` crosses the project
+intersectional thresholds. This demonstrates why aggregate and single-axis
+checks are not interchangeable with intersectional governance.
+
+## Why equal opportunity is reported separately from equalized odds
+
+For this project the favorable decision is approval, and the favorable ground
+truth is `default_30d == 0`. Equal-opportunity difference therefore compares
+approval rates among applicants with favorable outcomes. Equalized odds also
+incorporates the false-approval side among applicants with
+`default_30d == 1`.
+
+Reporting both prevents one metric name from hiding which conditional error
+behavior changed.
+
+## Why proxy-risk screening combines association with SHAP influence
+
+Association alone can identify a feature that differs across a protected
+intersection but barely affects model decisions. SHAP influence alone can
+identify an important feature with little relationship to the protected
+intersection.
+
+Phase 12 requires both signals for review priority: incident-induced statistical
+association and material model influence. Numeric association uses eta-squared;
+categorical association uses Cramér's V. This remains screening evidence rather
+than causal proof or a legal classification.
+
 ## Why separate evaluation attributes from model inputs
 
 `sex`, `age_group`, and `synthetic_demographic_group` are governance/evaluation

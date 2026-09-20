@@ -114,8 +114,8 @@ python scripts/verify_phase10.py
 ```
 
 Explain: semantic migration drives the larger AUC loss, elevated missingness
-drives the larger approval inflation, and the fitted median pathway amplifies
-the synthetic incident. q75 is a diagnostic validation candidate only; Vendor B
+drives the larger approval inflation, while elevated missingness interacting with the fitted median preprocessing path contributes materially to
+the measured synthetic incident behavior. q75 is a diagnostic validation candidate only; Vendor B
 remains blocked and production preprocessing is unchanged.
 
 ## 11. Scheduled monitoring orchestration
@@ -139,11 +139,32 @@ Evidence:
 - `data/evidence/phase11/monitoring_run.json`
 - `data/evidence/phase11/monitoring_events.jsonl`
 
+## 12. Intersectional fairness and proxy-risk evidence
+
+```bash
+python scripts/analyze_fairness_proxy.py
+python scripts/verify_phase12.py
+```
+
+Explain: Vendor E preserves protected attributes and labels while shifting only
+three non-protected model inputs for the supported `female|group_c`
+intersection. Data quality passes and aggregate drift remains STABLE. The
+single axes avoid blocking FAIL, but the intersection fails.
+
+Point out the measured intersectional evidence: demographic-parity ratio
+0.7479, equal-opportunity difference 0.1956, equalized-odds difference 0.2600,
+and false-approval-rate difference 0.2600.
+
+Then show the proxy-review priorities:
+`device_risk_score`, `credit_utilization`, and
+`bank_transaction_risk`. Explain that association plus SHAP influence is a
+screening signal, not proof of causality or unlawful proxy use.
+
 For the complete release gate:
 
 ```bash
 make quality
-make phase11-verify
+make phase12-verify
 ```
 
 ## 3–5 minute speaking sequence
@@ -157,9 +178,10 @@ make phase11-verify
 2:45  Shadow/canary/rollback lifecycle
 3:15  Business impact and decision flips
 3:40  Root-cause ablation + q75 diagnostic candidate
-4:10  Scheduled fail-closed monitoring orchestration
-4:35  CI/security/Terraform fail-closed delivery
-4:50  Limitations and production-hardening path
+4:05  Scheduled fail-closed monitoring orchestration
+4:25  Vendor E intersectional fairness + proxy-risk evidence
+4:45  CI/security/Terraform fail-closed delivery
+4:55  Limitations and production-hardening path
 ```
 
 Useful close:
