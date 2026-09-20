@@ -140,10 +140,7 @@ def main() -> int:
 
     target_column = str(phase10["decision"]["target_column"])
     threshold = float(phase10["decision"]["approval_threshold"])
-    quantiles = [
-        float(value)
-        for value in phase10["remediation"]["training_quantiles"]
-    ]
+    quantiles = [float(value) for value in phase10["remediation"]["training_quantiles"]]
 
     healthy_path = root / "data/raw/vendor_a/holdout.csv"
     incident_path = root / "data/raw/vendor_b/holdout.csv"
@@ -160,8 +157,7 @@ def main() -> int:
     ):
         if not path.exists():
             raise FileNotFoundError(
-                f"Required prior-phase artifact is missing: {path}. "
-                "Run make phase9-verify first."
+                f"Required prior-phase artifact is missing: {path}. " "Run make phase9-verify first."
             )
 
     healthy = load_csv(healthy_path)
@@ -170,16 +166,10 @@ def main() -> int:
     model = load_model(model_path)
 
     incident_cfg = VendorMigrationConfig(
-        target_device_null_rate=float(
-            phase1["incident"]["target_device_null_rate"]
-        ),
-        semantic_attenuation=float(
-            phase1["incident"]["semantic_attenuation"]
-        ),
+        target_device_null_rate=float(phase1["incident"]["target_device_null_rate"]),
+        semantic_attenuation=float(phase1["incident"]["semantic_attenuation"]),
         semantic_bias=float(phase1["incident"]["semantic_bias"]),
-        semantic_noise_std=float(
-            phase1["incident"]["semantic_noise_std"]
-        ),
+        semantic_noise_std=float(phase1["incident"]["semantic_noise_std"]),
         random_seed=int(phase1["project"]["random_seed"]) + 1,
     )
 
@@ -201,9 +191,7 @@ def main() -> int:
 
     probabilities: dict[str, np.ndarray] = {}
     for name, frame in frame_map.items():
-        probabilities[name] = model.predict_proba(
-            frame[MODEL_INPUT_FEATURES].copy()
-        )[:, 1]
+        probabilities[name] = model.predict_proba(frame[MODEL_INPUT_FEATURES].copy())[:, 1]
 
     healthy_probabilities = probabilities["healthy"]
     scenarios: dict[str, RootCauseScenarioMetrics] = {}
@@ -218,25 +206,13 @@ def main() -> int:
             healthy_probabilities=healthy_probabilities,
         )
 
-    phase9_report = json.loads(
-        phase9_path.read_text(encoding="utf-8")
-    )
+    phase9_report = json.loads(phase9_path.read_text(encoding="utf-8"))
     phase9_incident = phase9_report["incident"]
     phase9_consistency = (
-        abs(
-            scenarios["combined"].approval_rate
-            - float(phase9_incident["approval_rate"])
-        )
+        abs(scenarios["combined"].approval_rate - float(phase9_incident["approval_rate"])) <= 1e-12
+        and abs(scenarios["combined"].approved_default_rate - float(phase9_incident["approved_default_rate"]))
         <= 1e-12
-        and abs(
-            scenarios["combined"].approved_default_rate
-            - float(phase9_incident["approved_default_rate"])
-        )
-        <= 1e-12
-        and abs(
-            scenarios["combined"].mean_predicted_risk
-            - float(phase9_incident["mean_predicted_risk"])
-        )
+        and abs(scenarios["combined"].mean_predicted_risk - float(phase9_incident["mean_predicted_risk"]))
         <= 1e-12
     )
 
@@ -259,12 +235,8 @@ def main() -> int:
     newly_missing = combined_device.isna() & semantic_device.notna()
     newly_missing_count = int(newly_missing.sum())
 
-    semantic_reference_mean = float(
-        semantic_device.loc[newly_missing].mean()
-    )
-    healthy_reference_mean = float(
-        healthy_device.loc[newly_missing].mean()
-    )
+    semantic_reference_mean = float(semantic_device.loc[newly_missing].mean())
+    healthy_reference_mean = float(healthy_device.loc[newly_missing].mean())
 
     median_values = np.full(
         len(stored_incident),
@@ -277,12 +249,7 @@ def main() -> int:
         median_values,
     )
     median_control_max_probability_delta = float(
-        np.max(
-            np.abs(
-                median_control_probabilities
-                - probabilities["combined"]
-            )
-        )
+        np.max(np.abs(median_control_probabilities - probabilities["combined"]))
     )
 
     oracle_values = np.full(
@@ -290,9 +257,7 @@ def main() -> int:
         fitted_median,
         dtype=float,
     )
-    oracle_values[newly_missing.to_numpy()] = (
-        semantic_device.loc[newly_missing].to_numpy(dtype=float)
-    )
+    oracle_values[newly_missing.to_numpy()] = semantic_device.loc[newly_missing].to_numpy(dtype=float)
     oracle_probabilities = predict_with_device_value_override(
         model,
         stored_incident,
@@ -317,9 +282,7 @@ def main() -> int:
 
     for quantile in quantiles:
         if not 0.0 < quantile < 1.0:
-            raise ValueError(
-                f"Training quantile must be in (0, 1): {quantile}"
-            )
+            raise ValueError(f"Training quantile must be in (0, 1): {quantile}")
 
         value = float(train_device.quantile(quantile))
         replacement = np.full(
@@ -332,7 +295,7 @@ def main() -> int:
             stored_incident,
             replacement,
         )
-        candidate_name = f"training_q{int(round(quantile * 100))}"
+        candidate_name = f"training_q{round(quantile * 100)}"
         metrics = _scenario_metrics(
             stored_incident,
             candidate_probabilities,
@@ -347,21 +310,13 @@ def main() -> int:
             "replacement_value": value,
             "metrics": metrics.to_dict(),
             "delta_vs_current_combined": {
-                "roc_auc": (
-                    metrics.roc_auc
-                    - scenarios["combined"].roc_auc
-                ),
-                "approval_rate": (
-                    metrics.approval_rate
-                    - scenarios["combined"].approval_rate
-                ),
+                "roc_auc": (metrics.roc_auc - scenarios["combined"].roc_auc),
+                "approval_rate": (metrics.approval_rate - scenarios["combined"].approval_rate),
                 "approved_default_rate": (
-                    metrics.approved_default_rate
-                    - scenarios["combined"].approved_default_rate
+                    metrics.approved_default_rate - scenarios["combined"].approved_default_rate
                 ),
                 "mean_predicted_risk": (
-                    metrics.mean_predicted_risk
-                    - scenarios["combined"].mean_predicted_risk
+                    metrics.mean_predicted_risk - scenarios["combined"].mean_predicted_risk
                 ),
             },
         }
@@ -380,12 +335,8 @@ def main() -> int:
         "name": "root-cause-ablation-and-remediation",
         "methodology": {
             "design": "2x2 controlled factorial ablation",
-            "factor_semantic_shift": (
-                "Vendor B score attenuation, bias, and noise"
-            ),
-            "factor_elevated_missingness": (
-                "exact Vendor B device_risk_score missingness mask"
-            ),
+            "factor_semantic_shift": ("Vendor B score attenuation, bias, and noise"),
+            "factor_elevated_missingness": ("exact Vendor B device_risk_score missingness mask"),
             "fixed_components": [
                 "same applicant population",
                 "same default_30d labels",
@@ -401,32 +352,19 @@ def main() -> int:
         "invariants": {
             "same_population": True,
             "same_labels": True,
-            "generated_combined_matches_vendor_b": (
-                generated_combined_matches_vendor_b
-            ),
+            "generated_combined_matches_vendor_b": (generated_combined_matches_vendor_b),
             "phase9_consistency": phase9_consistency,
         },
-        "scenarios": {
-            name: metrics.to_dict()
-            for name, metrics in scenarios.items()
-        },
+        "scenarios": {name: metrics.to_dict() for name, metrics in scenarios.items()},
         "factorial_effects": effects,
         "imputation_diagnostic": {
             "feature": "device_risk_score",
             "fitted_training_median": fitted_median,
             "newly_missing_count": newly_missing_count,
-            "newly_missing_semantic_reference_mean": (
-                semantic_reference_mean
-            ),
-            "newly_missing_healthy_reference_mean": (
-                healthy_reference_mean
-            ),
-            "semantic_reference_minus_median": (
-                semantic_reference_mean - fitted_median
-            ),
-            "median_control_max_probability_delta": (
-                median_control_max_probability_delta
-            ),
+            "newly_missing_semantic_reference_mean": (semantic_reference_mean),
+            "newly_missing_healthy_reference_mean": (healthy_reference_mean),
+            "semantic_reference_minus_median": (semantic_reference_mean - fitted_median),
+            "median_control_max_probability_delta": (median_control_max_probability_delta),
         },
         "counterfactuals": {
             "oracle_semantic_restore": {
@@ -460,9 +398,7 @@ def main() -> int:
     report_path = root / str(phase10["evidence"]["report"])
     _write_json(report, report_path)
 
-    scenario_path = root / str(
-        phase10["evidence"]["scenario_summary"]
-    )
+    scenario_path = root / str(phase10["evidence"]["scenario_summary"])
     scenario_path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(
         [
@@ -501,13 +437,9 @@ def main() -> int:
     print("CreditScoreV4 — Phase 10 Root-Cause Ablation")
     print("=" * 49)
     print(
-        "Generated combined matches Vendor B... "
-        f"{'YES' if generated_combined_matches_vendor_b else 'NO'}"
+        "Generated combined matches Vendor B... " f"{'YES' if generated_combined_matches_vendor_b else 'NO'}"
     )
-    print(
-        "Phase 9 metric consistency............ "
-        f"{'YES' if phase9_consistency else 'NO'}"
-    )
+    print("Phase 9 metric consistency............ " f"{'YES' if phase9_consistency else 'NO'}")
 
     print("\n2x2 scenario evidence")
     for name in (
@@ -527,26 +459,11 @@ def main() -> int:
         )
 
     print("\nImputation diagnostic")
-    print(
-        f"  fitted device median................. "
-        f"{fitted_median:.4f}"
-    )
-    print(
-        f"  newly missing rows................... "
-        f"{newly_missing_count}"
-    )
-    print(
-        "  semantic reference mean.............. "
-        f"{semantic_reference_mean:.4f}"
-    )
-    print(
-        "  semantic reference - median.......... "
-        f"{semantic_reference_mean - fitted_median:+.4f}"
-    )
-    print(
-        "  median-control max probability delta. "
-        f"{median_control_max_probability_delta:.3e}"
-    )
+    print(f"  fitted device median................. " f"{fitted_median:.4f}")
+    print(f"  newly missing rows................... " f"{newly_missing_count}")
+    print("  semantic reference mean.............. " f"{semantic_reference_mean:.4f}")
+    print("  semantic reference - median.......... " f"{semantic_reference_mean - fitted_median:+.4f}")
+    print("  median-control max probability delta. " f"{median_control_max_probability_delta:.3e}")
 
     print("\nFixed-model counterfactuals")
     print(
@@ -565,10 +482,7 @@ def main() -> int:
             f"approved_default={metrics['approved_default_rate']:.2%}"
         )
 
-    print(
-        f"\nEvidence report......................... "
-        f"{report_path.relative_to(root)}"
-    )
+    print(f"\nEvidence report......................... " f"{report_path.relative_to(root)}")
     print(
         "NOTE: Phase 10 does not select a remediation candidate yet. "
         "Review this evidence before freezing outcome gates or promoting "

@@ -48,32 +48,19 @@ def test_ablation_preserves_population_labels_and_masks() -> None:
         frames.missingness_only,
         frames.combined,
     ):
-        assert frame["application_id"].equals(
-            healthy["application_id"]
-        )
-        assert frame["default_30d"].equals(
-            healthy["default_30d"]
-        )
+        assert frame["application_id"].equals(healthy["application_id"])
+        assert frame["default_30d"].equals(healthy["default_30d"])
 
     assert np.array_equal(
-        frames.semantic_only[
-            "device_risk_score"
-        ].isna().to_numpy(),
+        frames.semantic_only["device_risk_score"].isna().to_numpy(),
         healthy["device_risk_score"].isna().to_numpy(),
     )
     assert np.array_equal(
-        frames.missingness_only[
-            "device_risk_score"
-        ].isna().to_numpy(),
-        frames.combined[
-            "device_risk_score"
-        ].isna().to_numpy(),
+        frames.missingness_only["device_risk_score"].isna().to_numpy(),
+        frames.combined["device_risk_score"].isna().to_numpy(),
     )
 
-    assert (
-        frames.combined["device_risk_score"].isna().mean()
-        == pytest.approx(0.22, abs=1 / len(healthy))
-    )
+    assert frames.combined["device_risk_score"].isna().mean() == pytest.approx(0.22, abs=1 / len(healthy))
 
 
 def test_missingness_only_preserves_observed_healthy_values() -> None:
@@ -92,9 +79,7 @@ def test_missingness_only_preserves_observed_healthy_values() -> None:
         ),
     )
 
-    observed = frames.missingness_only[
-        "device_risk_score"
-    ].notna()
+    observed = frames.missingness_only["device_risk_score"].notna()
 
     assert np.allclose(
         frames.missingness_only.loc[

@@ -25,10 +25,7 @@ def main() -> int:
     report_path = ROOT / str(config["evidence"]["report"])
 
     if not report_path.exists():
-        print(
-            f"Missing Phase 10 report: "
-            f"{report_path.relative_to(ROOT)}"
-        )
+        print(f"Missing Phase 10 report: " f"{report_path.relative_to(ROOT)}")
         return 1
 
     report = _read_json(report_path)
@@ -38,40 +35,22 @@ def main() -> int:
 
     gates = {
         "same_population": (
-            bool(invariants["same_population"])
-            is bool(acceptance["require_same_population"])
+            bool(invariants["same_population"]) is bool(acceptance["require_same_population"])
         ),
-        "same_labels": (
-            bool(invariants["same_labels"])
-            is bool(acceptance["require_same_labels"])
-        ),
+        "same_labels": (bool(invariants["same_labels"]) is bool(acceptance["require_same_labels"])),
         "generated_combined_matches_vendor_b": (
             bool(invariants["generated_combined_matches_vendor_b"])
-            is bool(
-                acceptance[
-                    "require_generated_combined_matches_vendor_b"
-                ]
-            )
+            is bool(acceptance["require_generated_combined_matches_vendor_b"])
         ),
         "phase9_consistency": (
-            bool(invariants["phase9_consistency"])
-            is bool(acceptance["require_phase9_consistency"])
+            bool(invariants["phase9_consistency"]) is bool(acceptance["require_phase9_consistency"])
         ),
         "newly_missing_rows_present": (
-            int(diagnostic["newly_missing_count"])
-            >= int(acceptance["minimum_newly_missing_rows"])
+            int(diagnostic["newly_missing_count"]) >= int(acceptance["minimum_newly_missing_rows"])
         ),
         "median_control_reproduces_pipeline": (
-            float(
-                diagnostic[
-                    "median_control_max_probability_delta"
-                ]
-            )
-            <= float(
-                acceptance[
-                    "median_control_max_probability_delta"
-                ]
-            )
+            float(diagnostic["median_control_max_probability_delta"])
+            <= float(acceptance["median_control_max_probability_delta"])
         ),
         "four_factorial_scenarios_present": (
             set(report["scenarios"])
@@ -94,20 +73,12 @@ def main() -> int:
             }
         ),
         "oracle_is_not_deployable": (
-            report["counterfactuals"][
-                "oracle_semantic_restore"
-            ]["deployable"]
-            is False
+            report["counterfactuals"]["oracle_semantic_restore"]["deployable"] is False
         ),
-        "candidate_not_preselected": (
-            report["scope"]["candidate_selected"] is False
-        ),
-        "production_policy_unchanged": (
-            report["scope"]["production_policy_changed"] is False
-        ),
+        "candidate_not_preselected": (report["scope"]["candidate_selected"] is False),
+        "production_policy_unchanged": (report["scope"]["production_policy_changed"] is False),
         "traceability_hashes_present": all(
-            isinstance(value, str) and len(value) == 64
-            for value in traceability.values()
+            isinstance(value, str) and len(value) == 64 for value in traceability.values()
         ),
     }
 
@@ -115,16 +86,12 @@ def main() -> int:
     print("=" * 51)
 
     for name, passed in gates.items():
-        print(
-            f"  {name:<43} "
-            f"{'PASS' if passed else 'FAIL'}"
-        )
+        print(f"  {name:<43} " f"{'PASS' if passed else 'FAIL'}")
 
     if all(gates.values()):
         print("\nPHASE 10 CORE EXPERIMENT: VERIFIED")
         print(
-            "Outcome-specific remediation gates are intentionally "
-            "pending deterministic evidence review."
+            "Outcome-specific remediation gates are intentionally " "pending deterministic evidence review."
         )
         return 0
 

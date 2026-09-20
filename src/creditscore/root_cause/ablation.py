@@ -25,14 +25,10 @@ class AblationFrames:
 
 
 def _validate_identity(healthy: pd.DataFrame, candidate: pd.DataFrame) -> None:
-    if not healthy["application_id"].astype(str).equals(
-        candidate["application_id"].astype(str)
-    ):
+    if not healthy["application_id"].astype(str).equals(candidate["application_id"].astype(str)):
         raise ValueError("Ablation changed the ordered applicant population.")
 
-    if not healthy["default_30d"].astype(int).equals(
-        candidate["default_30d"].astype(int)
-    ):
+    if not healthy["default_30d"].astype(int).equals(candidate["default_30d"].astype(int)):
         raise ValueError("Ablation changed the outcome labels.")
 
 
@@ -82,20 +78,14 @@ def build_ablation_frames(
 
     healthy_missing = healthy["device_risk_score"].isna().to_numpy()
     semantic_missing = semantic_only["device_risk_score"].isna().to_numpy()
-    missingness_only_mask = (
-        missingness_only["device_risk_score"].isna().to_numpy()
-    )
+    missingness_only_mask = missingness_only["device_risk_score"].isna().to_numpy()
     combined_mask = combined["device_risk_score"].isna().to_numpy()
 
     if not np.array_equal(healthy_missing, semantic_missing):
-        raise ValueError(
-            "Semantic-only ablation changed baseline missingness."
-        )
+        raise ValueError("Semantic-only ablation changed baseline missingness.")
 
     if not np.array_equal(missingness_only_mask, combined_mask):
-        raise ValueError(
-            "Missingness-only ablation does not match Vendor B missingness."
-        )
+        raise ValueError("Missingness-only ablation does not match Vendor B missingness.")
 
     return AblationFrames(
         healthy=healthy.copy(deep=True),
@@ -163,9 +153,7 @@ def predict_with_device_value_override(
 
     replacement = np.asarray(replacement_values, dtype=float)
     if replacement.ndim != 1 or len(replacement) != len(frame):
-        raise ValueError(
-            "replacement_values must be one-dimensional and match frame length."
-        )
+        raise ValueError("replacement_values must be one-dimensional and match frame length.")
     if not np.isfinite(replacement).all():
         raise ValueError("replacement_values must be finite.")
 
@@ -179,9 +167,7 @@ def predict_with_device_value_override(
 
     _numeric_imputer(model)
 
-    engineered = feature_engineering.transform(
-        frame[MODEL_INPUT_FEATURES].copy()
-    )
+    engineered = feature_engineering.transform(frame[MODEL_INPUT_FEATURES].copy())
     transformed = preprocessor.transform(engineered)
 
     if sparse.issparse(transformed):

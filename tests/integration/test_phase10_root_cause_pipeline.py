@@ -60,9 +60,7 @@ def test_transformed_median_control_reproduces_pipeline_scores() -> None:
     )
 
     incident = frames.combined
-    current = model.predict_proba(
-        incident[MODEL_INPUT_FEATURES].copy()
-    )[:, 1]
+    current = model.predict_proba(incident[MODEL_INPUT_FEATURES].copy())[:, 1]
 
     median = fitted_device_median(model)
     replacement = np.full(
