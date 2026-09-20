@@ -46,6 +46,7 @@ def test_phase12_preserves_historical_fairness_regression_boundary() -> None:
     makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 
     assert "PHASE4_FAIRNESS_TESTS :=" in makefile
-    assert "tests/fairness/test_expanded_fairness.py" not in makefile.split(
-        "phase7-verify:", 1
-    )[1].split("\n\n", 1)[0]
+    assert (
+        "tests/fairness/test_expanded_fairness.py"
+        not in makefile.split("phase7-verify:", 1)[1].split("\n\n", 1)[0]
+    )
