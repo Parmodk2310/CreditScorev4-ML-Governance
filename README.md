@@ -287,8 +287,8 @@ The repository currently verifies the following boundaries:
 | Phase 9 business-impact suite | **6 passed** |
 | Phase 10 root-cause/remediation suite | **6 passed** |
 | Phase 11 orchestration suite | **10 passed** |
-| Phase 12 fairness/proxy-risk suite | **8 passed** |
-| Focused tests exercised by cumulative Phase 12 gate | **99 passed** |
+| Phase 12 fairness/proxy-risk suite | **11 passed** |
+| Focused tests exercised by cumulative Phase 12 gate | **102 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |

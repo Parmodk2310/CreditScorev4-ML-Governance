@@ -311,8 +311,8 @@ Release-level verified boundaries:
 | Phase 9 business-impact tests | **6 passed** |
 | Phase 10 root-cause/remediation tests | **6 passed** |
 | Phase 11 orchestration/integration/workflow-contract tests | **10 passed** |
-| Phase 12 fairness/proxy-risk tests | **8 passed** |
-| Focused test executions exercised by the cumulative Phase 12 gate | **99 passed** |
+| Phase 12 fairness/proxy-risk tests | **11 passed** |
+| Focused test executions exercised by the cumulative Phase 12 gate | **102 passed** |
 | Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 17. Design Decisions
