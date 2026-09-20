@@ -120,9 +120,7 @@ class MonitoringOrchestrator:
 
         for spec in self.specs:
             failed_dependencies = [
-                dependency
-                for dependency in spec.depends_on
-                if by_id[dependency].status != "PASS"
+                dependency for dependency in spec.depends_on if by_id[dependency].status != "PASS"
             ]
             if failed_dependencies:
                 result = MonitoringTaskResult(
@@ -131,10 +129,7 @@ class MonitoringOrchestrator:
                     command=_resolved_command(spec.command),
                     attempts=0,
                     return_code=None,
-                    reason=(
-                        "fail-closed dependency block: "
-                        + ", ".join(failed_dependencies)
-                    ),
+                    reason=("fail-closed dependency block: " + ", ".join(failed_dependencies)),
                 )
                 results.append(result)
                 by_id[spec.task_id] = result

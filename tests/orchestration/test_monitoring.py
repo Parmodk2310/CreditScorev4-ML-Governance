@@ -127,9 +127,7 @@ def test_successful_task_hashes_evidence(tmp_path: Path) -> None:
 
 
 def test_config_loader_uses_default_attempts() -> None:
-    config = _config(
-        [{"id": "one", "command": ["python", "-c", "pass"]}]
-    )
+    config = _config([{"id": "one", "command": ["python", "-c", "pass"]}])
     config["execution"]["max_attempts"] = 2
 
     specs = load_task_specs(config)

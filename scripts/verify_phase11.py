@@ -30,15 +30,12 @@ def main() -> int:
 
     if not manifest_path.exists():
         raise FileNotFoundError(
-            f"Phase 11 manifest missing: {manifest_path.relative_to(ROOT)}. "
-            "Run make phase11-run first."
+            f"Phase 11 manifest missing: {manifest_path.relative_to(ROOT)}. " "Run make phase11-run first."
         )
 
     manifest = _read_json(manifest_path)
     tasks = list(manifest["tasks"])
-    expected_ids = [
-        str(payload["id"]) for payload in config["orchestration"]["tasks"]
-    ]
+    expected_ids = [str(payload["id"]) for payload in config["orchestration"]["tasks"]]
     actual_ids = [str(task["task_id"]) for task in tasks]
 
     all_hashes_valid = True
@@ -49,10 +46,7 @@ def main() -> int:
             if str(payload["id"]) == str(task["task_id"])
         )
         expected_paths = {str(path) for path in configured.get("evidence", [])}
-        actual_hashes = {
-            str(path): str(value)
-            for path, value in task.get("evidence_sha256", {}).items()
-        }
+        actual_hashes = {str(path): str(value) for path, value in task.get("evidence_sha256", {}).items()}
         if set(actual_hashes) != expected_paths:
             all_hashes_valid = False
             break
@@ -64,26 +58,17 @@ def main() -> int:
     cron = str(config["scheduler"]["cron_utc"])
 
     gates = {
-        "final_status_pass": (
-            str(manifest["final_status"])
-            == str(acceptance["require_final_status"])
-        ),
+        "final_status_pass": (str(manifest["final_status"]) == str(acceptance["require_final_status"])),
         "task_order_matches_config": actual_ids == expected_ids,
         "all_tasks_pass": (
-            all(str(task["status"]) == "PASS" for task in tasks)
-            is bool(acceptance["require_all_tasks_pass"])
+            all(str(task["status"]) == "PASS" for task in tasks) is bool(acceptance["require_all_tasks_pass"])
         ),
         "no_skipped_tasks": (
             not any(str(task["status"]) == "SKIPPED" for task in tasks)
             is bool(acceptance["require_no_skipped_tasks"])
         ),
-        "evidence_hashes_complete": (
-            all_hashes_valid is bool(acceptance["require_evidence_hashes"])
-        ),
-        "fail_closed": (
-            bool(manifest["fail_closed"])
-            is bool(acceptance["require_fail_closed"])
-        ),
+        "evidence_hashes_complete": (all_hashes_valid is bool(acceptance["require_evidence_hashes"])),
+        "fail_closed": (bool(manifest["fail_closed"]) is bool(acceptance["require_fail_closed"])),
         "automatic_retraining_disabled": (
             bool(manifest["automatic_retraining"]) is False
             and bool(acceptance["require_automatic_retraining_disabled"])
@@ -101,8 +86,7 @@ def main() -> int:
         ),
         "scheduled_workflow_read_only": "contents: read" in workflow_text,
         "scheduled_workflow_uploads_evidence": (
-            "phase11-monitoring-evidence" in workflow_text
-            and "data/evidence/phase11" in workflow_text
+            "phase11-monitoring-evidence" in workflow_text and "data/evidence/phase11" in workflow_text
         ),
     }
 

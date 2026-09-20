@@ -63,10 +63,7 @@ def main() -> int:
     print(f"Automatic promotion.................. {str(run.automatic_promotion).lower()}")
     print()
     for result in run.tasks:
-        print(
-            f"  {result.task_id:<28} {result.status:<7} "
-            f"attempts={result.attempts}"
-        )
+        print(f"  {result.task_id:<28} {result.status:<7} " f"attempts={result.attempts}")
         if result.status != "PASS":
             print(f"    reason: {result.reason}")
 
