@@ -32,6 +32,18 @@ def test_phase11_monitoring_workflow_matches_schedule_contract() -> None:
     assert "data/evidence/phase11" in workflow
     assert "workflow_dispatch" in workflow
 
+    uses_lines = [
+        line.strip().split("uses:", 1)[1].split("#", 1)[0].strip()
+        for line in workflow.splitlines()
+        if line.strip().startswith("- uses:")
+    ]
+    assert uses_lines
+    for value in uses_lines:
+        action, ref = value.rsplit("@", 1)
+        assert action
+        assert len(ref) == 40
+        assert all(character in "0123456789abcdef" for character in ref)
+
 
 def test_phase11_release_version_and_safety_contract() -> None:
     with (ROOT / "pyproject.toml").open("rb") as handle:
