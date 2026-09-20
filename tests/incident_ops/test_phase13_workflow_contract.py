@@ -31,7 +31,9 @@ def test_phase13_release_version_contract() -> None:
 
 
 def test_phase13_is_in_current_scheduled_monitoring_path() -> None:
-    workflow = (ROOT / ".github/workflows/monitoring.yml").read_text(encoding="utf-8")
+    workflow_path = ROOT / ".github/workflows/monitoring.yml"
+    workflow = workflow_path.read_text(encoding="utf-8")
+    payload = yaml.safe_load(workflow)
 
     assert "make phase11-run" in workflow
     assert "python scripts/verify_phase11.py" in workflow
@@ -39,9 +41,21 @@ def test_phase13_is_in_current_scheduled_monitoring_path() -> None:
     assert "python scripts/verify_phase12.py" in workflow
     assert "make phase13-analyze" in workflow
     assert "python scripts/verify_phase13.py" in workflow
-    assert "phase13-incident-ops-evidence" in workflow
-    assert "data/evidence/phase13" in workflow
     assert "contents: read" in workflow
+
+    steps = payload["jobs"]["monitor"]["steps"]
+
+    phase13_uploads = [
+        step
+        for step in steps
+        if isinstance(step, dict)
+        and isinstance(step.get("with"), dict)
+        and step["with"].get("name") == "phase13-incident-ops-evidence"
+    ]
+
+    assert len(phase13_uploads) == 1
+    assert phase13_uploads[0]["with"]["path"] == "data/evidence/phase13"
+    assert phase13_uploads[0]["if"] == "always()"
 
 
 def test_phase13_preserves_phase12_historical_release_contract() -> None:
