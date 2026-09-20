@@ -1,0 +1,139 @@
+phase: 13
+name: incident-sla-operational-evidence
+target_release: "0.13.0"
+
+incident:
+  incident_id: CS4-2026-001
+  source: vendor_b
+  scenario: vendor_b_incident
+  severity: HIGH
+  synthetic: true
+
+timeline:
+  timezone: UTC
+  events:
+    - event_id: evt-001
+      event_type: INCIDENT_STARTED
+      occurred_at: "2026-01-01T00:00:00+00:00"
+      source: vendor_b
+      description: "Synthetic upstream vendor migration begins."
+    - event_id: evt-002
+      event_type: BATCH_INGESTED
+      occurred_at: "2026-01-01T02:00:00+00:00"
+      source: vendor_b
+      description: "Vendor B batch enters the governed scoring pipeline."
+    - event_id: evt-003
+      event_type: DATA_QUALITY_CHECK_STARTED
+      occurred_at: "2026-01-01T03:00:00+00:00"
+      source: phase2_data_quality
+      description: "Phase 2 data-quality evaluation begins."
+    - event_id: evt-004
+      event_type: INCIDENT_DETECTED
+      occurred_at: "2026-01-01T03:04:00+00:00"
+      source: phase2_data_quality
+      description: "Material device_risk_score missingness is detected."
+      evidence_path: data/evidence/phase2/phase2_verification_summary.json
+    - event_id: evt-005
+      event_type: ALERT_CREATED
+      occurred_at: "2026-01-01T03:05:00+00:00"
+      source: phase13_incident_ops
+      description: "Synthetic incident alert evidence is generated."
+    - event_id: evt-006
+      event_type: GOVERNANCE_BLOCKED
+      occurred_at: "2026-01-01T03:06:00+00:00"
+      source: phase2_data_quality
+      description: "Vendor B remains blocked and quarantined."
+      evidence_path: data/evidence/phase2/phase2_verification_summary.json
+    - event_id: evt-007
+      event_type: TRIAGE_STARTED
+      occurred_at: "2026-01-01T06:00:00+00:00"
+      source: phase13_incident_ops
+      description: "Synthetic incident triage begins."
+    - event_id: evt-008
+      event_type: ROOT_CAUSE_COMPLETED
+      occurred_at: "2026-01-01T11:30:00+00:00"
+      source: phase10_root_cause
+      description: "Root-cause ablation evidence is available."
+      evidence_path: data/evidence/phase10/root_cause_ablation.json
+    - event_id: evt-009
+      event_type: INCIDENT_REVIEW_COMPLETED
+      occurred_at: "2026-01-01T13:00:00+00:00"
+      source: phase13_incident_ops
+      description: "Synthetic operational review is completed."
+
+sla:
+  metrics:
+    - name: time_to_detect
+      start_event: INCIDENT_STARTED
+      end_event: INCIDENT_DETECTED
+      target_minutes: 240
+    - name: time_to_alert
+      start_event: INCIDENT_STARTED
+      end_event: ALERT_CREATED
+      target_minutes: 245
+    - name: time_to_block
+      start_event: INCIDENT_STARTED
+      end_event: GOVERNANCE_BLOCKED
+      target_minutes: 250
+    - name: time_to_triage
+      start_event: INCIDENT_STARTED
+      end_event: TRIAGE_STARTED
+      target_minutes: 480
+    - name: time_to_root_cause
+      start_event: INCIDENT_STARTED
+      end_event: ROOT_CAUSE_COMPLETED
+      target_minutes: 2880
+
+alert:
+  alert_id: CS4-DQ-VENDOR-B-001
+  severity: HIGH
+  status: OPEN
+  source: phase2_data_quality
+  signal: device_risk_score_null_rate
+  expected_max: 0.05
+  action: BLOCK_AND_QUARANTINE
+  routing:
+    mode: evidence_only
+    live_paging: false
+
+safety:
+  automatic_retraining: false
+  automatic_promotion: false
+  live_paging: false
+  claim_scope: simulated_incident_sla
+
+evidence:
+  data_contract: contracts/credit_application_contract.yaml
+  phase2_summary: data/evidence/phase2/phase2_verification_summary.json
+  phase9_report: data/evidence/phase9/business_impact.json
+  phase10_report: data/evidence/phase10/root_cause_ablation.json
+  timeline: data/evidence/phase13/incident_timeline.json
+  events: data/evidence/phase13/incident_events.jsonl
+  alert: data/evidence/phase13/alert_record.json
+  sla_summary: data/evidence/phase13/sla_summary.json
+  incident_report: data/evidence/phase13/incident_report.json
+
+acceptance:
+  require_vendor_b_blocked: true
+  require_phase9_vendor_b_scenario: true
+  require_phase10_vendor_b_consistency: true
+  require_timeline_sorted: true
+  require_timezone_aware: true
+  require_required_events: true
+  require_all_slas_pass: true
+  require_alert_after_detection: true
+  require_block_after_detection: true
+  require_triage_after_detection: true
+  require_root_cause_after_triage: true
+  expected_detection_minutes: 184
+  expected_alert_minutes: 185
+  expected_block_minutes: 186
+  expected_triage_minutes: 360
+  expected_root_cause_minutes: 690
+  require_alert_synthetic: true
+  require_live_paging_disabled: true
+  require_automatic_retraining_disabled: true
+  require_automatic_promotion_disabled: true
+  require_traceability_hashes: true
+  require_alert_threshold_matches_contract: true
+  require_events_jsonl_matches_timeline: true

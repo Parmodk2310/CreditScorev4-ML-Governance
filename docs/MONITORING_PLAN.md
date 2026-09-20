@@ -157,3 +157,14 @@ alert routing/on-call ownership, explicit SLOs/error budgets, long-running trend
 windows, release-to-metric correlation, concurrency/load validation, durable
 governance/audit storage, failure injection, access controls, and retention
 policies.
+
+## 11. Phase 13 incident SLA and alert evidence
+
+Phase 13 adds deterministic operational evidence around the existing Vendor B
+incident. It records detection, alert, governance-block, triage, root-cause, and
+review timestamps; evaluates explicit project SLAs; and hashes the prior Phase
+2, 9, and 10 source evidence.
+
+The alert artifact is evidence-only. Live PagerDuty/Slack/email/SNS routing,
+acknowledgment ownership, escalation rotations, and production MTTR remain out
+of scope.

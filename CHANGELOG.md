@@ -4,6 +4,17 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
 
+## v0.13.0 — Incident SLA & Operational Evidence
+
+- Added deterministic Vendor B incident timeline and machine-readable event log.
+- Added synthetic `HIGH` alert evidence for the existing Phase 2 data-quality block.
+- Added project SLA evaluation for detection, alerting, governance block, triage, and root-cause completion.
+- Added SHA-256 lineage to Phase 2, Phase 9, and Phase 10 evidence.
+- Preserved automatic retraining/promotion as disabled and kept live paging out of scope.
+- Promoted `make phase13-verify` to CI and deployment preflight.
+- Extended scheduled monitoring to generate and upload Phase 13 operational evidence.
+- Bumped the application release line to 0.13.0.
+
 ## v0.12.0 — Intersectional Fairness & Proxy-Risk Governance
 
 - Added deterministic Vendor E intersectional proxy-stress evidence while
