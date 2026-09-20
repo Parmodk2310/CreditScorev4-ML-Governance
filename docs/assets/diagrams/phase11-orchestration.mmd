@@ -1,0 +1,10 @@
+flowchart TB
+  A[GitHub Actions schedule\n+ workflow_dispatch] --> B[Scheduler-independent Python orchestrator]
+  B --> C[Dependency-ordered task graph\nPhase 1 → … → Phase 10]
+  C --> D[Per-task command result\n+ required evidence existence]
+  D --> E[Fail closed\nfailed dependency → SKIPPED]
+  D --> F[SHA-256 evidence capture]
+  F --> G[monitoring_run.json]
+  F --> H[monitoring_events.jsonl]
+  I[automatic_retraining = false\nautomatic_promotion = false] -. safety boundary .-> B
+

@@ -1,0 +1,28 @@
+digraph Phase13 {
+  graph [rankdir=LR, labelloc="t", label="Phase 13 — Incident SLA, Alerting & Operational Evidence", fontsize=20];
+  node [shape=box, style="rounded", fontsize=11];
+  p2 [label="Phase 2\nVendor B BLOCK"];
+  p9 [label="Phase 9\nBusiness impact"];
+  p10 [label="Phase 10\nRoot cause"];
+  timeline [label="Deterministic incident timeline"];
+  events [label="incident_events.jsonl"];
+  alert [label="Synthetic HIGH alert\nBLOCK_AND_QUARANTINE"];
+  sla [label="SLA evaluator\nDetection 184m\nBlock 186m\nRoot cause 690m ≤ 2880m"];
+  lineage [label="Cross-phase SHA-256 lineage"];
+  report [label="incident_report.json"];
+  safety [label="live_paging = false\nauto retraining = false\nauto promotion = false"];
+  p2 -> timeline;
+  p9 -> timeline;
+  p10 -> timeline;
+  timeline -> events;
+  timeline -> alert;
+  timeline -> sla;
+  p2 -> lineage;
+  p9 -> lineage;
+  p10 -> lineage;
+  events -> report;
+  alert -> report;
+  sla -> report;
+  lineage -> report;
+  safety -> alert [style=dashed];
+}

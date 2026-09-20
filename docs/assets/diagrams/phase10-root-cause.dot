@@ -1,0 +1,13 @@
+digraph Phase10 {
+  graph [rankdir=LR, labelloc="t", label="Phase 10 — Root-Cause Ablation & Remediation Governance", fontsize=20];
+  node [shape=box, style="rounded", fontsize=11];
+  factors [label="Vendor B factors\nSemantic migration\nElevated missingness"];
+  scenarios [label="2×2 ablation\nhealthy\nsemantic-only\nmissingness-only\ncombined"];
+  fixed [label="Fixed population + labels\nFixed model + threshold"];
+  metrics [label="AUC • approval\napproved default • flips"];
+  diagnostic [label="Median-imputation diagnostic\n+ fixed-model counterfactuals"];
+  candidate [label="q75 validation candidate\nDIAGNOSTIC ONLY"];
+  governance [label="Vendor B remains BLOCKED\nProduction preprocessing unchanged"];
+  evidence [label="Phase 10 evidence + hashes"];
+  factors -> scenarios -> fixed -> metrics -> diagnostic -> candidate -> governance -> evidence;
+}

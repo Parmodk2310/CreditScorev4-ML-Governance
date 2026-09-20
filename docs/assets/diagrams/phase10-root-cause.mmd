@@ -1,0 +1,9 @@
+flowchart LR
+  A[Vendor B factors\nSemantic migration + elevated missingness] --> B[2×2 ablation\nhealthy • semantic-only • missingness-only • combined]
+  B --> C[Fixed population + labels\nFixed model + threshold]
+  C --> D[AUC • approval • approved default • flips]
+  D --> E[Median-imputation diagnostic\n+ fixed-model counterfactuals]
+  E --> F[q75 validation candidate\nDIAGNOSTIC ONLY]
+  F --> G[Vendor B remains BLOCKED\nProduction preprocessing unchanged]
+  G --> H[Phase 10 evidence + SHA-256 lineage]
+

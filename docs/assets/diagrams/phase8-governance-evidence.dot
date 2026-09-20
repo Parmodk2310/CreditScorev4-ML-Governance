@@ -1,0 +1,18 @@
+digraph Phase8 {
+  graph [rankdir=LR, labelloc="t", label="Phase 8 — Governance Evidence & Traceability", fontsize=20];
+  node [shape=box, style="rounded", fontsize=11];
+  edge [fontsize=10];
+  legacy [label="Verified Phase 1–7\ncontrols + evidence"];
+  docs [label="Reviewer docs\nPolicy • Model Card • Validation\nMonitoring • Limitations"];
+  config [label="Executable contracts\nconfigs • source • tests"];
+  contract [label="Phase 8 evidence contract"];
+  verify [label="verify_phase8.py"];
+  manifest [label="reviewer_evidence_manifest.json"];
+  review [label="Recruiter / Engineer /\nGovernance review"];
+  ci [label="CI / deployment preflight"];
+  legacy -> contract;
+  docs -> contract;
+  config -> contract;
+  contract -> verify -> manifest -> review;
+  verify -> ci;
+}

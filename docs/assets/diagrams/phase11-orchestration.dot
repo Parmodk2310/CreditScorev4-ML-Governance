@@ -1,0 +1,19 @@
+digraph Phase11 {
+  graph [rankdir=TB, labelloc="t", label="Phase 11 — Scheduled Monitoring & Governance Orchestration", fontsize=20];
+  node [shape=box, style="rounded", fontsize=11];
+  trigger [label="GitHub Actions schedule\n+ workflow_dispatch"];
+  orch [label="Scheduler-independent\nPython orchestrator"];
+  graphnode [label="Dependency-ordered task graph\nPhase 1 → … → Phase 10"];
+  checks [label="Per-task command result\n+ required evidence existence"];
+  fail [label="Fail closed\nfailed dependency → SKIPPED"];
+  hashes [label="SHA-256 evidence capture"];
+  manifest [label="monitoring_run.json"];
+  events [label="monitoring_events.jsonl"];
+  boundary [label="automatic_retraining = false\nautomatic_promotion = false"];
+  trigger -> orch -> graphnode -> checks;
+  checks -> fail;
+  checks -> hashes;
+  hashes -> manifest;
+  hashes -> events;
+  boundary -> orch [style=dashed];
+}
