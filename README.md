@@ -262,7 +262,7 @@ infrastructure checks before merge:
 Pull request
    |
    +--> Ruff / Black / mypy / compile
-   +--> cumulative Phase 11 verification
+   +--> cumulative Phase 13 verification
    +--> Gitleaks
    +--> Trivy filesystem + Terraform scan
    +--> Docker build + smoke test
@@ -288,7 +288,8 @@ The repository currently verifies the following boundaries:
 | Phase 10 root-cause/remediation suite | **6 passed** |
 | Phase 11 orchestration suite | **10 passed** |
 | Phase 12 fairness/proxy-risk suite | **11 passed** |
-| Focused tests exercised by cumulative Phase 12 gate | **102 passed** |
+| Phase 13 incident-operations suite | **16 passed** |
+| Focused tests exercised by cumulative Phase 13 gate | **118 passed** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
@@ -324,7 +325,7 @@ python -m pip install -e ".[dev]"
 
 ```bash
 make quality
-make phase12-verify
+make phase13-verify
 make phase7-terraform
 ```
 
@@ -347,6 +348,8 @@ python scripts/run_monitoring_cycle.py --run-id reviewer-demo
 python scripts/verify_phase11.py
 python scripts/analyze_fairness_proxy.py
 python scripts/verify_phase12.py
+python scripts/analyze_incident_sla.py
+python scripts/verify_phase13.py
 ```
 
 ### Run the test suite
@@ -395,6 +398,7 @@ You do not need to read every document to understand the project.
 - [`docs/PHASE10.md`](docs/PHASE10.md) — root-cause ablation, remediation evidence, and non-claims
 - [`docs/PHASE11.md`](docs/PHASE11.md) — scheduled monitoring, dependency semantics, evidence, and safety boundaries
 - [`docs/PHASE12.md`](docs/PHASE12.md) — intersectional fairness, equal-opportunity evidence, and proxy-risk screening
+- [`docs/PHASE13.md`](docs/PHASE13.md) — simulated incident timeline, alert evidence, SLA evaluation, and lineage
 - [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) — commands for reproducing the verified scenarios
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit project boundaries and non-claims
 
@@ -427,7 +431,8 @@ It **does not claim**:
 - causal conclusions from SHAP or fairness metrics;
 - a currently active production AWS environment;
 - a managed MLflow/Airflow/Kubernetes platform;
-- live production monitoring, paging/on-call integration, or automatic retraining.
+- live production monitoring or paging/on-call integration; Phase 13 generates simulated alert/SLA evidence only.
+- automatic retraining or automatic promotion.
 
 ## Project structure
 
@@ -460,3 +465,17 @@ Released under the [`MIT License`](LICENSE).
 ---
 
 **Primary focus:** ML governance · model risk · safe release engineering · MLOps · AWS/Terraform
+
+## Phase 13 incident operations evidence
+
+Phase 13 connects the existing Vendor B data-quality incident, Phase 9
+business-impact evidence, and Phase 10 root-cause analysis into a deterministic
+operational incident timeline.
+
+The simulated fixture records **3h04m to detection**, **3h06m to governance
+block**, **6h00m to triage**, and **11h30m to root-cause completion** against a
+configured **<=48h project root-cause SLA**. A machine-readable `HIGH` alert is
+generated as evidence only; no live paging or on-call integration is claimed.
+
+Phase 13 verifies SHA-256 lineage back to the Phase 2, Phase 9, and Phase 10
+source evidence and keeps automatic retraining and automatic promotion disabled.

@@ -38,6 +38,12 @@ jobs:
       - name: Verify Phase 12 fairness and proxy-risk evidence
         run: python scripts/verify_phase12.py
 
+      - name: Run Phase 13 incident SLA and alert analysis
+        run: make phase13-analyze
+
+      - name: Verify Phase 13 incident operational evidence
+        run: python scripts/verify_phase13.py
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
@@ -49,3 +55,9 @@ jobs:
         with:
           name: phase12-fairness-proxy-evidence
           path: data/evidence/phase12
+
+- uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: phase13-incident-ops-evidence
+          path: data/evidence/phase13

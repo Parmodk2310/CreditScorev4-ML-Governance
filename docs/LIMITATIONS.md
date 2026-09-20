@@ -51,8 +51,8 @@ environment so failure modes and governance behavior are reproducible.
   scheduler database, worker fleet, or historical backfill service.
 - Scheduled runs are synthetic governance-control executions, not continuous
   monitoring of a live lending system.
-- No PagerDuty/Slack/on-call alert routing or incident acknowledgment workflow
-  is implemented.
+- Phase 13 generates deterministic synthetic alert and SLA evidence, but no
+  PagerDuty/Slack/on-call routing, acknowledgment, or escalation workflow is implemented.
 - Automatic retraining and automatic promotion are deliberately disabled.
 
 ## Cloud

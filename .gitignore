@@ -115,3 +115,8 @@ models/baseline/*.joblib
 /data/evidence/phase12/*.csv
 !data/raw/vendor_e/.gitkeep
 !data/evidence/phase12/.gitkeep
+
+# Phase 13 generated incident operations evidence
+/data/evidence/phase13/*.json
+/data/evidence/phase13/*.jsonl
+!data/evidence/phase13/.gitkeep

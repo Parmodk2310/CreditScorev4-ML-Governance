@@ -197,3 +197,14 @@ git diff --check
 A claim should not be treated as release evidence merely because it appears in a
 Markdown file. Configuration, source, tests, and generated evidence are the
 authoritative implementation boundary.
+
+## Phase 13 — incident SLA and operational evidence
+
+- `data/evidence/phase13/incident_timeline.json`
+- `data/evidence/phase13/incident_events.jsonl`
+- `data/evidence/phase13/alert_record.json`
+- `data/evidence/phase13/sla_summary.json`
+- `data/evidence/phase13/incident_report.json`
+
+The Phase 13 incident report records SHA-256 lineage to the Phase 2 data-quality,
+Phase 9 business-impact, and Phase 10 root-cause reports.

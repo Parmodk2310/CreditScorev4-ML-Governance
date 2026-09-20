@@ -191,7 +191,7 @@ phase7-terraform:
 phase7-clean:
 	rm -f data/evidence/phase7/*.json
 
-clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean phase12-clean
+clean: phase1-clean phase2-clean phase3-clean phase4-clean phase5-clean phase6-clean phase7-clean phase8-clean phase9-clean phase10-clean phase11-clean phase12-clean phase13-clean
 
 
 # Phase 8 — governance evidence and reviewer experience
@@ -282,3 +282,21 @@ phase12-verify:
 phase12-clean:
 	rm -f data/evidence/phase12/*.json data/evidence/phase12/*.csv
 	rm -f data/raw/vendor_e/*.csv
+
+# Phase 13 — incident SLA & operational evidence
+.PHONY: phase13-analyze phase13-test phase13-verify phase13-clean
+
+phase13-analyze:
+	$(PYTHON) scripts/analyze_incident_sla.py
+
+phase13-test:
+	$(PYTHON) -m pytest tests/incident_ops tests/integration/test_phase13_incident_sla_pipeline.py
+
+phase13-verify:
+	$(MAKE) phase12-verify
+	$(PYTHON) scripts/analyze_incident_sla.py
+	$(PYTHON) scripts/verify_phase13.py
+	$(PYTHON) -m pytest tests/incident_ops tests/integration/test_phase13_incident_sla_pipeline.py
+
+phase13-clean:
+	rm -f data/evidence/phase13/*.json data/evidence/phase13/*.jsonl

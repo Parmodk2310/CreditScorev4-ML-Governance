@@ -189,3 +189,14 @@ Useful close:
 > No single control is expected to detect every ML failure. The architecture
 > uses defense in depth so data quality, drift, fairness, governance, and release
 > controls independently stop unsafe progression at the correct layer.
+
+## Phase 13 — incident SLA and alert evidence
+
+```bash
+make phase13-analyze
+python scripts/verify_phase13.py
+make phase13-test
+```
+
+Expected deterministic root-cause completion: `690` minutes (`11h30m`) against
+the configured `2880` minute (`48h`) project SLA.

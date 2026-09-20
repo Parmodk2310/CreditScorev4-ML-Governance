@@ -102,6 +102,7 @@ def main() -> int:
                 or "make phase10-verify" in ci_workflow
                 or "make phase11-verify" in ci_workflow
                 or "make phase12-verify" in ci_workflow
+                or "make phase13-verify" in ci_workflow
             )
             and "make phase7-verify" not in ci_workflow
         ),
@@ -112,6 +113,7 @@ def main() -> int:
                 or "make phase10-verify" in deploy_workflow
                 or "make phase11-verify" in deploy_workflow
                 or "make phase12-verify" in deploy_workflow
+                or "make phase13-verify" in deploy_workflow
             )
             and "make phase7-verify" not in deploy_workflow
         ),
