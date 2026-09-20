@@ -60,23 +60,19 @@ def main() -> int:
 
     semantic_auc_drop = _f(healthy, "roc_auc") - _f(semantic, "roc_auc")
     missingness_approval_increase = _f(missingness, "approval_rate") - _f(healthy, "approval_rate")
-    semantic_default_increase = (
-        _f(semantic, "approved_default_rate") - _f(healthy, "approved_default_rate")
-    )
-    missingness_default_increase = (
-        _f(missingness, "approved_default_rate") - _f(healthy, "approved_default_rate")
+    semantic_default_increase = _f(semantic, "approved_default_rate") - _f(healthy, "approved_default_rate")
+    missingness_default_increase = _f(missingness, "approved_default_rate") - _f(
+        healthy, "approved_default_rate"
     )
 
     oracle_auc_improvement = _f(oracle_metrics, "roc_auc") - _f(combined, "roc_auc")
     oracle_approval_reduction = _f(combined, "approval_rate") - _f(oracle_metrics, "approval_rate")
-    oracle_default_reduction = (
-        _f(combined, "approved_default_rate") - _f(oracle_metrics, "approved_default_rate")
+    oracle_default_reduction = _f(combined, "approved_default_rate") - _f(
+        oracle_metrics, "approved_default_rate"
     )
 
     candidate_auc_improvement = (
-        _f(candidate_metrics, "roc_auc") - _f(combined, "roc_auc")
-        if candidate_present
-        else float("-inf")
+        _f(candidate_metrics, "roc_auc") - _f(combined, "roc_auc") if candidate_present else float("-inf")
     )
     candidate_approval_gap = (
         abs(_f(candidate_metrics, "approval_rate") - _f(healthy, "approval_rate"))
@@ -89,9 +85,7 @@ def main() -> int:
         else float("-inf")
     )
     candidate_residual_auc_gap = (
-        _f(healthy, "roc_auc") - _f(candidate_metrics, "roc_auc")
-        if candidate_present
-        else float("-inf")
+        _f(healthy, "roc_auc") - _f(candidate_metrics, "roc_auc") if candidate_present else float("-inf")
     )
     candidate_residual_default_gap = (
         _f(candidate_metrics, "approved_default_rate") - _f(healthy, "approved_default_rate")
@@ -123,7 +117,14 @@ def main() -> int:
         ),
         "factorial_effects_present": (
             set(effects)
-            >= {"roc_auc", "pr_auc", "brier_score", "approval_rate", "approved_default_rate", "mean_predicted_risk"}
+            >= {
+                "roc_auc",
+                "pr_auc",
+                "brier_score",
+                "approval_rate",
+                "approved_default_rate",
+                "mean_predicted_risk",
+            }
         ),
         "semantic_auc_drop_material": semantic_auc_drop >= float(acceptance["minimum_semantic_auc_drop"]),
         "missingness_approval_increase_material": (
@@ -193,8 +194,7 @@ def main() -> int:
     if candidate_present:
         print(f"  {candidate_name} AUC...................... {_f(candidate_metrics, 'roc_auc'):.4f}")
         print(
-            f"  {candidate_name} approval................. "
-            f"{_f(candidate_metrics, 'approval_rate'):.2%}"
+            f"  {candidate_name} approval................. " f"{_f(candidate_metrics, 'approval_rate'):.2%}"
         )
         print(
             f"  {candidate_name} approved default......... "
