@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Generate Phase 10 root-cause ablation and remediation evidence."""
 
 from __future__ import annotations
@@ -24,7 +25,13 @@ from creditscore.root_cause import (
     fitted_device_median,
     predict_with_device_value_override,
 )
-from creditscore.utils.config import decision_target_column, decision_threshold, load_config, load_yaml, project_root
+from creditscore.utils.config import (
+    decision_target_column,
+    decision_threshold,
+    load_config,
+    load_yaml,
+    project_root,
+)
 from creditscore.utils.hashing import file_sha256
 
 
