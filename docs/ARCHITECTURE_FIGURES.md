@@ -48,11 +48,10 @@ Phase-specific diagrams are retained in Mermaid, Graphviz, and rendered SVG form
 
 ---
 
-## Supplemental state/history diagrams
+## Supplemental state diagram
 
 | Figure | Mermaid | Graphviz | Rendered SVG |
 |---|---|---|---|
-| Historical Phase 1–7 overview | [`phase1-7-end-to-end.mmd`](assets/diagrams/phase1-7-end-to-end.mmd) | [`phase1-7-end-to-end.dot`](assets/diagrams/phase1-7-end-to-end.dot) | [`phase1-7-end-to-end.svg`](assets/diagrams/phase1-7-end-to-end.svg) |
 | Registry/release state machine | [`release-state.mmd`](assets/diagrams/release-state.mmd) | [`release-state.dot`](assets/diagrams/release-state.dot) | [`release-state.svg`](assets/diagrams/release-state.svg) |
 
 ---

@@ -12,7 +12,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIAGRAM_DIR = ROOT / "docs" / "assets" / "diagrams"
 FIGURE_INDEX = ROOT / "docs" / "ARCHITECTURE_FIGURES.md"
-PHASE8_13_INDEX = ROOT / "docs" / "PHASE8_13_ARCHITECTURE.md"
 README = ROOT / "README.md"
 ARCHITECTURE = ROOT / "ARCHITECTURE.md"
 
@@ -39,12 +38,7 @@ PRIMARY_SYSTEM_DIAGRAMS = (
     "delivery-controls",
 )
 
-PHASE8_13 = REQUIRED[7:13]
-
-SUPPLEMENTAL = (
-    "phase1-7-end-to-end",
-    "release-state",
-)
+SUPPLEMENTAL = ("release-state",)
 
 
 def fail(message: str) -> None:
@@ -143,7 +137,6 @@ def validate_system_set(stem: str) -> None:
 
 def main() -> int:
     figure_index = FIGURE_INDEX.read_text(encoding="utf-8")
-    phase8_13_index = PHASE8_13_INDEX.read_text(encoding="utf-8")
     readme = README.read_text(encoding="utf-8")
     architecture = ARCHITECTURE.read_text(encoding="utf-8")
 
@@ -170,10 +163,6 @@ def main() -> int:
             fail(f"{FIGURE_INDEX}: missing architecture entry for {stem}")
 
         print(f"DIAGRAM VALID: {stem}")
-
-    for stem in PHASE8_13:
-        if stem not in phase8_13_index:
-            fail(f"{PHASE8_13_INDEX}: missing architecture entry for {stem}")
 
     for stem in SUPPLEMENTAL:
         mmd = DIAGRAM_DIR / f"{stem}.mmd"

@@ -1,7 +1,0 @@
-flowchart LR
-  P1[Phase 1<br/>Incident baseline<br/>AUC 0.8025 -> 0.7329] --> P2[Phase 2<br/>Data quality<br/>Vendor B BLOCK]
-  P2 --> P3[Phase 3<br/>Drift governance<br/>Vendor C CRITICAL]
-  P3 --> P4[Phase 4<br/>Fairness + SHAP<br/>Vendor D FAIL]
-  P4 --> P5[Phase 5<br/>Governance + registry<br/>APPROVE / REJECT]
-  P5 --> P6[Phase 6<br/>Serving + safe release<br/>shadow / canary / rollback]
-  P6 --> P7[Phase 7<br/>CI/CD + AWS/Terraform<br/>fail-closed deployment]

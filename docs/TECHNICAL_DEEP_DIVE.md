@@ -18,8 +18,9 @@ Runtime degradation -> rollback
 ## Architecture maps
 
 - Complete figure index: [`ARCHITECTURE_FIGURES.md`](ARCHITECTURE_FIGURES.md)
-- Phase 8–13 detail: [`PHASE8_13_ARCHITECTURE.md`](PHASE8_13_ARCHITECTURE.md)
-- End-to-end rendered view: [`assets/diagrams/phase1-13-end-to-end.svg`](assets/diagrams/phase1-13-end-to-end.svg)
+- Canonical system view: [`assets/diagrams/system-overview.svg`](assets/diagrams/system-overview.svg)
+- Governance/release model: [`assets/diagrams/governance-release-model.svg`](assets/diagrams/governance-release-model.svg)
+- Delivery controls: [`assets/diagrams/delivery-controls.svg`](assets/diagrams/delivery-controls.svg)
 
 ## Why evaluate the same model after Vendor B?
 

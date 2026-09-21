@@ -16,7 +16,7 @@ documents:
 
 visuals:
   required:
-    - docs/assets/diagrams/phase1-7-end-to-end.svg
+    - docs/assets/diagrams/system-overview.svg
     - docs/assets/diagrams/release-state.svg
     - docs/assets/screenshots/01-incident-baseline.png
     - docs/assets/screenshots/02-data-quality-block.png
