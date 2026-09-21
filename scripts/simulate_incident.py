@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Apply Vendor B migration to the healthy holdout and evaluate the same model."""
 
 from __future__ import annotations
