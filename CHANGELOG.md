@@ -4,6 +4,27 @@ All notable releases of CreditScoreV4 ML Governance are documented here.
 
 The phased releases record the evolution from incident reproduction to governed model delivery.
 
+## v1.0.1 — Stability & Consistency Hardening
+
+This maintenance release tightens consistency between the repository's governance claims and the serving/runtime implementation without adding a new project phase.
+
+### Fixed
+
+- Aligned installed package and FastAPI runtime version metadata at `1.0.1`.
+- Applied the shared versioned credit-application contract to online scoring requests.
+- Recorded the generated model SHA-256 in Phase 1 evidence and verified it before model deserialization.
+- Removed internal model-path disclosure from the `/model` response.
+- Replaced raw serving exception disclosure with stable client-facing errors.
+- Replaced raw request-path Prometheus labels with bounded route-template labels.
+- Added a stable product-level decision-policy contract for the synthetic `0.50` approval threshold.
+
+### Validation and scope
+
+- Preserved the documented 118-test release count by strengthening existing tests rather than adding superficial test cases.
+- Clarified that the current model fixture uses deterministic stratified random holdout validation, not out-of-time credit validation.
+- Clarified that fairness results are deterministic point estimates and do not claim confidence intervals or population-level inference.
+- Clarified that SHA-256 integrity checks are not equivalent to signed build provenance.
+
 ## v1.0.0 — Stable ML Governance Case Study
 
 CreditScoreV4 reaches its first stable release after the Phase 1–13 engineering
@@ -168,7 +189,6 @@ It does not claim:
 - Updated Phase 7/8 and repository-state documentation.
 - Strengthened documentation-consistency tests.
 
-
 ## v0.8.0 — Governance Evidence & Traceability
 
 - Added structured documentation navigation and evidence traceability.
@@ -182,7 +202,6 @@ It does not claim:
 - Added focused tests for policy, registry, release, documentation, and deployment contracts.
 - Removed/moved historical implementation-package material from the repository root.
 - Kept Phase 1–7 runtime behavior unchanged.
-
 
 ## v0.7.0 — Automated Delivery and Gated Cloud Deployment
 

@@ -12,6 +12,7 @@ COPY configs ./configs
 COPY contracts ./contracts
 COPY scripts ./scripts
 COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
+COPY data/evidence/phase1/baseline_metrics.json ./data/evidence/phase1/baseline_metrics.json
 
 RUN python -m pip install . -c constraints.lock \
     && groupadd --gid 10001 creditscore \

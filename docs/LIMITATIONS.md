@@ -14,6 +14,7 @@ CreditScoreV4 ML Governance uses a constrained synthetic environment so failure 
 - The model is not validated for real credit decisioning.
 - Thresholds are project assumptions.
 - Reported metrics describe generated project fixtures only.
+- The current development fixture uses a deterministic stratified random holdout; no out-of-time credit-model validation is claimed.
 - No external validation population is claimed.
 
 ## Fairness
@@ -26,17 +27,21 @@ CreditScoreV4 ML Governance uses a constrained synthetic environment so failure 
   prohibited proxy.
 - Intersectional thresholds and minimum-support rules are project engineering
   heuristics, not regulatory standards.
+- Current fairness outputs are deterministic point estimates; confidence intervals and population-level uncertainty are not claimed.
 
 ## Governance
 
 - Promotion thresholds are engineering heuristics.
 - The registry and audit implementation are project-owned.
+- SHA-256 evidence and model digests provide integrity checks against recorded values, not independent proof of build provenance or artifact authenticity.
 - The project does not claim regulatory compliance.
 - The repository is not a substitute for independent model validation,
   compliance review, or legal review.
 
 ## Serving and release
 
+- Online row-level scoring requests are checked against the shared versioned data contract, while batch-level rules remain part of offline governance.
+- The model digest is checked before deserialization against generated Phase 1 evidence; signed provenance/attestations remain outside the current scope.
 - Shadow/canary behavior is exercised through deterministic controlled simulations/tests.
 - It is not equivalent to large-scale live production traffic mirroring.
 - Performance under high concurrency has not been established in this repository.

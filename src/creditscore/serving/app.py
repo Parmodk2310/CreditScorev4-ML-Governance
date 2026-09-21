@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
@@ -14,6 +15,7 @@ from fastapi.responses import PlainTextResponse
 
 from creditscore import __version__
 from creditscore.utils.config import load_yaml
+from creditscore.validation import RecordContractValidator, load_data_contract
 
 from .metrics import ServingMetrics
 from .predictor import ModelPredictor
@@ -27,6 +29,28 @@ from .schemas import (
     ReadyResponse,
 )
 
+LOGGER = logging.getLogger(__name__)
+
+
+def _resolve_path(project_root: Path, value: str) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else project_root / path
+
+
+def _load_expected_model_digest(project_root: Path, serving: dict[str, Any]) -> str:
+    evidence_path = _resolve_path(
+        project_root,
+        str(serving.get("model_evidence_path", "data/evidence/phase1/baseline_metrics.json")),
+    )
+    if not evidence_path.is_file():
+        raise RuntimeError("Model integrity evidence is missing")
+
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    digest = str(payload.get("model_artifact_sha256", "")).strip().lower()
+    if len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+        raise RuntimeError("Model integrity evidence does not contain a valid SHA-256 digest")
+    return digest
+
 
 def create_app(
     *,
@@ -38,12 +62,23 @@ def create_app(
     project_root = Path(root or Path.cwd())
     phase6 = config or load_yaml(project_root / "configs" / "phase6.yaml")
     serving = phase6["serving"]
-    predictor = predictor or ModelPredictor(
-        model_path=project_root / str(serving["model_path"]),
-        model_name=str(serving["model_name"]),
-        model_version=str(serving["model_version"]),
-        decision_threshold=float(serving["decision_threshold"]),
+
+    contract_path = _resolve_path(
+        project_root,
+        str(serving.get("contract_path", "contracts/credit_application_contract.yaml")),
     )
+    record_validator = RecordContractValidator(load_data_contract(contract_path))
+
+    if predictor is None:
+        expected_digest = _load_expected_model_digest(project_root, serving)
+        predictor = ModelPredictor(
+            model_path=project_root / str(serving["model_path"]),
+            model_name=str(serving["model_name"]),
+            model_version=str(serving["model_version"]),
+            decision_threshold=float(serving["decision_threshold"]),
+            expected_artifact_sha256=expected_digest,
+        )
+
     metrics = metrics or ServingMetrics()
     max_batch_size = int(serving["max_batch_size"])
 
@@ -73,8 +108,29 @@ def create_app(
             return response
         finally:
             elapsed = time.perf_counter() - started
-            metrics.requests.labels(request.method, request.url.path, str(response_status)).inc()
-            metrics.request_latency.labels(request.url.path).observe(elapsed)
+            route = request.scope.get("route")
+            route_label = str(getattr(route, "path", "unmatched") or "unmatched")
+            metrics.requests.labels(request.method, route_label, str(response_status)).inc()
+            metrics.request_latency.labels(route_label).observe(elapsed)
+
+    def validated_records(items: list[CreditApplicationRequest]) -> list[dict[str, Any]]:
+        records = [item.model_dump() for item in items]
+        violations: list[dict[str, Any]] = []
+        for index, record in enumerate(records):
+            for violation in record_validator.validate(record):
+                item: dict[str, Any] = violation.to_dict()
+                item["record_index"] = index
+                violations.append(item)
+        if violations:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={
+                    "code": "INPUT_CONTRACT_VIOLATION",
+                    "message": "Request does not satisfy the governed scoring contract.",
+                    "violations": violations,
+                },
+            )
+        return records
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:
@@ -90,21 +146,29 @@ def create_app(
     @app.get("/model", response_model=ModelInfoResponse)
     def model_info() -> ModelInfoResponse:
         if not predictor.ready:
-            raise HTTPException(status_code=503, detail="Model is not ready")
+            raise HTTPException(status_code=503, detail="Model service unavailable")
         return ModelInfoResponse(
             model_name=predictor.model_name,
             model_version=predictor.model_version,
-            model_path=str(predictor.model_path),
             artifact_sha256=predictor.artifact_sha256,
             decision_threshold=predictor.decision_threshold,
         )
 
     @app.post("/predict", response_model=PredictionResponse)
     def predict(payload: CreditApplicationRequest) -> PredictionResponse:
+        record = validated_records([payload])[0]
         try:
-            result = predictor.predict_one(payload.model_dump())
-        except (RuntimeError, ValueError) as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+            result = predictor.predict_one(record)
+        except ValueError as exc:
+            LOGGER.warning("Prediction rejected by model-input validation", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid model input",
+            ) from exc
+        except RuntimeError as exc:
+            LOGGER.exception("Prediction service unavailable")
+            raise HTTPException(status_code=503, detail="Model service unavailable") from exc
+
         metrics.record_prediction(
             predicted_default=result.predicted_default,
             approved=result.approved,
@@ -121,10 +185,20 @@ def create_app(
                 status_code=413,
                 detail=f"Batch size exceeds configured maximum of {max_batch_size}",
             )
+
+        records = validated_records(payload.applications)
         try:
-            results = predictor.predict_batch([item.model_dump() for item in payload.applications])
-        except (RuntimeError, ValueError) as exc:
-            raise HTTPException(status_code=503, detail=str(exc)) from exc
+            results = predictor.predict_batch(records)
+        except ValueError as exc:
+            LOGGER.warning("Batch prediction rejected by model-input validation", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid model input",
+            ) from exc
+        except RuntimeError as exc:
+            LOGGER.exception("Batch prediction service unavailable")
+            raise HTTPException(status_code=503, detail="Model service unavailable") from exc
+
         for result in results:
             metrics.record_prediction(
                 predicted_default=result.predicted_default,

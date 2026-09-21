@@ -16,8 +16,8 @@
   <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml">
     <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml/badge.svg" alt="Container image" />
   </a>
-  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0">
-    <img src="https://img.shields.io/badge/release-v1.0.0-2ea44f" alt="Release v1.0.0" />
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.1">
+    <img src="https://img.shields.io/badge/release-v1.0.1-2ea44f" alt="Release v1.0.1" />
   </a>
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
 </p>
@@ -107,7 +107,7 @@ GET  /model
 GET  /metrics
 ```
 
-The serving layer exposes Prometheus-compatible operational metrics and model metadata.
+Online requests are checked against the same versioned credit-application contract used by the offline governance path. Before model deserialization, serving verifies the persisted model SHA-256 against the generated Phase 1 evidence. Prometheus HTTP metrics use bounded route-template labels rather than raw request paths.
 
 ## Scheduled governance
 
@@ -133,7 +133,7 @@ The AWS path uses GitHub OIDC, immutable ECR image digests, persistent Terraform
 
 ## Verification
 
-The current v1.0.0 release verifies:
+The current v1.0.1 release verifies:
 
 | Boundary | Status |
 |---|---:|
@@ -179,7 +179,7 @@ make quality
 make release-verify
 ```
 
-Run the API after generating the deterministic model artifact:
+Run the API after generating the deterministic model artifact and its integrity evidence:
 
 ```bash
 python scripts/verify_phase1.py
@@ -193,7 +193,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 ├── .github/workflows/       # CI, security, monitoring, image, gated deployment
 ├── constraints.lock         # exact Python 3.12 CI dependency resolution
 ├── configs/                 # versioned control / historical phase contracts
-├── contracts/               # data contract
+├── contracts/               # shared offline/online data contract
 ├── data/                    # generated evidence, audit, quarantine, registry, release
 ├── docker/                  # serving and local observability
 ├── docs/                    # engineering documentation and architecture assets
@@ -233,9 +233,9 @@ It does not claim:
 
 ## Release
 
-Current stable release: **v1.0.0**
+Current stable release: **v1.0.1**
 
-See [`CHANGELOG.md`](CHANGELOG.md) and the [v1.0.0 release](https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0).
+See [`CHANGELOG.md`](CHANGELOG.md) and the [v1.0.1 release](https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.1).
 
 ## License
 

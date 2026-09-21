@@ -8,6 +8,8 @@ serving:
   model_name: CreditScoreV4
   model_version: 0.5.0-healthy
   model_path: models/baseline/creditscorev4.joblib
+  model_evidence_path: data/evidence/phase1/baseline_metrics.json
+  contract_path: contracts/credit_application_contract.yaml
   decision_threshold: 0.50
   max_batch_size: 500
 

@@ -11,13 +11,13 @@ class ServingMetrics:
         self.requests = Counter(
             "creditscore_http_requests_total",
             "HTTP requests handled by the CreditScoreV4 API.",
-            ["method", "path", "status"],
+            ["method", "route", "status"],
             registry=self.registry,
         )
         self.request_latency = Histogram(
             "creditscore_http_request_duration_seconds",
             "HTTP request duration in seconds.",
-            ["path"],
+            ["route"],
             registry=self.registry,
         )
         self.predictions = Counter(
