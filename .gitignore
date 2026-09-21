@@ -23,6 +23,7 @@ data/evidence/phase1/*.json
 data/evidence/phase1/*.csv
 data/evidence/phase1/*.png
 models/baseline/*.joblib
+models/baseline/*.joblib.sha256
 
 # Phase 2 generated governance evidence / quarantine
 /data/evidence/phase2/*.json
