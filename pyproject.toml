@@ -31,6 +31,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8,<10",
+    "pytest-cov>=7.1,<8",
     "ruff>=0.8,<1",
     "black>=24,<27",
     "mypy>=1.13,<2",
@@ -67,3 +68,13 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 check_untyped_defs = true
+
+[tool.coverage.run]
+branch = true
+source = ["creditscore"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
