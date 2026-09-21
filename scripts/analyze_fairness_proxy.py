@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Generate Phase 12 intersectional fairness and proxy-risk evidence."""
 
 from __future__ import annotations
