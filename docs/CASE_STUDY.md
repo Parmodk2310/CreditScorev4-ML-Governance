@@ -25,9 +25,9 @@ The current release preserves the historical 63-test Phase 1–7 regression boun
 
 Current architecture: [`ARCHITECTURE_FIGURES.md`](ARCHITECTURE_FIGURES.md), including the complete Phase 1–13 view.
 
-## 2. Why I Built This
+## 2. Engineering Motivation
 
-Typical ML projects answer: “Can I train a model?” Production ML systems must answer harder questions:
+The system is designed around operational questions that are not covered by model training alone:
 
 - Is incoming data still trustworthy?
 - Is it statistically similar to the reference population?
@@ -37,7 +37,7 @@ Typical ML projects answer: “Can I train a model?” Production ML systems mus
 - Can an approved candidate still be rolled out safely?
 - Can CI/CD fail closed when deployment prerequisites are absent?
 
-This project was built to exercise those engineering questions in one coherent system.
+The synthetic environment exercises those engineering questions in one controlled system.
 
 ## 3. Failure Scenario
 
@@ -353,9 +353,9 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - No production paging/on-call integration or automatic retraining/promotion is implemented.
 - Load, fault-injection, multi-region resilience, and long-running SLO evidence remain outside the current scope.
 
-## 19. What I Would Build Next
+## 19. Future Work
 
-The next iteration should deepen operational realism rather than add more isolated features:
+Future work focuses on operational realism rather than additional isolated features:
 
 1. **Managed registry backend** — MLflow or equivalent while keeping the current evidence/policy contract.
 2. **Durable orchestration backend when scale warrants it** — Airflow, Dagster, or Argo with backfill/history while preserving the current task/governance contract.
@@ -369,7 +369,7 @@ The next iteration should deepen operational realism rather than add more isolat
 
 Phase 8 adds an evidence-traceability layer over the existing Phase 1–7
 implementation. It connects policy, release control, tests, screenshots, and
-generated artifacts into a reviewable contract rather than creating a second
+generated artifacts into a traceable contract rather than creating a second
 governance system.
 
 Useful entry points:
@@ -385,8 +385,8 @@ Useful entry points:
 
 `scripts/verify_phase8.py` checks that documentation remains aligned
 with executable Phase 5–7 configuration and generated Phase 1–7 evidence. This
-reduces documentation drift: a README or case study should not silently claim a
-threshold, state transition, release outcome, or deployment property the
+reduces documentation drift by preventing documentation from claiming a
+threshold, state transition, release outcome, or deployment property that the
 repository no longer implements.
 
 

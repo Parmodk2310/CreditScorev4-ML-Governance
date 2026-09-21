@@ -9,8 +9,8 @@ It does not add another ML platform, orchestration framework, or cloud stack.
 Instead, it makes existing implementation claims easier to verify, reproduce,
 explain, and trace.
 
-> Every important public claim should be traceable to executable
-> configuration, source code, tests, or generated evidence.
+> Each documented claim must be traceable to executable configuration, source
+> code, tests, or generated evidence.
 
 ## Existing baseline
 
@@ -24,19 +24,11 @@ Phase 8 builds on:
 6. FastAPI serving plus shadow/canary/rollback,
 7. CI, security scanning, Docker, Terraform, and gated AWS ECS/Fargate delivery.
 
-## Documentation paths
+## Documentation map
 
-### Overview
-
-`README -> 60-second story -> architecture -> evidence -> outcomes -> case study`
-
-### Senior ML / MLOps engineer
-
-`README -> ARCHITECTURE -> TECHNICAL_DEEP_DIVE -> GOVERNANCE_POLICY -> source -> tests -> REPRODUCIBLE_DEMO`
-
-### Governance review
-
-`MODEL_CARD -> MODEL_VALIDATION_REPORT -> GOVERNANCE_POLICY -> MONITORING_PLAN -> EVIDENCE_INDEX -> LIMITATIONS`
+- System architecture: `README -> ARCHITECTURE -> ARCHITECTURE_FIGURES`
+- Governance controls: `GOVERNANCE_POLICY -> MODEL_CARD -> MODEL_VALIDATION_REPORT -> MONITORING_PLAN`
+- Evidence and reproduction: `EVIDENCE_INDEX -> TECHNICAL_DEEP_DIVE -> REPRODUCIBLE_DEMO -> LIMITATIONS`
 
 ## Phase 8 deliverables
 
@@ -48,7 +40,7 @@ Governance documentation:
 - `docs/MONITORING_PLAN.md`
 - `docs/LIMITATIONS.md`
 
-Governance documentation:
+Evidence and implementation documentation:
 
 - `docs/EVIDENCE_INDEX.md`
 - `docs/TECHNICAL_DEEP_DIVE.md`

@@ -19,7 +19,7 @@ python -m pip install -e ".[dev]"
 python scripts/verify_phase1.py
 ```
 
-Explain: healthy Vendor A is the reference, the same saved model is evaluated
+Expected observation: healthy Vendor A is the reference, the same saved model is evaluated
 after Vendor B migration, and AUC/missingness degrade.
 
 Evidence: `data/evidence/phase1/`
@@ -30,7 +30,7 @@ Evidence: `data/evidence/phase1/`
 python scripts/verify_phase2.py
 ```
 
-Explain: Vendor A passes, Vendor B is blocked, and failed data/evidence is
+Expected observation: Vendor A passes, Vendor B is blocked, and failed data/evidence is
 preserved rather than silently accepted.
 
 ## 3. Contract-valid drift
@@ -39,7 +39,7 @@ preserved rather than silently accepted.
 python scripts/verify_phase3.py
 ```
 
-Explain: Vendor C passes data quality but creates critical feature/prediction
+Expected observation: Vendor C passes data quality but creates critical feature/prediction
 drift.
 
 Evidence: `data/evidence/phase3/drift_report.json`
@@ -50,7 +50,7 @@ Evidence: `data/evidence/phase3/drift_report.json`
 python scripts/verify_phase4.py
 ```
 
-Explain: Vendor D passes quality, aggregate drift stays stable, fairness fails,
+Expected observation: Vendor D passes quality, aggregate drift stays stable, fairness fails,
 and SHAP supports investigation rather than causal claims.
 
 ## 5. Governance decision
@@ -59,7 +59,7 @@ and SHAP supports investigation rather than causal claims.
 python scripts/verify_phase5.py
 ```
 
-Point out:
+Expected observation:
 
 - healthy -> `APPROVE -> STAGING`
 - Vendor C -> `REJECT` because drift blocks
@@ -102,7 +102,7 @@ python scripts/analyze_business_impact.py
 python scripts/verify_phase9.py
 ```
 
-Explain: the same 15,000 synthetic applicants and labels are scored under
+Expected observation: the same 15,000 synthetic applicants and labels are scored under
 healthy and Vendor B inputs. Approval rises from 73.91% to 78.60% and approved
 30-day default rises from 21.80% to 26.37%.
 
@@ -113,7 +113,7 @@ python scripts/analyze_root_cause.py
 python scripts/verify_phase10.py
 ```
 
-Explain: semantic migration drives the larger AUC loss, elevated missingness
+Expected observation: semantic migration drives the larger AUC loss, elevated missingness
 drives the larger approval inflation, while elevated missingness interacting with the fitted median preprocessing path contributes materially to
 the measured synthetic incident behavior. q75 is a diagnostic validation candidate only; Vendor B
 remains blocked and production preprocessing is unchanged.
@@ -125,12 +125,12 @@ python scripts/run_monitoring_cycle.py --run-id demo-run
 python scripts/verify_phase11.py
 ```
 
-Explain: Phase 11 wraps the existing governance controls in a dependency-ordered
+Expected observation: Phase 11 wraps the existing governance controls in a dependency-ordered
 scheduled run. Each task must succeed and produce its configured evidence.
 Failures block dependent tasks, the run fails closed, and evidence hashes are
 recorded in the monitoring manifest.
 
-Also point out that automatic retraining and automatic promotion remain
+Confirm that automatic retraining and automatic promotion remain
 disabled; the scheduler cannot bypass the Phase 5 governance decision or Phase
 6 release state machine.
 
@@ -146,7 +146,7 @@ python scripts/analyze_fairness_proxy.py
 python scripts/verify_phase12.py
 ```
 
-Explain: Vendor E preserves protected attributes and labels while shifting only
+Expected observation: Vendor E preserves protected attributes and labels while shifting only
 three non-protected model inputs for the supported `female|group_c`
 intersection. Data quality passes and aggregate drift remains STABLE. The
 single axes avoid blocking FAIL, but the intersection fails.
@@ -155,7 +155,7 @@ Point out the measured intersectional evidence: demographic-parity ratio
 0.7479, equal-opportunity difference 0.1956, equalized-odds difference 0.2600,
 and false-approval-rate difference 0.2600.
 
-Then show the proxy-review priorities:
+The proxy-review priorities are:
 `device_risk_score`, `credit_utilization`, and
 `bank_transaction_risk`. Explain that association plus SHAP influence is a
 screening signal, not proof of causality or unlawful proxy use.
@@ -167,7 +167,7 @@ make quality
 make release-verify
 ```
 
-## 3–5 minute speaking sequence
+## Compact walkthrough sequence
 
 ```text
 0:00  Problem and healthy baseline
@@ -184,7 +184,7 @@ make release-verify
 4:55  Limitations and production-hardening path
 ```
 
-Useful close:
+Summary:
 
 > No single control is expected to detect every ML failure. The architecture
 > uses defense in depth so data quality, drift, fairness, governance, and release
