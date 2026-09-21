@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate Phase 10 root-cause ablation and remediation evidence."""
 
 from __future__ import annotations
