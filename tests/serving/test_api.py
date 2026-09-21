@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from fastapi.testclient import TestClient
 
+from creditscore import __version__
 from creditscore.serving.app import create_app
 from creditscore.serving.predictor import ModelPredictor
 
@@ -44,6 +45,7 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
         model_path=artifact,
         model_name="CreditScoreV4",
         model_version="test",
+        expected_artifact_sha256="sha-test",
         decision_threshold=0.50,
     )
     config = {
@@ -82,3 +84,20 @@ def test_metrics_endpoint_exposes_prometheus_data(monkeypatch, tmp_path: Path) -
     assert response.status_code == 200
     assert "creditscore_predictions_total" in response.text
     assert "creditscore_http_requests_total" in response.text
+
+
+def test_api_version_matches_package_metadata(monkeypatch, tmp_path: Path) -> None:
+    with _client(monkeypatch, tmp_path) as client:
+        info = client.get("/openapi.json").json()["info"]
+    assert info["version"] == __version__
+
+
+def test_metrics_normalize_unmatched_route_labels(monkeypatch, tmp_path: Path) -> None:
+    with _client(monkeypatch, tmp_path) as client:
+        assert client.get("/missing-one").status_code == 404
+        assert client.get("/missing-two").status_code == 404
+        metrics = client.get("/metrics").text
+
+    assert 'path="__unmatched__"' in metrics
+    assert "/missing-one" not in metrics
+    assert "/missing-two" not in metrics
