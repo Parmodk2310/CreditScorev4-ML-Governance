@@ -15,12 +15,12 @@ These screenshots are captured from the CreditScoreV4 ML Governance verification
 | `05-governance-decisions.png` | Evidence-backed model promotion/rejection decisions |
 | `06-release-rollback.png` | Progressive shadow/canary release and deterministic rollback |
 | `07-phase7-controls.png` | Automated delivery, security, container, and Terraform controls |
-| `10-phase8-evidence-contract.png` | Evidence contract, reviewer manifest, policy consistency, and traceability |
-| `11-phase9-business-impact.png` | Decision and observed-outcome impact of the Vendor B incident |
-| `12-phase10-root-cause.png` | Controlled root-cause ablation and remediation counterfactual evidence |
-| `13-phase11-monitoring-orchestration.png` | Scheduled fail-closed governance orchestration and evidence manifest |
-| `14-phase12-intersectional-fairness.png` | Intersectional fairness failure and proxy-risk review signals |
-| `15-phase13-incident-sla.png` | Synthetic incident timeline, alerting, SLA evaluation, and cross-phase lineage |
+| `08-phase8-evidence-contract.png` | Evidence contract, reviewer manifest, policy consistency, and traceability |
+| `09-phase9-business-impact.png` | Decision and observed-outcome impact of the Vendor B incident |
+| `10-phase10-root-cause.png` | Controlled root-cause ablation and remediation counterfactual evidence |
+| `11-phase11-monitoring-orchestration.png` | Scheduled fail-closed governance orchestration and evidence manifest |
+| `12-phase12-intersectional-fairness.png` | Intersectional fairness failure and proxy-risk review signals |
+| `13-phase13-incident-sla.png` | Synthetic incident timeline, alerting, SLA evaluation, and cross-phase lineage |
 
 ### Recommended current-release screenshot
 
@@ -28,7 +28,7 @@ For the strongest recruiter-facing evidence set, also capture:
 
 | Evidence | Demonstrates |
 |---|---|
-| `16-release-v101.png` | Current stable v1.0.1 hardening release and feature-freeze boundary |
+| `14-release-v101.png` | Current stable v1.0.1 hardening release and feature-freeze boundary |
 
 
 ---
@@ -38,14 +38,14 @@ For the strongest recruiter-facing evidence set, also capture:
 Place the images under:
 
 ```text
-docs/project-evidence/screenshots/
+docs/assets/screenshots/
 ```
 
 Then GitHub will render the following gallery automatically.
 
 ### Phase 1 — Incident Baseline
 
-![Phase 1 incident baseline](screenshots/01-incident-baseline.png)
+![Phase 1 incident baseline](01-incident-baseline.png)
 
 **What it proves:** the same trained model behaves differently after a controlled upstream Vendor B migration. The project reproduces a deterministic degradation rather than relying on a hypothetical incident.
 
@@ -53,7 +53,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 2 — Data-Quality Governance
 
-![Phase 2 data-quality block](screenshots/02-data-quality-block.png)
+![Phase 2 data-quality block](02-data-quality-block.png)
 
 **What it proves:** the data-quality layer detects the Vendor B contract violation, blocks unsafe progression, and writes quarantine/evidence artifacts.
 
@@ -61,7 +61,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 3 — Drift Governance
 
-![Phase 3 critical drift](screenshots/03-critical-drift.png)
+![Phase 3 critical drift](03-critical-drift.png)
 
 **What it proves:** schema-valid data can still be unsafe. PSI/KS and prediction-distribution monitoring detect critical distribution change even when the structural contract passes.
 
@@ -69,7 +69,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 4 — Fairness + SHAP
 
-![Phase 4 fairness and SHAP](screenshots/04-fairness-shap.png)
+![Phase 4 fairness and SHAP](04-fairness-shap.png)
 
 **What it proves:** aggregate model behavior can hide subgroup degradation. Fairness evidence is paired with SHAP-supported investigation while protected attributes remain outside model inputs.
 
@@ -77,7 +77,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 5 — Governance Decisions
 
-![Phase 5 governance decisions](screenshots/05-governance-decisions.png)
+![Phase 5 governance decisions](05-governance-decisions.png)
 
 **What it proves:** promotion is evidence-backed and fail-closed. Healthy evidence can progress; critical drift or fairness failure causes rejection.
 
@@ -85,7 +85,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 6 — Safe Release + Rollback
 
-![Phase 6 release rollback](screenshots/06-release-rollback.png)
+![Phase 6 release rollback](06-release-rollback.png)
 
 **What it proves:** an approved candidate still goes through runtime safety controls. Shadow and progressive canary stages can promote a healthy candidate or roll a degraded candidate back to `STAGING`.
 
@@ -93,7 +93,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 7 — Delivery Controls
 
-![Phase 7 controls](screenshots/07-phase7-controls.png)
+![Phase 7 controls](07-phase7-controls.png)
 
 **What it proves:** GitHub Actions, Docker, security scanning, Terraform, and fail-closed AWS deployment controls are part of the delivery boundary.
 
@@ -115,7 +115,7 @@ Then GitHub will render the following gallery automatically.
 
 ### Phase 8 — Evidence Contract & Traceability
 
-![Phase 8 evidence contract](screenshots/10-phase8-evidence-contract.png)
+![Phase 8 evidence contract](08-phase8-evidence-contract.png)
 
 **What it proves:** documentation claims are tied back to executable policy, generated evidence, registry transitions, release behavior, delivery controls, and a reviewer evidence manifest.
 
@@ -129,7 +129,7 @@ data/evidence/phase8/reviewer_evidence_manifest.json
 
 ### Phase 9 — Business Impact
 
-![Phase 9 business impact](screenshots/11-phase9-business-impact.png)
+![Phase 9 business impact](09-phase9-business-impact.png)
 
 **What it proves:** the Vendor B technical failure changes actual model decisions in the deterministic fixture.
 
@@ -149,7 +149,7 @@ These values are synthetic case-study measurements, not real lending outcomes.
 
 ### Phase 10 — Root Cause & Remediation Review
 
-![Phase 10 root cause](screenshots/12-phase10-root-cause.png)
+![Phase 10 root cause](10-phase10-root-cause.png)
 
 **What it proves:** a controlled 2×2 ablation separates semantic score migration from elevated missingness.
 
@@ -164,7 +164,7 @@ The evidence shows:
 
 ### Phase 11 — Scheduled Governance Orchestration
 
-![Phase 11 monitoring orchestration](screenshots/13-phase11-monitoring-orchestration.png)
+![Phase 11 monitoring orchestration](11-phase11-monitoring-orchestration.png)
 
 **What it proves:** existing governance controls can execute as one dependency-ordered, fail-closed monitoring cycle.
 
@@ -188,7 +188,7 @@ data/evidence/phase11/monitoring_events.jsonl
 
 ### Phase 12 — Intersectional Fairness & Proxy Risk
 
-![Phase 12 intersectional fairness](screenshots/14-phase12-intersectional-fairness.png)
+![Phase 12 intersectional fairness](12-phase12-intersectional-fairness.png)
 
 **What it proves:** single-axis checks can avoid a blocking failure while a supported intersection fails materially.
 
@@ -214,7 +214,7 @@ These are review signals, not causal or legal conclusions.
 
 ### Phase 13 — Incident SLA & Operational Evidence
 
-![Phase 13 incident SLA](screenshots/15-phase13-incident-sla.png)
+![Phase 13 incident SLA](13-phase13-incident-sla.png)
 
 **What it proves:** the system can generate a deterministic incident timeline, synthetic alert evidence, SLA evaluation, and cross-phase traceability.
 
@@ -234,7 +234,7 @@ Live paging, automatic retraining, and automatic promotion remain disabled.
 
 ### Current Stable Release — v1.0.1
 
-![v1.0.1 release](screenshots/16-release-v101.png)
+![v1.0.1 release](14-release-v101.png)
 
 **What it proves:** the repository reached a stable maintenance boundary with shared offline/online validation, model SHA verification before deserialization, a canonical decision policy, bounded Prometheus labels, sanitized serving errors, coverage reporting, observability validation, security/container/Terraform gates, and a v1.x functional-development freeze.
 
