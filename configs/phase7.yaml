@@ -19,7 +19,7 @@ security:
     - CRITICAL
 
 container:
-  dockerfile: docker/phase6/Dockerfile
+  dockerfile: docker/runtime/Dockerfile
   port: 8000
   smoke_endpoints:
     - /health

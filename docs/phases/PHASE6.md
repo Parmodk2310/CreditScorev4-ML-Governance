@@ -121,7 +121,7 @@ The Phase 6 release gate checks the real API, model readiness, prediction endpoi
 After generating the Phase 1 model artifact and Phase 5 registry state:
 
 ```bash
-docker compose -f docker/phase6/docker-compose.yml up --build
+docker compose -f docker/runtime/docker-compose.yml up --build
 ```
 
 Local ports:

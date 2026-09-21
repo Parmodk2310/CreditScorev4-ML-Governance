@@ -3,7 +3,7 @@ services:
     image: phase6-api:latest
     build:
       context: ../..
-      dockerfile: docker/phase6/Dockerfile
+      dockerfile: docker/runtime/Dockerfile
     ports:
       - "8000:8000"
     volumes:

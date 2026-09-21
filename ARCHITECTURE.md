@@ -208,7 +208,7 @@ Operational telemetry includes:
 - canary share;
 - rollback count.
 
-The local serving demonstration uses Prometheus and Grafana assets under `docker/phase6/`.
+The local serving demonstration uses Prometheus and Grafana assets under `docker/runtime/`.
 
 ---
 
