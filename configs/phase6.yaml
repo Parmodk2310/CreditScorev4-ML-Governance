@@ -10,7 +10,7 @@ serving:
   model_path: models/baseline/creditscorev4.joblib
   model_evidence_path: data/evidence/phase1/baseline_metrics.json
   contract_path: contracts/credit_application_contract.yaml
-  decision_threshold: 0.50
+  decision_policy_path: configs/decision_policy.yaml
   max_batch_size: 500
 
 release:
