@@ -41,6 +41,7 @@ phase1-clean:
 	rm -f data/raw/vendor_a/*.csv data/raw/vendor_b/*.csv
 	rm -f data/evidence/phase1/*.json data/evidence/phase1/*.csv data/evidence/phase1/*.png
 	rm -f models/baseline/*.joblib
+	rm -f models/baseline/*.joblib.sha256
 
 phase2-healthy:
 	$(PYTHON) scripts/validate_data_quality.py --input data/raw/vendor_a/holdout.csv --source vendor_a --batch-name vendor_a_healthy
@@ -304,10 +305,17 @@ phase13-clean:
 
 # Stable product-level verification interface.
 # Historical phase targets remain available for reproducibility.
-.PHONY: workflow-validate diagram-validate diagram-render release-verify
+.PHONY: workflow-validate diagram-validate diagram-render release-verify coverage observability-config
 
 workflow-validate:
 	$(PYTHON) scripts/validate_workflows.py
+
+coverage:
+	$(PYTHON) -m pytest --cov=creditscore --cov-branch --cov-report=term-missing --cov-report=xml
+
+observability-config:
+	docker run --rm --entrypoint=promtool -v "$(CURDIR)/docker/phase6/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" prom/prometheus:v3.14.0 check config /etc/prometheus/prometheus.yml
+	GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-creditscore-config-check}" docker compose -f docker/phase6/docker-compose.yml config --quiet
 
 diagram-validate:
 	$(PYTHON) scripts/validate_diagrams.py
