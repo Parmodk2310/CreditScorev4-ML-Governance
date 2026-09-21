@@ -77,8 +77,7 @@ class ModelPredictor:
                 actual_sha256 = file_sha256(self.model_path).lower()
                 if actual_sha256 != self.expected_artifact_sha256:
                     raise RuntimeError(
-                        "Model artifact SHA-256 mismatch; refusing to deserialize "
-                        f"{self.model_path}"
+                        "Model artifact SHA-256 mismatch; refusing to deserialize " f"{self.model_path}"
                     )
                 self._model = load_model(self.model_path)
                 self._artifact_sha256 = actual_sha256
