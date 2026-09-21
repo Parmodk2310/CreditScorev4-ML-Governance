@@ -55,7 +55,7 @@ Repository workflows should:
 - pin external GitHub Actions to full 40-character commit SHAs;
 - retain the human-readable release tag as an inline comment;
 - run Gitleaks plus Trivy filesystem/IaC checks;
-- build/smoke-test the container and report built-image HIGH/CRITICAL vulnerabilities;
+- build/smoke-test the container and block on fixable built-image HIGH/CRITICAL vulnerabilities;
 - run the cumulative `make release-verify` gate before merge;
 - keep AWS mutation disabled unless explicitly enabled and confirmed.
 

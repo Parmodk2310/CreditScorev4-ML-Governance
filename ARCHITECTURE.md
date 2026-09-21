@@ -300,8 +300,9 @@ mutation       |
 
 `AWS_DEPLOY_ENABLED=false` remains the safe default.
 
-The image workflow reports HIGH/CRITICAL findings from the built container while
-filesystem and Terraform HIGH/CRITICAL findings remain blocking security gates.
+The image workflow blocks on fixable HIGH/CRITICAL findings from the built
+container. Filesystem and Terraform HIGH/CRITICAL findings remain blocking
+security gates.
 
 The repository validates this delivery architecture; v1.0.0 does not claim an active production AWS deployment.
 

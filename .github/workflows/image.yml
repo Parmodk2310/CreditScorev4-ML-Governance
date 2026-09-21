@@ -44,6 +44,6 @@ jobs:
           image-ref: creditscorev4:${{ github.sha }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "0"
+          exit-code: "1"
       - name: Inspect image digest
         run: docker image inspect creditscorev4:${GITHUB_SHA} --format '{{index .RepoDigests 0}}' || true

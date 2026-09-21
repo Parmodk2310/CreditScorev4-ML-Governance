@@ -143,7 +143,7 @@ The current v1.0.0 release verifies:
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
 | Trivy filesystem / IaC scan | **PASS** |
-| Built-image vulnerability scan | **enabled (reporting)** |
+| Built-image vulnerability scan | **PASS** |
 | Python dependency resolution | **exact `constraints.lock`** |
 | Architecture validation | **PASS** |
 | Workflow structure / pinning | **PASS** |
