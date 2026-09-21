@@ -29,10 +29,10 @@ jobs:
           GRAFANA_ADMIN_PASSWORD: ci-observability-config
         run: |
           docker run --rm --entrypoint=promtool \
-            -v "$PWD/docker/phase6/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
+            -v "$PWD/docker/runtime/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
             prom/prometheus:v3.14.0 \
             check config /etc/prometheus/prometheus.yml
-          docker compose -f docker/phase6/docker-compose.yml config --quiet
+          docker compose -f docker/runtime/docker-compose.yml config --quiet
       - name: Generate deterministic model artifact
         run: python scripts/verify_phase1.py
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -40,7 +40,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
-          file: docker/phase6/Dockerfile
+          file: docker/runtime/Dockerfile
           push: false
           load: true
           tags: creditscorev4:${{ github.sha }}
@@ -59,17 +59,17 @@ jobs:
           GRAFANA_ADMIN_PASSWORD: ci-observability-stack
         run: |
           docker tag creditscorev4:${GITHUB_SHA} phase6-api:latest
-          docker compose -f docker/phase6/docker-compose.yml up -d --no-build
+          docker compose -f docker/runtime/docker-compose.yml up -d --no-build
           python scripts/verify_observability_stack.py
       - name: Dump observability logs on failure
         if: failure()
         env:
           GRAFANA_ADMIN_PASSWORD: ci-observability-stack
-        run: docker compose -f docker/phase6/docker-compose.yml logs --no-color
+        run: docker compose -f docker/runtime/docker-compose.yml logs --no-color
       - name: Stop observability stack
         if: always()
         env:
           GRAFANA_ADMIN_PASSWORD: ci-observability-stack
-        run: docker compose -f docker/phase6/docker-compose.yml down --volumes --remove-orphans
+        run: docker compose -f docker/runtime/docker-compose.yml down --volumes --remove-orphans
       - name: Inspect image digest
         run: docker image inspect creditscorev4:${GITHUB_SHA} --format '{{index .RepoDigests 0}}' || true

@@ -44,7 +44,7 @@ def test_image_workflow_builds_without_push_and_smoke_tests() -> None:
     assert "push: false" in text
     assert "verify_container.py" in text
     assert "promtool" in text
-    assert "docker compose -f docker/phase6/docker-compose.yml config --quiet" in text
+    assert "docker compose -f docker/runtime/docker-compose.yml config --quiet" in text
     assert "verify_observability_stack.py" in text
     assert_actions_pinned(text)
 
@@ -59,7 +59,7 @@ def test_deploy_workflow_requires_oidc_and_explicit_gate() -> None:
 
 
 def test_cloud_image_contains_generated_model_artifact() -> None:
-    dockerfile = (ROOT / "docker/phase6/Dockerfile").read_text()
+    dockerfile = (ROOT / "docker/runtime/Dockerfile").read_text()
     assert "COPY models/baseline/creditscorev4.joblib" in dockerfile
 
 
