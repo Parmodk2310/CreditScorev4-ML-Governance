@@ -153,9 +153,9 @@ It does not claim:
 ## v0.8.1 — Public Repository & Consistency Hardening
 
 - Added the documented `main` branch-protection policy and required quality,
-  Terraform, security, and container check definitions. The current private
-  repository does not report `main` as protected; `docs/BRANCH_PROTECTION.md`
-  is the authoritative current-state note.
+  Terraform, security, and container check definitions. At the time of the
+  v0.8.1 release, `main` was not yet protected; enforcement was applied later
+  without rewriting this historical release boundary.
 - Pinned all external GitHub Actions to immutable commit SHAs.
 - Added MIT license, security policy, and contribution policy.
 - Scoped AWS OIDC permission to the deployment job.
