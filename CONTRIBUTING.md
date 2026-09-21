@@ -20,8 +20,9 @@ Python 3.12 is the supported development runtime.
 ## Branch and pull-request workflow
 
 The preferred contribution workflow is a focused branch plus pull request.
-GitHub currently reports `main` as unprotected for this private repository, so
-this is a documented maintainer policy rather than a server-enforced control.
+`main` is protected and requires the repository's quality, Terraform, security,
+and container checks before merge. The checked-in protection policy is kept in
+`ops/main-branch-protection.json` and can be reapplied with the repository script.
 
 Create a focused branch:
 
