@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from creditscore.serving.predictor import ModelPredictor
 
@@ -43,6 +44,7 @@ def test_predictor_returns_risk_and_decision(monkeypatch, tmp_path: Path) -> Non
         model_path=artifact,
         model_name="CreditScoreV4",
         model_version="test",
+        expected_artifact_sha256="abc123",
         decision_threshold=0.50,
     )
     predictor.load()
@@ -53,3 +55,29 @@ def test_predictor_returns_risk_and_decision(monkeypatch, tmp_path: Path) -> Non
     assert high.risk_probability == 0.75
     assert high.predicted_default == 1
     assert predictor.artifact_sha256 == "abc123"
+
+
+def test_predictor_rejects_hash_mismatch_before_deserialization(monkeypatch, tmp_path: Path) -> None:
+    artifact = tmp_path / "model.joblib"
+    artifact.write_bytes(b"tampered-model")
+    load_called = False
+
+    def fail_if_loaded(_):  # type: ignore[no-untyped-def]
+        nonlocal load_called
+        load_called = True
+        raise AssertionError("Deserializer must not run for an untrusted artifact")
+
+    monkeypatch.setattr("creditscore.serving.predictor.load_model", fail_if_loaded)
+    monkeypatch.setattr("creditscore.serving.predictor.file_sha256", lambda _: "actual-sha")
+
+    predictor = ModelPredictor(
+        model_path=artifact,
+        model_name="CreditScoreV4",
+        model_version="test",
+        expected_artifact_sha256="expected-sha",
+    )
+
+    with pytest.raises(RuntimeError, match="SHA-256 mismatch"):
+        predictor.load()
+
+    assert load_called is False
