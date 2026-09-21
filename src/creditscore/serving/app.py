@@ -8,11 +8,11 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
-from creditscore import __version__
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import PlainTextResponse
 
+from creditscore import __version__
 from creditscore.utils.config import load_yaml
 
 from .metrics import ServingMetrics
