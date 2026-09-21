@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Verify the local API, Prometheus, and Grafana observability stack."""
 
 from __future__ import annotations
