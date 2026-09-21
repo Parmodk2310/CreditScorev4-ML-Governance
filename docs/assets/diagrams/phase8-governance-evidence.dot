@@ -5,7 +5,7 @@ digraph G {
   edge [color="#5472c2"];
   A [label="Phase 1-7 evidence
 artifacts"];
-  B [label="Reviewer evidence
+  B [label="Evidence
 manifest"];
   C [label="Policy + threshold
 cross-checks"];
@@ -13,7 +13,7 @@ cross-checks"];
 contract validation"];
   E [label="Expected governance
 outcome review"];
-  F [label="Reviewer-ready
+  F [label="Governance
 evidence bundle"];
   A -> B -> C -> D -> E -> F;
 }
