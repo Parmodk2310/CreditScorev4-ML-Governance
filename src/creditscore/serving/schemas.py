@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -9,7 +11,7 @@ class CreditApplicationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     application_id: str | None = None
-    age: int = Field(ge=18, le=100)
+    age: int = Field(ge=21, le=70)
     annual_income: float = Field(gt=0)
     employment_length_years: float = Field(ge=0)
     debt_to_income: float = Field(ge=0, le=1)
@@ -21,8 +23,8 @@ class CreditApplicationRequest(BaseModel):
     device_risk_score: float | None = Field(default=None, ge=0, le=1)
     bank_transaction_risk: float = Field(ge=0, le=1)
     employment_verification_score: float = Field(ge=0, le=1)
-    region: str
-    employment_type: str
+    region: Literal["north", "south", "east", "west", "central"]
+    employment_type: Literal["salaried", "self_employed", "contract", "other"]
 
 
 class BatchPredictionRequest(BaseModel):
