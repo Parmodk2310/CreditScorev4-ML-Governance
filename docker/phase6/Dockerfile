@@ -9,6 +9,7 @@ WORKDIR /app
 COPY pyproject.toml README.md constraints.lock ./
 COPY src ./src
 COPY configs ./configs
+COPY contracts ./contracts
 COPY scripts ./scripts
 COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
 

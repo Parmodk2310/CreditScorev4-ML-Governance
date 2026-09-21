@@ -75,6 +75,24 @@ def test_predict_and_batch_endpoints(monkeypatch, tmp_path: Path) -> None:
     assert batch.json()["count"] == 2
 
 
+def test_online_contract_rejects_age_outside_governed_range(...):
+    payload = _payload()
+    payload["age"] = 90
+
+    response = client.post("/predict", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_online_contract_rejects_unknown_region(...):
+    payload = _payload()
+    payload["region"] = "unknown"
+
+    response = client.post("/predict", json=payload)
+
+    assert response.status_code == 422
+
+
 def test_metrics_endpoint_exposes_prometheus_data(monkeypatch, tmp_path: Path) -> None:
     with _client(monkeypatch, tmp_path) as client:
         client.post("/predict", json=_payload())
