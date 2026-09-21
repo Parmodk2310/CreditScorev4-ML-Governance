@@ -1,8 +1,8 @@
-# Reproducible Demo
+# Reproducibility Guide
 
-## Goal
+## Purpose
 
-This walkthrough provides a short, repeatable path through the complete
+This guide defines a short, repeatable verification path through the complete
 governance flow.
 
 Run from the repository root with the Python 3.12 virtual environment active.
@@ -160,35 +160,14 @@ The proxy-review priorities are:
 `bank_transaction_risk`. Association plus SHAP influence is treated as a
 screening signal, not proof of causality or unlawful proxy use.
 
-For the complete release gate:
+## Complete release verification
 
 ```bash
 make quality
 make release-verify
 ```
 
-## Compact walkthrough sequence
-
-```text
-0:00  Problem and healthy baseline
-0:30  Vendor B: quality failure
-1:00  Vendor C: contract-valid drift
-1:30  Vendor D: aggregate-stable fairness failure
-2:00  Evidence-backed governance decisions
-2:45  Shadow/canary/rollback lifecycle
-3:15  Business impact and decision flips
-3:40  Root-cause ablation + q75 diagnostic candidate
-4:05  Scheduled fail-closed monitoring orchestration
-4:25  Vendor E intersectional fairness + proxy-risk evidence
-4:45  CI/security/Terraform fail-closed delivery
-4:55  Limitations and production-hardening path
-```
-
-Summary:
-
-> No single control is expected to detect every ML failure. The architecture
-> uses defense in depth so data quality, drift, fairness, governance, and release
-> controls independently stop unsafe progression at the correct layer.
+The commands above are the stable release-level interface. The numbered steps remain available when evidence for an individual control needs to be regenerated or inspected.
 
 ## Phase 13 — incident SLA and alert evidence
 
