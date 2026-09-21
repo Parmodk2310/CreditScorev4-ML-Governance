@@ -138,7 +138,7 @@ unchanged.
 Run:
 
 ```bash
-python scripts/run_monitoring_cycle.py --run-id reviewer-demo
+python scripts/run_monitoring_cycle.py --run-id demo-run
 python scripts/verify_phase11.py
 ```
 

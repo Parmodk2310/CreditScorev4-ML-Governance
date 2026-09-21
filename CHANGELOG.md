@@ -164,7 +164,7 @@ It does not claim:
 - Migrated Starlette TestClient development dependency from deprecated
   `httpx` fallback to `httpx2`.
 - Updated Phase 7/8 and repository-state documentation.
-- Strengthened reviewer-document consistency tests.
+- Strengthened documentation-consistency tests.
 
 
 ## v0.8.0 — Governance Evidence & Traceability
