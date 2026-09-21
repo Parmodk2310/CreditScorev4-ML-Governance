@@ -18,7 +18,7 @@ typecheck:
 	mypy -p creditscore
 
 quality: lint typecheck workflow-validate diagram-validate
-	black --check src/creditscore scripts tests
+	black --diff --check src/creditscore scripts tests
 	$(PYTHON) -m compileall -q src/creditscore scripts tests
 
 phase1-generate:
