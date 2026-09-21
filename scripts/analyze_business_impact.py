@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate Phase 9 business-impact evidence from the verified Vendor A/B incident."""
 
 from __future__ import annotations
