@@ -18,7 +18,7 @@ from creditscore.incidents.vendor_c_drift import VendorCDriftConfig, VendorCDrif
 from creditscore.incidents.vendor_d_group_stress import VendorDGroupStressScenario, VendorDStressConfig
 from creditscore.model.evaluate import evaluate_model, save_metrics
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_settings, load_yaml
 from creditscore.utils.hashing import file_sha256
 from creditscore.validation import DataQualityGate, load_data_contract
 
@@ -111,6 +111,7 @@ def build_scenario_evidence(root: str | Path, scenario: str) -> EvidenceBundle:
     phase3 = load_yaml(root / "configs" / "phase3.yaml")
     phase4 = load_yaml(root / "configs" / "phase4.yaml")
     phase5 = load_yaml(root / "configs" / "phase5.yaml")
+    _, decision_threshold = decision_settings(root)
 
     reference = pd.read_csv(root / phase3["scenario"]["input"])
     current, source = _scenario_frame(root, scenario, reference, phase3, phase4)
@@ -130,7 +131,7 @@ def build_scenario_evidence(root: str | Path, scenario: str) -> EvidenceBundle:
     metrics, _ = evaluate_model(
         model,
         current,
-        threshold=float(phase4["prediction"]["default_threshold"]),
+        threshold=decision_threshold,
         scenario=f"phase5_{scenario}",
         vendor=source,
     )
@@ -150,7 +151,7 @@ def build_scenario_evidence(root: str | Path, scenario: str) -> EvidenceBundle:
         current,
         reference_predictions=pd.Series(reference_probabilities, name="risk_probability"),
         current_predictions=pd.Series(current_probabilities, name="risk_probability"),
-        approval_threshold=float(phase4["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold,
     )
     drift_json, drift_csv = save_drift_report(
         drift,
@@ -165,7 +166,7 @@ def build_scenario_evidence(root: str | Path, scenario: str) -> EvidenceBundle:
         current,
         reference_probabilities=reference_probabilities,
         current_probabilities=current_probabilities,
-        default_threshold=float(phase4["prediction"]["default_threshold"]),
+        default_threshold=decision_threshold,
     )
     fairness_json, fairness_csv = save_fairness_report(
         fairness,
