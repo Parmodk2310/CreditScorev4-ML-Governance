@@ -133,7 +133,7 @@ The AWS path uses GitHub OIDC, immutable ECR image digests, persistent Terraform
 
 ## Verification
 
-The current v1.0.0 release verifies:
+Current `main` verification includes:
 
 | Boundary | Status |
 |---|---:|
