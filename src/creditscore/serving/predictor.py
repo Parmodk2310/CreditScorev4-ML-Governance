@@ -45,11 +45,15 @@ class ModelPredictor:
         model_path: str | Path,
         model_name: str,
         model_version: str,
+        expected_artifact_sha256: str,
         decision_threshold: float = 0.50,
     ) -> None:
         self.model_path = Path(model_path)
         self.model_name = str(model_name)
         self.model_version = str(model_version)
+        self.expected_artifact_sha256 = str(expected_artifact_sha256).strip().lower()
+        if not self.expected_artifact_sha256:
+            raise ValueError("Expected model artifact SHA-256 is required")
         self.decision_threshold = float(decision_threshold)
         self._lock = RLock()
         self._model: Pipeline | None = None
@@ -70,8 +74,14 @@ class ModelPredictor:
             raise FileNotFoundError(f"Model artifact not found: {self.model_path}")
         with self._lock:
             if self._model is None:
+                actual_sha256 = file_sha256(self.model_path).lower()
+                if actual_sha256 != self.expected_artifact_sha256:
+                    raise RuntimeError(
+                        "Model artifact SHA-256 mismatch; refusing to deserialize "
+                        f"{self.model_path}"
+                    )
                 self._model = load_model(self.model_path)
-                self._artifact_sha256 = file_sha256(self.model_path)
+                self._artifact_sha256 = actual_sha256
 
     def _require_model(self) -> Pipeline:
         if self._model is None:
