@@ -1,0 +1,81 @@
+flowchart TB
+    subgraph INPUTS["1. Synthetic scenarios and reference inputs"]
+        direction LR
+        A["Vendor A<br/>Healthy reference<br/>P1"]
+        B["Vendor B<br/>Data-quality incident<br/>P1 and P2"]
+        C["Vendor C<br/>Contract-valid drift<br/>P3"]
+        D["Vendor D<br/>Subgroup fairness stress<br/>P4"]
+        E["Vendor E<br/>Intersectional proxy stress<br/>P12"]
+    end
+
+    subgraph RISK["2. Data and model risk controls"]
+        direction LR
+        Q["Data quality<br/>Schema, completeness, quarantine<br/>P2"]
+        DR["Feature and prediction drift<br/>PSI and KS<br/>P3"]
+        F["Fairness and explainability<br/>Single-axis, intersectional, SHAP<br/>P4 and P12"]
+    end
+
+    subgraph GOV["3. Governance control plane"]
+        direction LR
+        GP["Policy engine<br/>Blocking gates and deterministic decision<br/>P5"]
+        EI["Evidence integrity<br/>SHA-256 lineage and reviewer contract<br/>P5 and P8"]
+        REG["Registry and audit<br/>Legal transitions and audit records<br/>P5"]
+    end
+
+    subgraph RELEASE["4. Serving and safe release"]
+        direction TB
+        API["FastAPI serving and Prometheus metrics<br/>P6"]
+        ST["STAGING"] --> SH["SHADOW"] --> CA["CANARY<br/>10, 25, 50, 100 percent"] --> PR["PRODUCTION"]
+        SH --> RB["ROLLBACK"]
+        CA --> RB
+        RB --> ST
+        API --> ST
+    end
+
+    subgraph OPS["5. Delivery, monitoring, analysis, and incident evidence"]
+        direction LR
+        CI["CI, security, container, Terraform<br/>P7"]
+        MON["Scheduled fail-closed governance<br/>P11"]
+        IMP["Business-impact evidence<br/>P9"]
+        RCA["Root-cause ablation<br/>P10"]
+        INC["Incident timeline, SLA, lineage<br/>P13"]
+        AWS["Gated AWS path<br/>OIDC, ECR, ECS Fargate, ALB<br/>P7"]
+    end
+
+    SAFE["Safety boundaries<br/>Synthetic evidence only<br/>AWS deployment disabled by default<br/>No automatic retraining or promotion"]
+
+    A --> Q
+    B --> Q
+    B --> DR
+    C --> DR
+    D --> F
+    E --> F
+
+    Q --> GP
+    DR --> GP
+    F --> GP
+    GP --> EI --> REG
+
+    REG --> API
+    PR --> OPS
+    EI --> IMP --> RCA --> INC
+
+    CI --> AWS
+    MON -.-> RISK
+    SAFE -.-> AWS
+    SAFE -.-> MON
+    SAFE -.-> GOV
+
+    classDef scenario fill:#FFFFFF,stroke:#94A3B8,color:#0F172A,stroke-width:1px;
+    classDef risk fill:#EFF6FF,stroke:#3B82F6,color:#0F172A,stroke-width:1.5px;
+    classDef governance fill:#F5F3FF,stroke:#7C3AED,color:#0F172A,stroke-width:1.5px;
+    classDef release fill:#ECFDF5,stroke:#059669,color:#0F172A,stroke-width:1.5px;
+    classDef operations fill:#FFF7ED,stroke:#EA580C,color:#0F172A,stroke-width:1.5px;
+    classDef safety fill:#FEF2F2,stroke:#DC2626,color:#7F1D1D,stroke-width:1.5px;
+
+    class A,B,C,D,E scenario;
+    class Q,DR,F risk;
+    class GP,EI,REG governance;
+    class API,ST,SH,CA,PR,RB release;
+    class CI,MON,IMP,RCA,INC,AWS operations;
+    class SAFE safety;

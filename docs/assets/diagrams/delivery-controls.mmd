@@ -1,0 +1,15 @@
+flowchart TB
+    PR["Pull request or push to main"] --> CI["Required verification matrix<br/>Quality and governance: Ruff, Black, mypy, compile, release verification<br/>Security: Gitleaks and Trivy<br/>Container: deterministic artifact, Docker build, smoke test<br/>Infrastructure: Terraform fmt and validate"]
+    CI --> M{"All required checks green?"}
+    M --> MERGE["Merge eligible"]
+
+    MERGE -.-> WD["Optional manual deployment<br/>workflow_dispatch"]
+    WD --> G{"Deployment gate satisfied?<br/>confirm DEPLOY plus AWS_DEPLOY_ENABLED=true"}
+    G --> SAFE["Safe default<br/>NO CLOUD MUTATION"]
+    G --> PRE["Re-run quality, release,<br/>security, and IaC gates"]
+    PRE --> OIDC["GitHub OIDC<br/>assume AWS role"]
+    OIDC --> ECR["Immutable ECR image<br/>resolved by digest"]
+    ECR --> TF["Terraform<br/>persistent S3 state locking"]
+    TF --> ECS["ECS Fargate service"]
+    ECS --> ALB["HTTPS ALB<br/>health verification"]
+    ALB --> RM["Release manifest<br/>deployment evidence"]

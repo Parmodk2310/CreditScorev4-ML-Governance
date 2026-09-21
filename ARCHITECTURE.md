@@ -1,299 +1,398 @@
-# CreditScoreV4 ML Governance Architecture — Through Phase 13
+# CreditScoreV4 ML Governance Architecture
 
+CreditScoreV4 v1.0.0 is organized as one integrated ML-governance system. The phase numbers remain useful for historical traceability, but the current architecture is better understood through four boundaries:
 
-![CreditScoreV4 Phase 1–13 architecture](docs/assets/diagrams/phase1-13-end-to-end.svg)
+1. **data and model risk**
+2. **governance and evidence integrity**
+3. **serving and safe release**
+4. **delivery, monitoring, and incident operations**
 
-Architecture sources: [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md).
+The diagrams below are the canonical high-level architecture views used by the README and engineering documentation.
 
-```text
-                           PHASE 1
-Vendor A train ----------------------> CreditScoreV4
-Vendor A holdout -------------------> healthy evaluation (~0.80 AUC)
-        |
-        +--> Vendor B migration ----> same model (~0.73 AUC)
-                         |
-                         v
-                         PHASE 2
-              versioned data contract
-                 + Great Expectations
-                         |
-                  Vendor B --> BLOCK
-                    quarantine/evidence
-                         |
-                         v
-                         PHASE 3
-Vendor A reference -------------------------------+
-                                                   |
-Vendor C: schema/type/range/null contract valid    |
-        |                                          |
-        +--> Phase 2 gate --> PASS                 |
-        +--> feature PSI + KS <--------------------+
-        +--> prediction PSI + KS
-                         |
-                  overall drift CRITICAL
-                         |
-                         v
-                         PHASE 4
-Vendor D: aggregate-valid subgroup proxy stress
-        |
-        +--> Phase 2 quality --> PASS
-        +--> Phase 3 aggregate drift --> STABLE
-        +--> Fairlearn subgroup assessment --> FAIL
-        +--> SHAP explains non-protected proxy drivers
-                         |
-                         v
-                         PHASE 5
-quality + performance + calibration + drift + fairness + hashes
-                         |
-                  configurable policy engine
-                         |
-                   +-----+-----+
-                   |           |
-                APPROVE      REJECT
-                   |           |
-                   v           v
-                STAGING     REJECTED
-                   |
-                   v
-                         PHASE 6
-                 governed FastAPI serving
-                   /predict /batch-predict
-             /health /ready /model /metrics
-                   |
-                   v
-                 SHADOW
-                   |
-                   v
-                 CANARY
-          10% -> 25% -> 50% -> 100%
-                   |
-             +-----+-----+
-             |           |
-          healthy      degraded
-             |           |
-             v           v
-        PRODUCTION     STAGING
-                      rollback
-```
+---
 
-## Phase 6 release boundary
+## 1. System overview
 
-Phase 5 decides whether a model may enter `STAGING`. Phase 6 is the only layer that can move an approved staged model through `SHADOW`, `CANARY`, and `PRODUCTION`.
+<p align="center">
+  <img src="docs/assets/diagrams/system-overview.svg"
+       alt="CreditScoreV4 ML Governance system overview"
+       width="100%" />
+</p>
 
-The registry transitions are:
+<p align="center">
+  <sub><a href="docs/assets/diagrams/system-overview.mmd">Mermaid source</a></sub>
+</p>
+
+The architecture starts with deterministic synthetic scenarios and keeps the control layers independent:
+
+- **Vendor A** provides the healthy reference.
+- **Vendor B** exercises data-quality degradation and incident analysis.
+- **Vendor C** exercises contract-valid distribution drift.
+- **Vendor D** exercises subgroup fairness degradation.
+- **Vendor E** exercises supported intersectional fairness and proxy-risk review.
+
+Those scenarios feed independent data/model-risk controls before a model is allowed to reach governance or release state transitions.
+
+### Phase mapping
+
+| Architecture area | Historical implementation |
+|---|---|
+| Baseline + incident reproduction | Phase 1 |
+| Data-quality governance | Phase 2 |
+| Feature/prediction drift | Phase 3 |
+| Fairness + explainability | Phase 4 |
+| Governance policy + registry | Phase 5 |
+| Serving + safe release | Phase 6 |
+| CI/security/container/Terraform + gated AWS path | Phase 7 |
+| Reviewer/evidence contracts | Phase 8 |
+| Business-impact analysis | Phase 9 |
+| Root-cause ablation | Phase 10 |
+| Scheduled fail-closed orchestration | Phase 11 |
+| Intersectional fairness + proxy-risk screening | Phase 12 |
+| Incident timeline + SLA + lineage | Phase 13 |
+
+The current repository should be evaluated as this integrated system, not as thirteen independent applications.
+
+---
+
+## 2. Data and model risk boundary
+
+The first control layer answers whether incoming data and model behavior remain inside the project's accepted engineering envelope.
+
+### Data quality
+
+Phase 2 applies the versioned scoring contract plus Great Expectations-backed validation.
+
+Material violations fail closed:
 
 ```text
-REGISTERED -> CANDIDATE -> STAGING -> SHADOW -> CANARY -> PRODUCTION
-                       \-> REJECTED      \-----------> STAGING rollback
-                                      SHADOW --------> STAGING rollback
+incoming batch
+      |
+      v
+contract / completeness / range checks
+      |
+      +---- PASS ----> downstream model-risk controls
+      |
+      `---- BLOCK ---> quarantine + evidence
 ```
 
-`CANDIDATE -> PRODUCTION` remains illegal.
+Vendor B is the deterministic blocking scenario: `device_risk_score` missingness rises from `3.14%` to `22.00%`.
 
-## Serving plane
+### Drift
 
-The serving process loads the same persisted sklearn/XGBoost pipeline used by the governance evidence. Request validation is handled by Pydantic/FastAPI, inference is serialized through the predictor wrapper, and `/model` exposes the model artifact SHA-256 used for operational traceability.
+Phase 3 deliberately uses Vendor C to demonstrate that valid schema and null rates do not imply stable model behavior.
 
-## Observability plane
+The layer evaluates:
 
-The API exposes Prometheus metrics for request counts, latency, prediction outcomes, risk distribution, readiness, rollout stage, canary share, and rollback count. `docker/phase6/` provisions a local Prometheus + Grafana demonstration stack.
+- feature PSI;
+- feature KS statistics;
+- prediction PSI;
+- prediction KS statistics;
+- aggregate drift severity.
 
-## Safe-release controller
+### Fairness and explainability
 
-Traffic assignment is deterministic from a SHA-256 request bucket. Shadow and canary checkpoints use configurable project guardrails for request volume, error rate, p95 latency, and mean risk-output delta. Failed blocking gates trigger rollback to `STAGING` and append a release audit event.
+Phases 4 and 12 add group-level and intersectional governance.
 
-## Phase 7 automation/deployment plane
+Protected/evaluation attributes remain excluded from model inputs. SHAP and association statistics are used as investigation evidence; they are not treated as causal or legal conclusions.
+
+---
+
+## 3. Governance and release model
+
+<p align="center">
+  <img src="docs/assets/diagrams/governance-release-model.svg"
+       alt="CreditScoreV4 governance and release model"
+       width="900" />
+</p>
+
+<p align="center">
+  <sub><a href="docs/assets/diagrams/governance-release-model.mmd">Mermaid source</a></sub>
+</p>
+
+A candidate is not promoted because one metric looks healthy. Promotion requires a complete evidence set.
+
+The governance policy evaluates:
+
+- data-quality decision;
+- ROC-AUC;
+- PR-AUC;
+- calibration;
+- drift status;
+- fairness status;
+- minimum evidence count;
+- evidence hashes.
+
+The project registry enforces legal transitions:
 
 ```text
-GitHub PR / main
-  |-- CI: quality + cumulative Phase 13 verification
-  |-- Security: Gitleaks + Trivy fs/config
-  |-- Image: deterministic model generation -> Docker build -> smoke test
-  `-- Terraform: fmt + init -backend=false + validate
+REGISTERED -> CANDIDATE
+CANDIDATE -> STAGING
+CANDIDATE -> REJECTED
 
-Manual workflow_dispatch only
-  -> fail-closed deployment gate
-  -> GitHub OIDC -> AWS role
-  -> persistent S3 Terraform backend
-  -> Terraform-managed ECR bootstrap
-  -> immutable image push + digest resolution
-  -> ECS/Fargate + ALB deployment
-  -> deployed health verification
-  -> release manifest evidence
+STAGING -> SHADOW
+SHADOW -> CANARY
+SHADOW -> STAGING       # rollback
+
+CANARY -> PRODUCTION
+CANARY -> STAGING       # rollback
 ```
 
-Phase 7 does not bypass the governance controls: the deploy workflow reruns quality and the cumulative Phase 13 verification gate before cloud mutation. Deployment remains blocked unless explicitly enabled and confirmed.
-
-<!-- PHASE8_ARCHITECTURE -->
-## Phase 8 evidence/reviewer plane
-
-Phase 8 does not change the prediction or release data plane. It adds a
-cross-cutting evidence/reviewer plane:
+A direct:
 
 ```text
-Phase 1-7 configs + source + tests + generated evidence
-                         |
-                         v
-              Phase 8 evidence contract
-                         |
-          +--------------+--------------+
-          |              |              |
-          v              v              v
-   governance docs   evidence index   reviewer manifest
-          |              |              |
-          +--------------+--------------+
-                         |
-                         v
-          reproducible technical review
+CANDIDATE -> PRODUCTION
 ```
 
-The Phase 8 verifier checks documentation/visual presence, policy thresholds,
-registry transitions, release guardrails, fail-closed deployment behavior, and
-generated governance/release evidence.
+transition is intentionally illegal.
 
-## Phase 9–10 incident-analysis plane
+### Governance versus release safety
 
-Phase 9 measures decision/outcome impact for the exact Vendor B fixture. Phase
-10 then decomposes that same fixture without retraining the model:
+Phase 5 answers:
+
+> Is this candidate eligible to enter `STAGING`?
+
+Phase 6 separately answers:
+
+> Is the staged candidate healthy enough to progress through `SHADOW` and `CANARY` toward `PRODUCTION`?
+
+That separation prevents governance approval from becoming an automatic production deployment.
+
+### Release gates
+
+The safe-release controller evaluates project guardrails for:
+
+- request count;
+- error rate;
+- p95 latency;
+- mean risk-output delta.
+
+The healthy deterministic path exercises:
 
 ```text
-healthy -----------------------------+
-  |                                  |
-  +--> semantic-only                 |
-  +--> missingness-only              |
-  +--> combined Vendor B             |
-                                      v
-                              2x2 root-cause evidence
-                                      |
-                          +-----------+-----------+
-                          |                       |
-                          v                       v
-                 oracle restoration       q60/q75/q90
-                 diagnostic only          fixed-model candidates
-                          |                       |
-                          +-----------+-----------+
-                                      v
-                         q75 validation candidate only
-                                      |
-                                      v
-                         Vendor B remains BLOCKED
-                         production policy unchanged
+STAGING -> SHADOW -> CANARY
+                    10%
+                    25%
+                    50%
+                    100%
+                       -> PRODUCTION
 ```
 
-The analysis keeps the applicant population, labels, baseline model artifact,
-and decision threshold fixed. The fitted missingness indicator is preserved
-during counterfactual value overrides so the experiment isolates the numeric
-replacement path rather than silently changing the fitted preprocessing
-contract.
+A degraded path returns to `STAGING` and persists the rollback reason.
 
+---
 
-## Phase 11 scheduled monitoring/orchestration plane
+## 4. Serving and observability plane
 
-Phase 11 adds a control-plane scheduler around the existing verified lifecycle;
-it does not create a second promotion authority.
+The governed model is served through FastAPI:
 
 ```text
-GitHub Actions schedule / workflow_dispatch
-                  |
-                  v
-        run_monitoring_cycle.py
-                  |
-                  v
-        dependency-ordered tasks
- Phase 1 -> ... -> Phase 10 verification
-                  |
-        +---------+----------+
-        |                    |
-        v                    v
- command status       required evidence
-        |                    |
-        +---------+----------+
-                  |
-                  v
-       SHA-256 evidence hashes
-                  |
-        +---------+----------+
-        |                    |
-        v                    v
- monitoring_run.json   monitoring_events.jsonl
-                  |
-                  v
-          verify_phase11.py
+GET  /health
+GET  /ready
+POST /predict
+POST /batch-predict
+GET  /model
+GET  /metrics
 ```
 
-The orchestration contract is fail closed. A failed prerequisite prevents its
-dependents from running and records them as `SKIPPED`. A command that exits
-successfully but fails to produce configured evidence is also treated as a
-failed task.
+The serving process loads the same persisted sklearn/XGBoost pipeline used by governance verification.
 
-The scheduled workflow has read-only repository permissions and verifies the
-generated monitoring manifest before uploading the Phase 11 evidence artifact.
-`automatic_retraining=false` and `automatic_promotion=false` are explicit
-release contracts. Governance eligibility remains owned by Phase 5, and runtime
-promotion remains owned by Phase 6.
+Operational telemetry includes:
 
+- request counts;
+- latency;
+- prediction outcomes;
+- risk-distribution metrics;
+- readiness;
+- rollout stage;
+- canary share;
+- rollback count.
 
-## Phase 12 intersectional fairness and proxy-risk plane
+The local serving demonstration uses Prometheus and Grafana assets under `docker/phase6/`.
 
-Phase 12 extends the model-risk plane without changing the fitted model or
-adding protected attributes to model inputs.
+---
+
+## 5. Delivery controls
+
+<p align="center">
+  <img src="docs/assets/diagrams/delivery-controls.svg"
+       alt="CreditScoreV4 delivery controls"
+       width="900" />
+</p>
+
+<p align="center">
+  <sub><a href="docs/assets/diagrams/delivery-controls.mmd">Mermaid source</a></sub>
+</p>
+
+Merge verification and cloud mutation are intentionally separate systems.
+
+### Pull-request and main-branch verification
+
+The automated delivery boundary exercises:
 
 ```text
-Vendor A reference ------------------------------+
-                                                  |
-Vendor E: targeted non-protected input stress     |
-  female AND synthetic_demographic_group=group_c  |
-          |                                       |
-          +--> Phase 2 data quality -> PASS       |
-          +--> Phase 3 aggregate drift -> STABLE  |
-          |                                       |
-          v                                       |
- intersectional fairness <------------------------+
-          |
-          +--> sex axis -> PASS
-          +--> synthetic_demographic_group -> WARNING
-          `--> female|group_c -> FAIL
-                       |
-                       v
-              proxy-risk screening
-          +------------+-------------+
-          |                          |
-          v                          v
- statistical association       SHAP influence
- eta² / Cramér's V              mean |attribution|
-          |                          |
-          +------------+-------------+
-                       |
-                       v
-             review-priority evidence
+quality
+  -> Ruff
+  -> Black
+  -> mypy
+  -> compile
+  -> current release verification
+
+security
+  -> Gitleaks
+  -> Trivy filesystem
+  -> Trivy Terraform/IaC
+
+container
+  -> deterministic model generation
+  -> Docker build
+  -> runtime smoke test
+
+infrastructure
+  -> Terraform fmt
+  -> Terraform validate
 ```
 
-The Phase 12 fairness evaluator uses approval as the favorable decision and
-separates equal-opportunity difference from equalized-odds difference. Only
-groups meeting the configured minimum support participate in governance
-comparisons.
+### Gated AWS deployment
 
-The proxy-risk layer is intentionally a screening mechanism. Association plus
-model influence identifies features that deserve review; it does not establish
-causality, legal proxy status, discrimination, or regulatory non-compliance.
+Cloud deployment is manual and fail closed.
 
-The current scheduled workflow preserves the released Phase 11 monitoring
-manifest contract, verifies it, then runs Phase 12 analysis and verification as
-an additional current control layer.
-
-## Phase 13 incident operations plane
+The path is:
 
 ```text
-Phase 2 DQ evidence ----+
-                        |
-Phase 9 impact ---------+--> deterministic incident timeline
-                        |             |
-Phase 10 root cause ----+             +--> alert evidence
-                                      +--> SLA evaluation
-                                      +--> cross-phase SHA-256 lineage
-                                      `--> incident report
+workflow_dispatch
+      |
+      v
+explicit deployment confirmation
+      |
+      v
+AWS_DEPLOY_ENABLED == true ?
+      |
+  +---+---+
+  |       |
+ false   true
+  |       |
+  v       v
+no cloud  re-run release/security/IaC gates
+mutation       |
+               v
+           GitHub OIDC
+               |
+               v
+        immutable ECR digest
+               |
+               v
+      persistent Terraform state
+               |
+               v
+          ECS / Fargate
+               |
+               v
+           HTTPS ALB
+               |
+               v
+       health verification
+               |
+               v
+         release manifest
 ```
 
-The Phase 13 layer consumes previously verified Vendor B evidence and adds
-operational timing semantics. It does not retrain, promote, page an on-call
-engineer, or mutate production infrastructure.
+`AWS_DEPLOY_ENABLED=false` remains the safe default.
+
+The repository validates this delivery architecture; v1.0.0 does not claim an active production AWS deployment.
+
+---
+
+## 6. Monitoring, analysis, and incident operations
+
+### Scheduled governance
+
+Phase 11 wraps the existing verified controls in a dependency-ordered monitoring cycle.
+
+It records:
+
+- task execution status;
+- attempts;
+- required evidence paths;
+- SHA-256 evidence hashes;
+- `monitoring_run.json`;
+- `monitoring_events.jsonl`.
+
+The scheduler is fail closed. A successful command that fails to produce required evidence is treated as a failed task.
+
+Automatic retraining and automatic promotion remain disabled.
+
+### Business impact
+
+Phase 9 compares the exact same 15,000 synthetic applicants, labels, model artifact, and threshold between healthy and Vendor B inputs.
+
+This isolates decision-impact evidence from model retraining.
+
+### Root cause
+
+Phase 10 decomposes the Vendor B incident into:
+
+- healthy;
+- semantic-only;
+- missingness-only;
+- combined.
+
+Counterfactual replacements remain diagnostic-only. Vendor B stays blocked and production preprocessing is unchanged.
+
+### Incident operations
+
+Phase 13 consumes previously verified Vendor B evidence to produce:
+
+- deterministic incident timeline;
+- synthetic alert evidence;
+- SLA calculations;
+- cross-phase SHA-256 lineage;
+- incident report.
+
+It does not perform live paging, automatic retraining, automatic promotion, or production mutation.
+
+---
+
+## 7. Safety boundaries
+
+The system intentionally keeps these boundaries explicit:
+
+```text
+synthetic evidence only
+real applicant PII: not used
+regulatory certification: not claimed
+live production paging: disabled / not implemented
+automatic retraining: false
+automatic promotion: false
+AWS deployment: false by default
+```
+
+Fairness thresholds, SLA thresholds, release thresholds, and model thresholds are engineering guardrails for this deterministic case study.
+
+---
+
+## 8. Architecture sources
+
+The complete figure/source index is maintained in:
+
+[`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md)
+
+Primary v1 system diagrams:
+
+- [`system-overview.mmd`](docs/assets/diagrams/system-overview.mmd) / [`system-overview.svg`](docs/assets/diagrams/system-overview.svg)
+- [`governance-release-model.mmd`](docs/assets/diagrams/governance-release-model.mmd) / [`governance-release-model.svg`](docs/assets/diagrams/governance-release-model.svg)
+- [`delivery-controls.mmd`](docs/assets/diagrams/delivery-controls.mmd) / [`delivery-controls.svg`](docs/assets/diagrams/delivery-controls.svg)
+
+Phase-specific diagrams remain available for evidence/history review.
+
+Validate architecture assets with:
+
+```bash
+make diagram-validate
+```
+
+Regenerate Graphviz-backed SVGs when Graphviz is installed with:
+
+```bash
+make diagram-render
+```

@@ -1,0 +1,23 @@
+flowchart TB
+    E["Verified evidence<br/>quality, performance, calibration,<br/>drift, fairness, integrity"] --> P["Governance policy"]
+    P --> D{"Promotion decision"}
+
+    D --> R["REJECTED<br/>blocking reason persisted"]
+    D --> C["CANDIDATE approved<br/>for staged release"]
+
+    C --> ST["STAGING"]
+    ST --> SH["SHADOW"]
+    SH --> SG{"Shadow gates pass?"}
+    SG --> RB1["Rollback to STAGING"]
+    SG --> CA["CANARY<br/>10% to 25% to 50% to 100%"]
+    CA --> CG{"Canary gates pass?"}
+    CG --> RB2["Rollback to STAGING"]
+    CG --> PR["PRODUCTION"]
+
+    P --> A["Decision artifact<br/>SHA-256 evidence hashes<br/>audit record"]
+    PR --> A
+    RB1 --> A
+    RB2 --> A
+    R --> A
+
+    X["Illegal transition blocked<br/>CANDIDATE directly to PRODUCTION"] -.-> C

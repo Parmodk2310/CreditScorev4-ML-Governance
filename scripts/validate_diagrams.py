@@ -14,6 +14,7 @@ DIAGRAM_DIR = ROOT / "docs" / "assets" / "diagrams"
 FIGURE_INDEX = ROOT / "docs" / "ARCHITECTURE_FIGURES.md"
 PHASE8_13_INDEX = ROOT / "docs" / "PHASE8_13_ARCHITECTURE.md"
 README = ROOT / "README.md"
+ARCHITECTURE = ROOT / "ARCHITECTURE.md"
 
 REQUIRED = (
     "phase1-incident-baseline",
@@ -30,6 +31,12 @@ REQUIRED = (
     "phase12-fairness-proxy",
     "phase13-incident-ops",
     "phase1-13-end-to-end",
+)
+
+PRIMARY_SYSTEM_DIAGRAMS = (
+    "system-overview",
+    "governance-release-model",
+    "delivery-controls",
 )
 
 PHASE8_13 = REQUIRED[7:13]
@@ -54,23 +61,21 @@ def validate_mermaid(path: Path, *, strict: bool) -> None:
 
     if strict:
         if not first.startswith("flowchart "):
-            fail(f"{path}: recreated architecture must start " "with a Mermaid flowchart declaration")
+            fail(f"{path}: current architecture must start " "with a Mermaid flowchart declaration")
     else:
         supported = first.startswith("flowchart ") or first == "stateDiagram-v2"
         if not supported:
-            fail(f"{path}: unsupported Mermaid declaration " f"{first!r}")
+            fail(f"{path}: unsupported Mermaid declaration {first!r}")
 
     if strict:
-        # Keep the recreated architecture sources inside a conservative,
-        # GitHub-safe Mermaid subset.
         if "|" in text:
-            fail(f"{path}: raw pipe character is not allowed " "in recreated Mermaid sources")
+            fail(f"{path}: raw pipe character is not allowed " "in current Mermaid architecture sources")
 
         if r"\n" in text:
             fail(f"{path}: use <br/> rather than literal " r"Mermaid \n label escapes")
 
         if '["' not in text or '"]' not in text:
-            fail(f"{path}: recreated node labels must use " "quoted Mermaid text")
+            fail(f"{path}: current node labels must use " "quoted Mermaid text")
 
 
 def validate_dot(path: Path) -> None:
@@ -109,11 +114,7 @@ def render_dot_if_available(path: Path) -> None:
         ET.parse(tmp.name)
 
 
-def validate_complete_set(
-    stem: str,
-    *,
-    strict_mermaid: bool,
-) -> None:
+def validate_phase_set(stem: str, *, strict_mermaid: bool) -> None:
     mmd = DIAGRAM_DIR / f"{stem}.mmd"
     dot = DIAGRAM_DIR / f"{stem}.dot"
     svg = DIAGRAM_DIR / f"{stem}.svg"
@@ -128,25 +129,51 @@ def validate_complete_set(
     render_dot_if_available(dot)
 
 
+def validate_system_set(stem: str) -> None:
+    mmd = DIAGRAM_DIR / f"{stem}.mmd"
+    svg = DIAGRAM_DIR / f"{stem}.svg"
+
+    for path in (mmd, svg):
+        if not path.exists():
+            fail(f"Missing primary architecture artifact: {path}")
+
+    validate_mermaid(mmd, strict=True)
+    validate_svg(svg)
+
+
 def main() -> int:
     figure_index = FIGURE_INDEX.read_text(encoding="utf-8")
     phase8_13_index = PHASE8_13_INDEX.read_text(encoding="utf-8")
     readme = README.read_text(encoding="utf-8")
+    architecture = ARCHITECTURE.read_text(encoding="utf-8")
+
+    for stem in PRIMARY_SYSTEM_DIAGRAMS:
+        validate_system_set(stem)
+
+        for document, document_text in (
+            (FIGURE_INDEX, figure_index),
+            (README, readme),
+            (ARCHITECTURE, architecture),
+        ):
+            if stem not in document_text:
+                fail(f"{document}: missing primary architecture reference for {stem}")
+
+        print(f"PRIMARY DIAGRAM VALID: {stem}")
 
     for stem in REQUIRED:
-        validate_complete_set(
+        validate_phase_set(
             stem,
             strict_mermaid=True,
         )
 
         if stem not in figure_index:
-            fail(f"{FIGURE_INDEX}: missing architecture " f"entry for {stem}")
+            fail(f"{FIGURE_INDEX}: missing architecture entry for {stem}")
 
         print(f"DIAGRAM VALID: {stem}")
 
     for stem in PHASE8_13:
         if stem not in phase8_13_index:
-            fail(f"{PHASE8_13_INDEX}: missing architecture " f"entry for {stem}")
+            fail(f"{PHASE8_13_INDEX}: missing architecture entry for {stem}")
 
     for stem in SUPPLEMENTAL:
         mmd = DIAGRAM_DIR / f"{stem}.mmd"
@@ -163,25 +190,27 @@ def main() -> int:
             fail(f"{stem}: supplemental diagram set is incomplete")
 
         if all(existing):
-            validate_complete_set(
+            validate_phase_set(
                 stem,
                 strict_mermaid=False,
             )
             print(f"SUPPLEMENTAL DIAGRAM VALID: {stem}")
 
-    current_overview = "docs/assets/diagrams/" "phase1-13-end-to-end.svg"
-
-    if current_overview not in readme:
-        fail("README.md: current overview must reference " "phase1-13-end-to-end.svg")
-
     renderer = shutil.which("dot")
 
     if renderer:
-        print(f"Graphviz render check: PASS ({renderer})")
+        print(f"Graphviz phase-diagram render check: PASS ({renderer})")
     else:
-        print("Graphviz render check: SKIPPED " "(dot not installed); committed SVG/XML " "validation passed")
+        print(
+            "Graphviz phase-diagram render check: SKIPPED "
+            "(dot not installed); committed SVG/XML validation passed"
+        )
 
-    print(f"Validated {len(REQUIRED)} current " "architecture diagram sets.")
+    print(
+        f"Validated {len(PRIMARY_SYSTEM_DIAGRAMS)} primary system diagrams, "
+        f"{len(REQUIRED)} current phase architecture sets, "
+        "and available supplemental diagrams."
+    )
 
     return 0
 

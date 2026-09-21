@@ -1,14 +1,33 @@
 # Architecture Figure Index
 
-CreditScoreV4 keeps architecture diagrams in three representations:
+CreditScoreV4 keeps committed architecture sources and rendered assets under `docs/assets/diagrams/`.
 
-- `.mmd` — Mermaid source for GitHub/Markdown-oriented editing
-- `.dot` — Graphviz source for deterministic rendering when Graphviz is available
-- `.svg` — committed vector rendering used by README/docs
+The v1 documentation uses two diagram classes:
 
-All files live in `docs/assets/diagrams/`.
+- **system-level diagrams** — the canonical README/architecture views;
+- **phase-specific diagrams** — implementation/evidence views retained for technical and historical review.
 
-## Current Phase 1–13 architecture
+---
+
+## Primary v1 system architecture
+
+| Figure | Mermaid source | Rendered SVG |
+|---|---|---|
+| **System overview** | [`system-overview.mmd`](assets/diagrams/system-overview.mmd) | [`system-overview.svg`](assets/diagrams/system-overview.svg) |
+| **Governance & release model** | [`governance-release-model.mmd`](assets/diagrams/governance-release-model.mmd) | [`governance-release-model.svg`](assets/diagrams/governance-release-model.svg) |
+| **Delivery controls** | [`delivery-controls.mmd`](assets/diagrams/delivery-controls.mmd) | [`delivery-controls.svg`](assets/diagrams/delivery-controls.svg) |
+
+These are the primary architecture diagrams for the current v1 repository.
+
+- `system-overview` shows the complete control-plane architecture.
+- `governance-release-model` separates eligibility decisions from runtime release safety.
+- `delivery-controls` separates automatic merge verification from the manual fail-closed AWS mutation path.
+
+---
+
+## Phase-specific architecture
+
+Phase-specific diagrams are retained in Mermaid, Graphviz, and rendered SVG form.
 
 | Figure | Mermaid | Graphviz | Rendered SVG |
 |---|---|---|---|
@@ -25,31 +44,41 @@ All files live in `docs/assets/diagrams/`.
 | Phase 11 — Monitoring orchestration | [`phase11-orchestration.mmd`](assets/diagrams/phase11-orchestration.mmd) | [`phase11-orchestration.dot`](assets/diagrams/phase11-orchestration.dot) | [`phase11-orchestration.svg`](assets/diagrams/phase11-orchestration.svg) |
 | Phase 12 — Intersectional fairness & proxy risk | [`phase12-fairness-proxy.mmd`](assets/diagrams/phase12-fairness-proxy.mmd) | [`phase12-fairness-proxy.dot`](assets/diagrams/phase12-fairness-proxy.dot) | [`phase12-fairness-proxy.svg`](assets/diagrams/phase12-fairness-proxy.svg) |
 | Phase 13 — Incident operations & SLA evidence | [`phase13-incident-ops.mmd`](assets/diagrams/phase13-incident-ops.mmd) | [`phase13-incident-ops.dot`](assets/diagrams/phase13-incident-ops.dot) | [`phase13-incident-ops.svg`](assets/diagrams/phase13-incident-ops.svg) |
-| **End-to-end Phase 1–13** | [`phase1-13-end-to-end.mmd`](assets/diagrams/phase1-13-end-to-end.mmd) | [`phase1-13-end-to-end.dot`](assets/diagrams/phase1-13-end-to-end.dot) | [`phase1-13-end-to-end.svg`](assets/diagrams/phase1-13-end-to-end.svg) |
+| Historical Phase 1–13 sequence | [`phase1-13-end-to-end.mmd`](assets/diagrams/phase1-13-end-to-end.mmd) | [`phase1-13-end-to-end.dot`](assets/diagrams/phase1-13-end-to-end.dot) | [`phase1-13-end-to-end.svg`](assets/diagrams/phase1-13-end-to-end.svg) |
 
-## Supplemental historical/release diagrams
+---
 
-These remain useful but are no longer the primary system overview:
+## Supplemental state/history diagrams
 
 | Figure | Mermaid | Graphviz | Rendered SVG |
 |---|---|---|---|
 | Historical Phase 1–7 overview | [`phase1-7-end-to-end.mmd`](assets/diagrams/phase1-7-end-to-end.mmd) | [`phase1-7-end-to-end.dot`](assets/diagrams/phase1-7-end-to-end.dot) | [`phase1-7-end-to-end.svg`](assets/diagrams/phase1-7-end-to-end.svg) |
 | Registry/release state machine | [`release-state.mmd`](assets/diagrams/release-state.mmd) | [`release-state.dot`](assets/diagrams/release-state.dot) | [`release-state.svg`](assets/diagrams/release-state.svg) |
 
-## Rendering policy
+---
 
-The committed `.svg` files are the canonical rendered assets used by GitHub documentation.
+## Validation policy
 
-To validate the complete architecture set without requiring Graphviz locally:
+The committed SVG files are the documentation renderings used by GitHub.
+
+Run:
 
 ```bash
 make diagram-validate
 ```
 
-To regenerate SVGs when Graphviz is installed:
+The validator checks:
+
+- required architecture assets exist;
+- Mermaid sources stay inside the repository's GitHub-safe subset;
+- committed SVG files are valid XML/SVG;
+- Graphviz phase diagrams remain structurally valid;
+- Graphviz render checks run when `dot` is installed;
+- README and `ARCHITECTURE.md` reference the primary v1 diagrams;
+- this index contains every required diagram.
+
+When Graphviz is installed, regenerate Graphviz-backed SVGs with:
 
 ```bash
 make diagram-render
 ```
-
-`diagram-render` is intentionally optional. A developer without the `dot` binary can still run the repository quality gate because committed SVG/XML, Mermaid safety, DOT structure, file coverage, and documentation references are validated independently.
