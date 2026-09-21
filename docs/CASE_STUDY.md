@@ -37,7 +37,7 @@ Typical ML projects answer: “Can I train a model?” Production ML systems mus
 - Can an approved candidate still be rolled out safely?
 - Can CI/CD fail closed when deployment prerequisites are absent?
 
-This project was built to demonstrate those engineering questions in one coherent system.
+This project was built to exercise those engineering questions in one coherent system.
 
 ## 3. Failure Scenario
 
@@ -82,7 +82,7 @@ The design point is simple: obviously degraded input should not reach later mode
 
 ## 6. Vendor C — Contract-Valid Drift
 
-Vendor C is intentionally more subtle. It preserves the data-quality contract, row count, schema, and required missingness behavior, so Phase 2 passes. Phase 3 then detects distributional change.
+Vendor C is subtler. It preserves the data-quality contract, row count, schema, and required missingness behavior, so Phase 2 passes. Phase 3 then detects distributional change.
 
 Measured Phase 3 evidence:
 
@@ -233,7 +233,7 @@ STAGING -> SHADOW -> CANARY -> PRODUCTION
 
 The healthy path exercises canary shares at **10%, 25%, 50%, and 100%**, then reaches production.
 
-A degraded release intentionally fails release gates for:
+A degraded release fails release gates for:
 
 - error rate
 - mean risk delta
@@ -425,7 +425,7 @@ dependency causes downstream work to be recorded as `SKIPPED`, and a command
 that does not produce configured evidence is treated as failed even if its
 process exit code is zero.
 
-The scheduler is intentionally not a retraining or promotion authority:
+The scheduler is not a retraining or promotion authority:
 `automatic_retraining=false` and `automatic_promotion=false`. Findings feed
 the existing governance path rather than creating a scheduler-to-production
 shortcut.
@@ -433,7 +433,7 @@ shortcut.
 
 ## 22. Vendor E — Intersectional Fairness and Proxy-Risk Review
 
-Phase 12 adds a deterministic failure mode that is intentionally harder to
+Phase 12 adds a deterministic failure mode that is harder to
 detect with single-axis monitoring.
 
 Vendor E preserves the protected/evaluation columns and `default_30d` labels,
@@ -468,7 +468,7 @@ whether the fitted model materially uses that input. Numeric association uses
 eta-squared; categorical association uses Cramér's V; model influence uses SHAP
 mean absolute attribution.
 
-The three intentionally stressed inputs surface as review priorities:
+The three stressed inputs surface as review priorities:
 `device_risk_score`, `credit_utilization`, and
 `bank_transaction_risk`.
 

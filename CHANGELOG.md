@@ -2,7 +2,7 @@
 
 All notable releases of CreditScoreV4 ML Governance are documented here.
 
-The project uses phased releases to demonstrate the evolution from incident reproduction to governed model delivery.
+The phased releases record the evolution from incident reproduction to governed model delivery.
 
 ## v1.0.0 — Stable ML Governance Case Study
 
@@ -31,7 +31,7 @@ verified system into a stable product-level review and release boundary.
 
 ### Verified engineering boundary
 
-The stable release demonstrates:
+The stable release includes:
 
 - deterministic synthetic incident reproduction;
 - fail-closed data-quality governance;

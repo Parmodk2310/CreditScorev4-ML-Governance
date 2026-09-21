@@ -43,8 +43,8 @@ signals, not a claim that either metric is universally sufficient.
 
 ## Why fairness is separate from aggregate drift
 
-Aggregate metrics can hide concentrated subgroup impact. Vendor D deliberately
-creates that failure mode: aggregate drift remains stable while subgroup outcome
+Aggregate metrics can hide concentrated subgroup impact. Vendor D creates that
+failure mode: aggregate drift remains stable while subgroup outcome
 metrics cross project fairness thresholds.
 
 ## Why add intersectional fairness after single-axis fairness

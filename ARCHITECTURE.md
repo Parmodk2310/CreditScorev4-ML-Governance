@@ -224,7 +224,7 @@ The local serving demonstration uses Prometheus and Grafana assets under `docker
   <sub><a href="docs/assets/diagrams/delivery-controls.mmd">Mermaid source</a></sub>
 </p>
 
-Merge verification and cloud mutation are intentionally separate systems.
+Merge verification and cloud mutation are separate systems.
 
 ### Pull-request and main-branch verification
 

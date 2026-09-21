@@ -23,9 +23,8 @@
 </p>
 
 > **A model can be statistically strong and still be unsafe to promote.**
-> CreditScoreV4 demonstrates how independent data-quality, drift, fairness,
-> evidence-integrity, release-health, and delivery controls can stop unsafe
-> progression before production.
+> CreditScoreV4 uses independent data-quality, drift, fairness, evidence-integrity,
+> release-health, and delivery controls to stop unsafe progression before production.
 
 CreditScoreV4 is a **deterministic synthetic ML-governance case study**. It uses controlled failure scenarios to exercise an end-to-end ML lifecycle without claiming real applicant data, a real banking incident, regulatory certification, or a live production deployment.
 

@@ -59,7 +59,7 @@ PRODUCTION -> terminal
 REJECTED -> terminal
 ```
 
-A direct `CANDIDATE -> PRODUCTION` transition is intentionally illegal.
+A direct `CANDIDATE -> PRODUCTION` transition is disallowed by the registry.
 
 ## Governance vs release safety
 
