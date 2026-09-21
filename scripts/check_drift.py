@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Run Phase 2 pass-through validation and Phase 3 statistical drift detection."""
 
 from __future__ import annotations
