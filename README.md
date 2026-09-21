@@ -16,8 +16,8 @@
   <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml">
     <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml/badge.svg" alt="Container image" />
   </a>
-  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases">
-    <img src="https://img.shields.io/github/v/release/Parmodk2310/CreditScorev4-ML-Governance" alt="Latest release" />
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0">
+    <img src="https://img.shields.io/badge/release-v1.0.0-2ea44f" alt="Release v1.0.0" />
   </a>
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
 </p>
