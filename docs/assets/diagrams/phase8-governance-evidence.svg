@@ -21,7 +21,7 @@
 <g id="node2" class="node">
 <title>B</title>
 <path fill="#eef4ff" stroke="#5472c2" d="M329,-38C329,-38 202,-38 202,-38 196,-38 190,-32 190,-26 190,-26 190,-12 190,-12 190,-6 196,0 202,0 202,0 329,0 329,0 335,0 341,-6 341,-12 341,-12 341,-26 341,-26 341,-32 335,-38 329,-38"/>
-<text text-anchor="middle" x="265.5" y="-22.8" font-family="Times,serif" font-size="14.00">Reviewer evidence</text>
+<text text-anchor="middle" x="265.5" y="-22.8" font-family="Times,serif" font-size="14.00">Evidence</text>
 <text text-anchor="middle" x="265.5" y="-7.8" font-family="Times,serif" font-size="14.00">manifest</text>
 </g>
 <!-- A&#45;&gt;B -->

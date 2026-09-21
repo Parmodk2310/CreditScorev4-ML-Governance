@@ -178,7 +178,7 @@
 <title>OUT</title>
 <path fill="#eefaf0" stroke="#3c8c5a" d="M3379,-38C3379,-38 3196,-38 3196,-38 3190,-38 3184,-32 3184,-26 3184,-26 3184,-12 3184,-12 3184,-6 3190,0 3196,0 3196,0 3379,0 3379,0 3385,0 3391,-6 3391,-12 3391,-12 3391,-26 3391,-26 3391,-32 3385,-38 3379,-38"/>
 <text text-anchor="middle" x="3287.5" y="-22.8" font-family="Times,serif" font-size="14.00">Stable reviewer&#45;facing</text>
-<text text-anchor="middle" x="3287.5" y="-7.8" font-family="Times,serif" font-size="14.00">ML governance case study</text>
+<text text-anchor="middle" x="3287.5" y="-7.8" font-family="Times,serif" font-size="14.00">release boundary</text>
 </g>
 <!-- P13&#45;&gt;OUT -->
 <g id="edge13" class="edge">
