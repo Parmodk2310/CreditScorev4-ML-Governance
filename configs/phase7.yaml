@@ -47,3 +47,4 @@ aws:
     - AWS_REGION
     - TF_STATE_BUCKET
     - TF_STATE_KEY
+    - ACM_CERTIFICATE_ARN
