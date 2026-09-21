@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run Phase 2/3 pass-through controls and Phase 4 fairness assessment."""
 
 from __future__ import annotations
