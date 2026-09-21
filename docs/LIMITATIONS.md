@@ -1,7 +1,6 @@
 # Limitations and Non-Claims
 
-CreditScoreV4 ML Governance intentionally uses a constrained synthetic
-environment so failure modes and governance behavior are reproducible.
+CreditScoreV4 ML Governance uses a constrained synthetic environment so failure modes and governance behavior are reproducible.
 
 ## Data
 
@@ -53,7 +52,7 @@ environment so failure modes and governance behavior are reproducible.
   monitoring of a live lending system.
 - Phase 13 generates deterministic synthetic alert and SLA evidence, but no
   PagerDuty/Slack/on-call routing, acknowledgment, or escalation workflow is implemented.
-- Automatic retraining and automatic promotion are deliberately disabled.
+- Automatic retraining and automatic promotion remain disabled.
 
 ## Cloud
 

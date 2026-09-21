@@ -92,7 +92,7 @@ A failed shadow/canary gate returns the candidate to `STAGING`.
 
 ## Deployment safety
 
-Phase 7 deliberately defaults cloud mutation to disabled:
+Phase 7 defaults cloud mutation to disabled:
 
 ```text
 AWS_DEPLOY_ENABLED=false

@@ -84,7 +84,7 @@ Evidence: `data/evidence/phase7/release_manifest.json`.
 Implementation evidence also lives under `.github/workflows/`,
 `infra/terraform/`, `docker/phase6/`, and `configs/phase7.yaml`.
 
-## Phase 8 — reviewer evidence
+## Phase 8 — evidence contract
 
 ```bash
 python scripts/verify_phase8.py

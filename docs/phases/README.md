@@ -37,7 +37,7 @@ The numbered phase targets remain available for historical reproducibility.
 | [Phase 5](PHASE5.md) | Evidence-backed governance policy and model registry |
 | [Phase 6](PHASE6.md) | FastAPI serving, shadow/canary release, and rollback |
 | [Phase 7](PHASE7.md) | CI/security/container verification and gated AWS delivery |
-| [Phase 8](PHASE8.md) | Reviewer evidence contracts and repository consistency |
+| [Phase 8](PHASE8.md) | Evidence contracts and repository consistency |
 | [Phase 9](PHASE9.md) | Business-impact and decision-transition evidence |
 | [Phase 10](PHASE10.md) | Root-cause ablation and remediation counterfactuals |
 | [Phase 11](PHASE11.md) | Scheduled fail-closed governance orchestration |
@@ -46,9 +46,9 @@ The numbered phase targets remain available for historical reproducibility.
 
 ## Current interpretation
 
-The current repository should be reviewed as one ML-governance system rather
-than as thirteen independent projects.
+The current repository is one ML-governance system rather than thirteen
+independent projects.
 
 The phase documents explain how that system evolved. The current architecture,
-release gate, limitations, and reviewer documentation define the active
+release gate, limitations, and current documentation define the active
 repository boundary.

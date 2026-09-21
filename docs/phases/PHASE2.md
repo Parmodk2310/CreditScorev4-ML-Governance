@@ -1,6 +1,6 @@
 # Phase 2 — Data Quality Governance
 
-Phase 2 adds a blocking data-quality control in front of CreditScoreV4. It deliberately reuses the deterministic Vendor B incident generated in Phase 1; there is no new synthetic failure for this phase.
+Phase 2 adds a blocking data-quality control in front of CreditScoreV4. It reuses the deterministic Vendor B incident generated in Phase 1; there is no new synthetic failure for this phase.
 
 ## Question answered
 

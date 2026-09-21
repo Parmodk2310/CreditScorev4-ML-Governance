@@ -2,8 +2,8 @@
 
 ## Goal
 
-This walkthrough gives a reviewer a short, repeatable path through the complete
-governance story.
+This walkthrough provides a short, repeatable path through the complete
+governance flow.
 
 Run from the repository root with the Python 3.12 virtual environment active.
 
@@ -87,7 +87,7 @@ python scripts/verify_phase7.py
 Explain GitHub Actions quality/security/image/deploy separation, Terraform
 ECS/Fargate architecture, and the default-disabled AWS deployment gate.
 
-## 8. Reviewer evidence
+## 8. Evidence contract
 
 ```bash
 python scripts/verify_phase8.py
