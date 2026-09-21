@@ -44,14 +44,14 @@ Those scenarios feed independent data/model-risk controls before a model is allo
 | Governance policy + registry | Phase 5 |
 | Serving + safe release | Phase 6 |
 | CI/security/container/Terraform + gated AWS path | Phase 7 |
-| Reviewer/evidence contracts | Phase 8 |
+| Evidence contract + repository consistency | Phase 8 |
 | Business-impact analysis | Phase 9 |
 | Root-cause ablation | Phase 10 |
 | Scheduled fail-closed orchestration | Phase 11 |
 | Intersectional fairness + proxy-risk screening | Phase 12 |
 | Incident timeline + SLA + lineage | Phase 13 |
 
-The current repository should be evaluated as this integrated system, not as thirteen independent applications.
+The repository is one integrated system; the phase documents preserve its implementation history.
 
 ---
 
@@ -80,7 +80,7 @@ Vendor B is the deterministic blocking scenario: `device_risk_score` missingness
 
 ### Drift
 
-Phase 3 deliberately uses Vendor C to demonstrate that valid schema and null rates do not imply stable model behavior.
+Phase 3 uses Vendor C to verify that valid schema and null rates do not imply stable model behavior.
 
 The layer evaluates:
 
@@ -144,7 +144,7 @@ A direct:
 CANDIDATE -> PRODUCTION
 ```
 
-transition is intentionally illegal.
+transition is disallowed by the registry.
 
 ### Governance versus release safety
 
@@ -355,7 +355,7 @@ It does not perform live paging, automatic retraining, automatic promotion, or p
 
 ## 7. Safety boundaries
 
-The system intentionally keeps these boundaries explicit:
+The system keeps these boundaries explicit:
 
 ```text
 synthetic evidence only

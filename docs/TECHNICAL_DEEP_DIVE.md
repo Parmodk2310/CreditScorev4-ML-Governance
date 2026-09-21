@@ -2,9 +2,9 @@
 
 ## System thesis
 
-The project intentionally creates multiple failure modes that bypass different
-layers of an ML system, then uses independent controls so each failure is
-detected at the appropriate boundary before unsafe promotion.
+The system uses multiple failure modes that bypass different layers of the ML
+stack, with independent controls assigned to the boundary responsible for each
+failure.
 
 ```text
 Vendor B -> data quality
@@ -54,10 +54,10 @@ intersection of dimensions experiences materially different outcomes. Phase 12
 therefore evaluates `sex`, `synthetic_demographic_group`, and their
 intersection separately.
 
-Vendor E is intentionally constructed so aggregate drift is STABLE and the
+Vendor E is constructed so aggregate drift is STABLE and the
 single axes avoid blocking FAIL, while `female|group_c` crosses the project
-intersectional thresholds. This demonstrates why aggregate and single-axis
-checks are not interchangeable with intersectional governance.
+intersectional thresholds. The result shows why aggregate and single-axis checks are not interchangeable
+with intersectional governance.
 
 ## Why equal opportunity is reported separately from equalized odds
 
@@ -185,7 +185,7 @@ the safe default and requires explicit deployment configuration.
 
 ## Why incident operations are evidence-only
 
-Phase 13 deliberately models detection, alert creation, governance blocking,
+Phase 13 models detection, alert creation, governance blocking,
 triage, and root-cause timing as deterministic operational evidence rather than
 claiming a real production incident-response system.
 
@@ -207,4 +207,4 @@ load/capacity testing, disaster recovery, retention policies, release
 provenance/signing, environment apply/destroy evidence, and independent
 validation/compliance review.
 
-The project intentionally does not claim these are already implemented.
+The project does not claim these are already implemented.

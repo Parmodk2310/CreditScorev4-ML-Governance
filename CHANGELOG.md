@@ -6,8 +6,8 @@ The project uses phased releases to demonstrate the evolution from incident repr
 
 ## v1.0.0 — Stable ML Governance Case Study
 
-CreditScoreV4 reaches its first stable portfolio/reviewer release after the
-Phase 1–13 engineering sequence.
+CreditScoreV4 reaches its first stable release after the Phase 1–13 engineering
+sequence.
 
 This release does not introduce new model behavior. It consolidates the
 verified system into a stable product-level review and release boundary.
@@ -19,12 +19,12 @@ verified system into a stable product-level review and release boundary.
 - Updated CI and deployment preflight to use the stable release interface.
 - Added structural validation for all GitHub Actions workflows.
 
-### Reviewer experience
+### Documentation and navigation
 
 - Reframed the repository as one integrated ML-governance system rather than
   thirteen separate implementation phases.
 - Moved Phase 1–13 implementation history under `docs/phases/`.
-- Added recruiter, ML/MLOps, governance, and evidence-specific review paths.
+- Added structured documentation links for architecture, governance, evidence, and operations.
 - Added Phase 8–13 architecture diagrams in DOT, Mermaid, and rendered SVG.
 - Updated case-study, monitoring, validation, limitations, and evidence
   documentation to the current release boundary.
@@ -130,7 +130,6 @@ It does not claim:
   preflight gate.
 - Bumped the application release line to 0.10.0.
 
-<!-- PHASE9_CHANGELOG -->
 ## v0.9.0 — Business Impact & Incident Outcome Evidence
 
 - Added deterministic business-impact analysis for the Vendor B incident.
@@ -151,7 +150,6 @@ It does not claim:
   preflight gate.
 - Preserved the Phase 1–7 historical 63-test verification boundary.
 
-<!-- PHASE8_CHANGELOG -->
 ## v0.8.1 — Public Repository & Consistency Hardening
 
 - Enabled enforced `main` branch protection with required quality, Terraform,
@@ -171,14 +169,14 @@ It does not claim:
 
 ## v0.8.0 — Governance Evidence & Traceability
 
-- Added reviewer-specific navigation and evidence traceability.
+- Added structured documentation navigation and evidence traceability.
 - Enforced cumulative Phase 8 verification in CI and the gated deployment preflight.
 - Removed stale Airflow/MLflow/MinIO platform scaffolding that was not part of the verified implementation.
 - Reduced `env.example` to the actual fail-closed AWS deployment contract.
 - Added governance policy documentation tied to executable Phase 5 thresholds.
 - Added a model card, validation report, monitoring plan, and limitations.
 - Added technical design-decision documentation and a reproducible demo.
-- Added a Phase 8 evidence contract and reviewer evidence manifest.
+- Added a Phase 8 evidence contract and evidence manifest.
 - Added focused tests for policy, registry, release, documentation, and deployment contracts.
 - Removed/moved historical implementation-package material from the repository root.
 - Kept Phase 1–7 runtime behavior unchanged.

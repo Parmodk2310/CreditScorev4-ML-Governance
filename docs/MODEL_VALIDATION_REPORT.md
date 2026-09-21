@@ -19,8 +19,8 @@ Vendor C -> contract-valid distribution drift
 Vendor D -> aggregate-stable subgroup/fairness stress
 ```
 
-The project intentionally uses progressively subtler failure modes to show why
-one control cannot detect every class of ML failure.
+The validation suite layers progressively subtler failure modes because no
+single control detects every class of ML failure.
 
 ## Phase 1 — healthy reference and incident reproduction
 
@@ -50,8 +50,8 @@ Evidence: `data/evidence/phase2/`
 
 ## Phase 3 — contract-valid drift
 
-Vendor C is deliberately designed to pass the Phase 2 data-quality contract
-while changing model-relevant distributions.
+Vendor C passes the Phase 2 data-quality contract while changing model-relevant
+distributions.
 
 Verified case-study outcome:
 
@@ -123,9 +123,9 @@ Cloud deployment remains disabled by default.
 
 Evidence: `data/evidence/phase7/release_manifest.json`
 
-## Phase 8 — reviewer/evidence contracts
+## Phase 8 — evidence contracts
 
-Phase 8 verifies that reviewer-facing documentation, policy thresholds,
+Phase 8 verifies that documentation, policy thresholds,
 registry transitions, release controls, deployment defaults, and generated
 evidence remain consistent with executable configuration.
 

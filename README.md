@@ -86,7 +86,7 @@ A candidate is not promoted because one metric looks healthy. Promotion requires
   <sub><a href="docs/assets/diagrams/governance-release-model.mmd">Mermaid source</a></sub>
 </p>
 
-A direct `CANDIDATE -> PRODUCTION` transition is intentionally illegal. Failed shadow or canary gates return the candidate to `STAGING` with auditable release evidence.
+A direct `CANDIDATE -> PRODUCTION` transition is disallowed by the registry. Failed shadow or canary gates return the candidate to `STAGING` with auditable release evidence.
 
 ## Serving and observability
 
@@ -111,7 +111,7 @@ Automatic retraining and automatic promotion remain disabled.
 
 ## Delivery controls
 
-Pull-request verification and cloud deployment are deliberately separated. Merge checks run automatically; cloud mutation requires a separate manual workflow plus explicit deployment enablement.
+Pull-request verification and cloud deployment are separate control paths. Merge checks run automatically; cloud mutation requires a separate manual workflow plus explicit deployment enablement.
 
 <p align="center">
   <img src="docs/assets/diagrams/delivery-controls.svg"
@@ -211,7 +211,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 
 ## Scope
 
-This project demonstrates **production-oriented ML controls in a synthetic environment**.
+Scope: **production-oriented ML controls in a synthetic environment**.
 
 It does not claim:
 

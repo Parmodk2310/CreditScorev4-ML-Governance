@@ -2,9 +2,9 @@
 
 ## 1. Executive Summary
 
-CreditScoreV4 ML Governance is a synthetic credit-risk governance system. It demonstrates how an ML engineering team can detect upstream data failures, quantify model and subgroup degradation, explain likely proxy behavior, enforce deterministic governance gates, and move only approved candidates through a safe serving and release lifecycle.
+CreditScoreV4 ML Governance is a synthetic credit-risk governance system covering upstream data failures, model and subgroup degradation, proxy-risk investigation, deterministic governance gates, and controlled serving and release.
 
-The project is deliberately structured as a sequence of increasingly subtle failure modes. Vendor B is visibly bad and should be blocked by data-quality controls. Vendor C remains contract-valid yet creates critical drift. Vendor D remains aggregate-stable yet creates material subgroup disparities. These scenarios prevent the governance story from collapsing into a single “schema validation” check.
+The failure scenarios become progressively subtler across the control stack. Vendor B is visibly bad and should be blocked by data-quality controls. Vendor C remains contract-valid yet creates critical drift. Vendor D remains aggregate-stable yet creates material subgroup disparities. These scenarios prevent the governance story from collapsing into a single “schema validation” check.
 
 The final lifecycle is:
 
@@ -20,7 +20,7 @@ Incident reproduction
   -> Scheduled, fail-closed governance monitoring
 ```
 
-The current release preserves the historical 63-test Phase 1–7 regression boundary, then layers reviewer-evidence contracts, business-impact analysis, root-cause ablation, scheduled fail-closed governance monitoring, intersectional fairness/proxy-risk review, and deterministic incident-operations SLA evidence on top. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
+The current release preserves the historical 63-test Phase 1–7 regression boundary, then layers evidence contracts, business-impact analysis, root-cause ablation, scheduled fail-closed governance monitoring, intersectional fairness/proxy-risk review, and deterministic incident-operations SLA evidence on top. Quality, Terraform, container, secret-scanning, and IaC security controls remain part of the release boundary.
 
 
 Current architecture: [`ARCHITECTURE_FIGURES.md`](ARCHITECTURE_FIGURES.md), including the complete Phase 1–13 view.
@@ -110,7 +110,7 @@ Measured Phase 4 evidence:
 
 Protected/evaluation-only attributes remain absent from the model and SHAP feature set. SHAP analysis instead highlights stressed proxy features including `bank_transaction_risk`, `credit_utilization`, and `device_risk_score`.
 
-This phase is not a claim that SHAP proves causality. It demonstrates how explainability can help an engineer investigate which model inputs participate in a subgroup stress scenario.
+SHAP is used here as investigative evidence for which model inputs participate in the subgroup stress scenario; it is not treated as causal proof.
 
 ## 8. Business Impact of Vendor B
 
@@ -304,7 +304,7 @@ Release-level verified boundaries:
 | Phase 5 | approve/reject decisions, integrity hashes, registry/audit evidence |
 | Phase 6 | serving endpoints, shadow/canary path, rollback path |
 | Phase 7 | CI/security/container/Terraform controls |
-| Phase 8 | reviewer evidence contract and documentation/configuration traceability |
+| Phase 8 | evidence contract and documentation/configuration traceability |
 | Phase 9 | controlled business-impact and decision-transition evidence |
 | Phase 10 | controlled root-cause ablation and remediation counterfactual evidence |
 | Phase 11 | scheduled fail-closed monitoring, evidence hashing, manifest/event-log verification |
@@ -365,7 +365,6 @@ The next iteration should deepen operational realism rather than add more isolat
 6. **Performance testing** — realistic concurrency, latency distributions, capacity limits, and rollback under load.
 7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
 
-<!-- PHASE8_CASE_STUDY -->
 ## 20. Evidence Traceability
 
 Phase 8 adds an evidence-traceability layer over the existing Phase 1–7
@@ -384,7 +383,7 @@ Useful entry points:
 - `docs/REPRODUCIBLE_DEMO.md`
 - `docs/LIMITATIONS.md`
 
-`scripts/verify_phase8.py` checks that reviewer documentation remains aligned
+`scripts/verify_phase8.py` checks that documentation remains aligned
 with executable Phase 5–7 configuration and generated Phase 1–7 evidence. This
 reduces documentation drift: a README or case study should not silently claim a
 threshold, state transition, release outcome, or deployment property the
