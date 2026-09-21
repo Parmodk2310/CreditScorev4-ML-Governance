@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run Phase 2 pass-through validation and Phase 3 statistical drift detection."""
 
 from __future__ import annotations
@@ -11,7 +10,7 @@ from creditscore.data.preprocessing import MODEL_INPUT_FEATURES
 from creditscore.drift import DriftDetector
 from creditscore.drift.report import save_drift_report, save_reference_profile
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_settings, load_yaml
 from creditscore.validation import DataQualityGate, load_data_contract
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def run_drift_check() -> tuple:
     phase2 = load_yaml(ROOT / "configs" / "phase2.yaml")
     phase3 = load_yaml(ROOT / "configs" / "phase3.yaml")
+    _, decision_threshold = decision_settings(ROOT)
     reference = pd.read_csv(ROOT / phase3["scenario"]["input"])
     current = pd.read_csv(ROOT / phase3["scenario"]["output"])
 
@@ -49,7 +49,7 @@ def run_drift_check() -> tuple:
         current,
         reference_predictions=reference_predictions,
         current_predictions=current_predictions,
-        approval_threshold=float(phase3["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold,
     )
     save_reference_profile(reference, detector.features, ROOT / phase3["paths"]["reference_profile"])
     save_drift_report(
