@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate Phase 10 root-cause ablation and remediation evidence."""
 
 from __future__ import annotations
@@ -25,7 +24,7 @@ from creditscore.root_cause import (
     fitted_device_median,
     predict_with_device_value_override,
 )
-from creditscore.utils.config import load_config, load_yaml, project_root
+from creditscore.utils.config import decision_settings, load_config, load_yaml, project_root
 from creditscore.utils.hashing import file_sha256
 
 
@@ -138,8 +137,7 @@ def main() -> int:
     phase10 = load_yaml(root / "configs" / "phase10.yaml")
     phase1 = load_config()
 
-    target_column = str(phase10["decision"]["target_column"])
-    threshold = float(phase10["decision"]["approval_threshold"])
+    target_column, threshold = decision_settings(root)
     quantiles = [float(value) for value in phase10["remediation"]["training_quantiles"]]
     validation_candidate = str(phase10["remediation"]["validation_candidate"])
     validation_candidate_status = str(phase10["remediation"]["validation_candidate_status"])
