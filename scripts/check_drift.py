@@ -11,7 +11,7 @@ from creditscore.data.preprocessing import MODEL_INPUT_FEATURES
 from creditscore.drift import DriftDetector
 from creditscore.drift.report import save_drift_report, save_reference_profile
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_threshold, load_yaml
 from creditscore.validation import DataQualityGate, load_data_contract
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,7 +49,7 @@ def run_drift_check() -> tuple:
         current,
         reference_predictions=reference_predictions,
         current_predictions=current_predictions,
-        approval_threshold=float(phase3["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold(ROOT),
     )
     save_reference_profile(reference, detector.features, ROOT / phase3["paths"]["reference_profile"])
     save_drift_report(
