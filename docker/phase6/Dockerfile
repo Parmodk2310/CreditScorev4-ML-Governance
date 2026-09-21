@@ -11,6 +11,7 @@ COPY src ./src
 COPY configs ./configs
 COPY scripts ./scripts
 COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
+COPY models/baseline/creditscorev4.joblib.sha256 ./models/baseline/creditscorev4.joblib.sha256
 
 RUN python -m pip install . -c constraints.lock \
     && groupadd --gid 10001 creditscore \
