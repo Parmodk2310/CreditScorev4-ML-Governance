@@ -14,7 +14,7 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import PlainTextResponse
 
 from creditscore import __version__
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_threshold, load_yaml
 from creditscore.validation import RecordContractValidator, load_data_contract
 
 from .metrics import ServingMetrics
@@ -75,7 +75,7 @@ def create_app(
             model_path=project_root / str(serving["model_path"]),
             model_name=str(serving["model_name"]),
             model_version=str(serving["model_version"]),
-            decision_threshold=float(serving["decision_threshold"]),
+            decision_threshold=decision_threshold(project_root),
             expected_artifact_sha256=expected_digest,
         )
 
