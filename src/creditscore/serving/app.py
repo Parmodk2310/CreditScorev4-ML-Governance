@@ -44,9 +44,7 @@ def _expected_model_sha256(project_root: Path, phase6: dict[str, Any]) -> str:
             record = registry.get(str(serving["model_name"]), str(serving["model_version"]))
             return record.artifact_sha256.strip().lower()
 
-    digest_value = str(
-        serving.get("model_digest_path", f"{serving['model_path']}.sha256")
-    )
+    digest_value = str(serving.get("model_digest_path", f"{serving['model_path']}.sha256"))
     digest_path = _resolved_path(project_root, digest_value)
     if not digest_path.is_file():
         raise FileNotFoundError(f"Trusted model digest not found: {digest_path}")
