@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Phase 6 release gate: API serving, observability, shadow/canary, and rollback."""
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ from creditscore.release.models import ReleaseHealthSnapshot
 from creditscore.release.router import CanaryRouter
 from creditscore.serving.app import create_app
 from creditscore.serving.predictor import ModelPredictor
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_threshold, load_yaml
 from creditscore.utils.hashing import file_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,17 +98,28 @@ def _routing_is_accurate(shares: list[float]) -> tuple[bool, dict[str, float]]:
     return passed, observed
 
 
+def _expected_model_digest(serving: dict) -> str:
+    evidence_path = ROOT / str(serving["model_evidence_path"])
+    payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    digest = str(payload["model_artifact_sha256"])
+    if len(digest) != 64:
+        raise RuntimeError("Phase 1 model integrity evidence is invalid")
+    return digest
+
+
 def main() -> int:
     config = load_yaml(ROOT / "configs" / "phase6.yaml")
     _ensure_phase5_staging(config)
     _reset_phase6(config)
 
     serving = config["serving"]
+    expected_digest = _expected_model_digest(serving)
     predictor = ModelPredictor(
         model_path=ROOT / str(serving["model_path"]),
         model_name=str(serving["model_name"]),
         model_version=str(serving["model_version"]),
-        decision_threshold=float(serving["decision_threshold"]),
+        decision_threshold=decision_threshold(ROOT),
+        expected_artifact_sha256=expected_digest,
     )
     app = create_app(root=ROOT, config=config, predictor=predictor)
     sample_records = _records(200)
@@ -187,11 +197,14 @@ def main() -> int:
     audit_records = controller.audit.read_all()
     acceptance = config["acceptance"]
     metrics_text = metrics_response.text
+    model_payload = model_response.json()
     gates = {
         "health_endpoint": health_response.status_code == 200 and health_response.json()["status"] == "ok",
         "ready_endpoint": ready_response.status_code == 200 and ready_response.json()["model_ready"] is True,
         "model_endpoint": model_response.status_code == 200
-        and bool(model_response.json()["artifact_sha256"]),
+        and model_payload["artifact_sha256"] == expected_digest
+        and "model_path" not in model_payload,
+        "model_integrity_verified": predictor.artifact_sha256 == expected_digest,
         "predict_endpoint": predict_response.status_code == 200
         and 0.0 <= predict_response.json()["risk_probability"] <= 1.0,
         "batch_predict_endpoint": batch_response.status_code == 200 and batch_response.json()["count"] == 5,
@@ -212,6 +225,7 @@ def main() -> int:
     report = {
         "healthy_model_version": str(release["model_version"]),
         "healthy_final_stage": production_state.stage,
+        "model_artifact_sha256": predictor.artifact_sha256,
         "visited_canary_shares": visited_shares,
         "routing_observed": routing_observed,
         "rollback_model_version": ROLLBACK_VERSION,

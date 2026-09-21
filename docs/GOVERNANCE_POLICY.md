@@ -108,3 +108,7 @@ change: state the reason, update versioned configuration, update tests,
 regenerate evidence, review changed outcomes, update documentation, and merge
 only after CI passes. Thresholds should never be changed merely to force a
 candidate to pass.
+
+## Product decision policy
+
+The executable approval/default threshold and target-column identity are owned by `configs/decision_policy.yaml`. Historical phase configuration files retain matching threshold snapshots for reproducibility, but current training, incident analysis, drift/fairness evaluation, governance evidence, business-impact analysis, root-cause analysis, intersectional analysis, and online serving load the canonical product policy.

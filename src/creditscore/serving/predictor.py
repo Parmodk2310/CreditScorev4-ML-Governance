@@ -46,11 +46,13 @@ class ModelPredictor:
         model_name: str,
         model_version: str,
         decision_threshold: float = 0.50,
+        expected_artifact_sha256: str | None = None,
     ) -> None:
         self.model_path = Path(model_path)
         self.model_name = str(model_name)
         self.model_version = str(model_version)
         self.decision_threshold = float(decision_threshold)
+        self.expected_artifact_sha256 = expected_artifact_sha256
         self._lock = RLock()
         self._model: Pipeline | None = None
         self._artifact_sha256: str | None = None
@@ -67,11 +69,20 @@ class ModelPredictor:
 
     def load(self) -> None:
         if not self.model_path.exists():
-            raise FileNotFoundError(f"Model artifact not found: {self.model_path}")
+            raise FileNotFoundError("Model artifact not found")
+
         with self._lock:
-            if self._model is None:
-                self._model = load_model(self.model_path)
-                self._artifact_sha256 = file_sha256(self.model_path)
+            if self._model is not None:
+                return
+
+            actual_sha256 = file_sha256(self.model_path)
+            if self.expected_artifact_sha256 is not None and actual_sha256 != self.expected_artifact_sha256:
+                raise RuntimeError("Model artifact integrity verification failed")
+
+            # Deserialization occurs only after the artifact digest is verified.
+            model = load_model(self.model_path)
+            self._artifact_sha256 = actual_sha256
+            self._model = model
 
     def _require_model(self) -> Pipeline:
         if self._model is None:
@@ -83,7 +94,7 @@ class ModelPredictor:
         frame = pd.DataFrame(records)
         missing = [column for column in MODEL_INPUT_FEATURES if column not in frame.columns]
         if missing:
-            raise ValueError(f"Missing model input features: {', '.join(sorted(missing))}")
+            raise ValueError("Required model input features are missing")
         return frame[MODEL_INPUT_FEATURES].copy()
 
     def predict_batch(self, records: list[dict[str, Any]]) -> list[PredictionResult]:

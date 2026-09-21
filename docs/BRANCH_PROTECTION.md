@@ -1,13 +1,12 @@
 # Main Branch Protection
 
-This file defines the intended protection policy for a single-maintainer
-repository. It describes the checks that should be required before merge; it
-does not itself enable GitHub branch protection.
+This file documents the protection policy applied to `main` for this
+single-maintainer repository. The canonical checked-in policy lives in
+`ops/main-branch-protection.json`; `scripts/configure_main_protection.sh` applies
+that policy through the GitHub API.
 
-At the current private-repository state, GitHub does not report `main`
-as protected. The repository therefore does not claim that the checks below
-are technically enforced by branch protection. Pull-request CI still executes
-the same quality, Terraform, security, and container checks.
+`main` is currently protected and the required quality, Terraform, security,
+and container checks below are enforced before merge.
 
 ## Required checks
 
@@ -49,11 +48,12 @@ chmod +x scripts/configure_main_protection.sh
 ./scripts/configure_main_protection.sh --apply
 ```
 
-## Private-repository note
+## Repository-state note
 
-GitHub plan entitlements can limit branch-protection features for private
-repositories. If GitHub returns an entitlement error, apply this policy after
-the repository is public or on a plan that supports private-repo protection.
+Protection is an external GitHub repository setting, while this file and
+`ops/main-branch-protection.json` are the versioned policy definition. After any
+repository visibility or plan change, re-run the configuration script and verify
+the required checks through the GitHub branch-protection API.
 
 ## Deployment workflow
 

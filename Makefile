@@ -6,7 +6,7 @@ PHASE4_FAIRNESS_TESTS := tests/fairness/test_evaluator.py tests/fairness/test_me
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]" -c constraints.lock
 
 lint:
 	ruff check src/creditscore scripts tests
@@ -18,7 +18,7 @@ typecheck:
 	mypy -p creditscore
 
 quality: lint typecheck workflow-validate diagram-validate
-	black --check src/creditscore scripts tests
+	black --diff --check src/creditscore scripts tests
 	$(PYTHON) -m compileall -q src/creditscore scripts tests
 
 phase1-generate:
@@ -41,6 +41,7 @@ phase1-clean:
 	rm -f data/raw/vendor_a/*.csv data/raw/vendor_b/*.csv
 	rm -f data/evidence/phase1/*.json data/evidence/phase1/*.csv data/evidence/phase1/*.png
 	rm -f models/baseline/*.joblib
+	rm -f models/baseline/*.joblib.sha256
 
 phase2-healthy:
 	$(PYTHON) scripts/validate_data_quality.py --input data/raw/vendor_a/holdout.csv --source vendor_a --batch-name vendor_a_healthy
@@ -304,10 +305,17 @@ phase13-clean:
 
 # Stable product-level verification interface.
 # Historical phase targets remain available for reproducibility.
-.PHONY: workflow-validate diagram-validate diagram-render release-verify
+.PHONY: workflow-validate diagram-validate diagram-render release-verify coverage observability-config
 
 workflow-validate:
 	$(PYTHON) scripts/validate_workflows.py
+
+coverage:
+	$(PYTHON) -m pytest --cov=creditscore --cov-branch --cov-report=term-missing --cov-report=xml
+
+observability-config:
+	docker run --rm --entrypoint=promtool -v "$(CURDIR)/docker/phase6/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" prom/prometheus:v3.14.0 check config /etc/prometheus/prometheus.yml
+	GRAFANA_ADMIN_PASSWORD="$${GRAFANA_ADMIN_PASSWORD:-creditscore-config-check}" docker compose -f docker/phase6/docker-compose.yml config --quiet
 
 diagram-validate:
 	$(PYTHON) scripts/validate_diagrams.py

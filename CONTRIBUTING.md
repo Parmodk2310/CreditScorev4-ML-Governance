@@ -20,8 +20,9 @@ Python 3.12 is the supported development runtime.
 ## Branch and pull-request workflow
 
 The preferred contribution workflow is a focused branch plus pull request.
-GitHub currently reports `main` as unprotected for this private repository, so
-this is a documented maintainer policy rather than a server-enforced control.
+`main` is protected and requires the repository's quality, Terraform, security,
+and container checks before merge. The checked-in protection policy is kept in
+`ops/main-branch-protection.json` and can be reapplied with the repository script.
 
 Create a focused branch:
 
@@ -47,9 +48,15 @@ For workflow/security changes:
 python -m pytest -v tests/automation/test_workflows.py tests/evidence/test_phase8_evidence_contract.py
 ```
 
-## Expected merge checks
+For serving/observability changes with Docker available:
 
-When branch protection is available/enabled, the repository policy expects these exact job/check names:
+```bash
+make observability-config
+```
+
+## Required merge checks
+
+Branch protection requires these exact job/check names:
 
 - `quality`
 - `terraform`
@@ -108,6 +115,10 @@ in the same pull request.
 Keep documentation claims synchronized with executable behavior. Avoid unsupported
 statements about real customer/bank data, production traffic, regulatory
 compliance, deployed AWS infrastructure, or causal conclusions from SHAP.
+
+## v1.x maintenance mode
+
+CreditScoreV4 is feature-frozen after v1.0.1. The v1.x line accepts bug fixes, security fixes, reproducibility work, dependency maintenance, test/CI hardening, and documentation corrections. New project phases, new model families, automatic retraining/promotion, or unrelated platform expansion are out of scope unless the project is deliberately reopened with a new design decision.
 
 ## Security
 

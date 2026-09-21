@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from creditscore.serving.predictor import ModelPredictor
 
@@ -36,20 +37,43 @@ def _record() -> dict:
 def test_predictor_returns_risk_and_decision(monkeypatch, tmp_path: Path) -> None:
     artifact = tmp_path / "model.joblib"
     artifact.write_bytes(b"fake-model")
-    monkeypatch.setattr("creditscore.serving.predictor.load_model", lambda _: FakeModel())
-    monkeypatch.setattr("creditscore.serving.predictor.file_sha256", lambda _: "abc123")
+    events: list[str] = []
+
+    def fake_hash(_: Path) -> str:
+        events.append("hash")
+        return "abc123"
+
+    def fake_load(_: Path) -> FakeModel:
+        events.append("load")
+        return FakeModel()
+
+    monkeypatch.setattr("creditscore.serving.predictor.file_sha256", fake_hash)
+    monkeypatch.setattr("creditscore.serving.predictor.load_model", fake_load)
 
     predictor = ModelPredictor(
         model_path=artifact,
         model_name="CreditScoreV4",
         model_version="test",
         decision_threshold=0.50,
+        expected_artifact_sha256="abc123",
     )
     predictor.load()
     low, high = predictor.predict_batch([_record(), _record()])
 
+    assert events[:2] == ["hash", "load"]
     assert low.risk_probability == 0.25
     assert low.approved is True
     assert high.risk_probability == 0.75
     assert high.predicted_default == 1
     assert predictor.artifact_sha256 == "abc123"
+
+    events.clear()
+    rejected = ModelPredictor(
+        model_path=artifact,
+        model_name="CreditScoreV4",
+        model_version="tampered",
+        expected_artifact_sha256="different-digest",
+    )
+    with pytest.raises(RuntimeError, match="integrity"):
+        rejected.load()
+    assert events == ["hash"], "Deserialization must not run after a digest mismatch"

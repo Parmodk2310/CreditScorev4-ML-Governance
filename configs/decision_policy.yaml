@@ -1,0 +1,12 @@
+policy:
+  name: creditscorev4_decision_policy
+  version: 1
+  scope: synthetic_case_study
+
+decision:
+  target_column: default_30d
+  approval_threshold: 0.50
+
+claims:
+  regulatory_standard: false
+  real_lending_policy: false

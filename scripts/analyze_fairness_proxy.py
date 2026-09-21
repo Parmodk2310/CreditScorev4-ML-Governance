@@ -24,7 +24,7 @@ from creditscore.fairness import (
     save_proxy_risk_report,
 )
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_threshold, load_yaml
 from creditscore.utils.hashing import file_sha256
 from creditscore.validation import DataQualityGate, load_data_contract
 
@@ -81,7 +81,7 @@ def main() -> int:
             current_probabilities,
             name="risk_probability",
         ),
-        approval_threshold=float(config["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold(ROOT),
     )
 
     fairness = ExpandedFairnessEvaluator(config).evaluate(
@@ -89,7 +89,7 @@ def main() -> int:
         current,
         reference_probabilities=reference_probabilities,
         current_probabilities=current_probabilities,
-        default_threshold=float(config["prediction"]["default_threshold"]),
+        default_threshold=decision_threshold(ROOT),
     )
     fairness_json, fairness_csv = save_expanded_fairness_report(
         fairness,

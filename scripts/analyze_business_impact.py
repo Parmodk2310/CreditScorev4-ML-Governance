@@ -13,7 +13,7 @@ from creditscore.business_impact import compare_business_impact, evaluate_scenar
 from creditscore.data.loader import load_csv
 from creditscore.data.preprocessing import MODEL_INPUT_FEATURES
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml, project_root
+from creditscore.utils.config import decision_target_column, decision_threshold, load_yaml, project_root
 from creditscore.utils.hashing import file_sha256
 
 
@@ -29,8 +29,8 @@ def main() -> int:
     root = project_root()
     config = load_yaml(root / "configs" / "phase9.yaml")
 
-    target_column = str(config["decision"]["target_column"])
-    threshold = float(config["decision"]["approval_threshold"])
+    target_column = decision_target_column(root)
+    threshold = decision_threshold(root)
 
     healthy_path = root / "data/raw/vendor_a/holdout.csv"
     incident_path = root / "data/raw/vendor_b/holdout.csv"

@@ -32,6 +32,29 @@ def test_phase8_policy_contract_matches_phase5() -> None:
     assert str(expected["blocked_fairness_status"]) in actual["fairness"]["blocked_statuses"]
     assert int(actual["evidence_integrity"]["minimum_artifacts"]) == int(expected["minimum_artifacts"])
 
+    # Stable product-level decision policy must agree with all active historical configs.
+    decision_policy = load_yaml(ROOT / "configs" / "decision_policy.yaml")
+    threshold = float(decision_policy["decision"]["approval_threshold"])
+    assert str(decision_policy["decision"]["target_column"]) == "default_30d"
+    assert float(load_yaml(ROOT / "configs" / "phase1.yaml")["model"]["decision_threshold"]) == threshold
+    assert float(load_yaml(ROOT / "configs" / "phase3.yaml")["prediction"]["approval_threshold"]) == threshold
+
+    phase4 = load_yaml(ROOT / "configs" / "phase4.yaml")
+    assert float(phase4["prediction"]["default_threshold"]) == threshold
+    assert float(phase4["prediction"]["approval_threshold"]) == threshold
+
+    phase6 = load_yaml(ROOT / "configs" / "phase6.yaml")
+    assert str(phase6["serving"]["decision_policy_path"]) == "configs/decision_policy.yaml"
+    assert "contract_path" in phase6["serving"]
+    assert "model_evidence_path" in phase6["serving"]
+
+    assert float(load_yaml(ROOT / "configs" / "phase9.yaml")["decision"]["approval_threshold"]) == threshold
+    assert float(load_yaml(ROOT / "configs" / "phase10.yaml")["decision"]["approval_threshold"]) == threshold
+
+    phase12 = load_yaml(ROOT / "configs" / "phase12.yaml")
+    assert float(phase12["prediction"]["default_threshold"]) == threshold
+    assert float(phase12["prediction"]["approval_threshold"]) == threshold
+
 
 def test_phase8_registry_state_contract() -> None:
     assert ALLOWED_TRANSITIONS["REGISTERED"] == {"CANDIDATE"}

@@ -17,10 +17,23 @@ Vendor A -> healthy reference
 Vendor B -> data-quality degradation
 Vendor C -> contract-valid distribution drift
 Vendor D -> aggregate-stable subgroup/fairness stress
+Vendor E -> aggregate-stable intersectional/proxy-risk stress
 ```
 
 The validation suite layers progressively subtler failure modes because no
 single control detects every class of ML failure.
+
+### Validation population boundary
+
+The current model-development fixture uses a deterministic stratified random
+train/holdout split. That is appropriate for this reproducible synthetic
+engineering case study, but it is not presented as out-of-time credit-model
+validation.
+
+A real lending validation program would normally require separate development,
+validation, and out-of-time populations, followed by post-deployment stability
+and performance monitoring. This repository does not claim those population or
+time-vintage guarantees.
 
 ## Phase 1 — healthy reference and incident reproduction
 
@@ -34,6 +47,10 @@ with model retraining.
 | AUC drop | — | `0.0696` |
 | `device_risk_score` null rate | `3.14%` | `22.00%` |
 
+The baseline evidence also records the SHA-256 digest of the persisted model
+artifact. The serving process verifies that digest before deserializing the
+model.
+
 Evidence: `data/evidence/phase1/`
 
 ## Phase 2 — data-quality validation
@@ -45,6 +62,11 @@ Expected behavior:
 
 The blocking scenario is tied to material `device_risk_score` missingness and
 produces machine-readable quality evidence plus quarantine output.
+
+The same versioned credit-application contract is also applied to online
+serving requests for row-level requirements, types, ranges, nullability, and
+allowed categories. Batch-only rules such as aggregate null-rate limits remain
+part of the offline data-quality gate.
 
 Evidence: `data/evidence/phase2/`
 
@@ -81,6 +103,11 @@ Verified case-study outcome:
 SHAP is used as investigative evidence for proxy/model-input behavior. It is not
 presented as causal proof.
 
+The reported fairness measurements are deterministic point estimates for the
+synthetic fixtures. The repository does not currently claim bootstrap
+confidence intervals or population-level uncertainty bounds; those would be
+required for stronger statistical inference in a real validation program.
+
 Evidence: `data/evidence/phase4/`
 
 ## Phase 5 — governance validation
@@ -100,6 +127,11 @@ Evidence: `data/evidence/phase5/`
 
 The service exposes `/health`, `/ready`, `/predict`, `/batch-predict`, `/model`,
 and `/metrics`.
+
+Online requests are checked against the same versioned scoring contract used by
+the batch governance path. The model artifact digest is verified against Phase
+1 evidence before `joblib` deserialization. Operational metrics use bounded
+route-template labels rather than raw request paths.
 
 Healthy path:
 
@@ -128,6 +160,9 @@ Evidence: `data/evidence/phase7/release_manifest.json`
 Phase 8 verifies that documentation, policy thresholds,
 registry transitions, release controls, deployment defaults, and generated
 evidence remain consistent with executable configuration.
+
+The stable product-level decision policy also checks that historical active
+configurations agree on the synthetic `0.50` approval threshold.
 
 Evidence: `data/evidence/phase8/reviewer_evidence_manifest.json`
 

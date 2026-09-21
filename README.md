@@ -16,8 +16,8 @@
   <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml">
     <img src="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/actions/workflows/image.yml/badge.svg" alt="Container image" />
   </a>
-  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0">
-    <img src="https://img.shields.io/badge/release-v1.0.0-2ea44f" alt="Release v1.0.0" />
+  <a href="https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.1">
+    <img src="https://img.shields.io/badge/release-v1.0.1-2ea44f" alt="Release v1.0.1" />
   </a>
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
 </p>
@@ -33,7 +33,7 @@ CreditScoreV4 is a **deterministic synthetic ML-governance case study**. It uses
 - **Problem:** unsafe upstream or model changes can bypass accuracy-only monitoring.
 - **Controls:** data quality, PSI/KS drift, fairness, evidence integrity, and staged release.
 - **Engineering:** Python 3.12, FastAPI, Docker, GitHub Actions, Terraform, AWS ECS/Fargate.
-- **Verification:** 118 tests, fail-closed governance, canary rollback, and security/IaC checks.
+- **Verification:** full regression suite, fail-closed governance, canary rollback, coverage measurement, and security/IaC checks.
 
 ## System overview
 
@@ -107,7 +107,7 @@ GET  /model
 GET  /metrics
 ```
 
-The serving layer exposes Prometheus-compatible operational metrics and model metadata.
+Online requests are checked against the same versioned credit-application contract used by the offline governance path. Before model deserialization, serving verifies the persisted model SHA-256 against generated model-integrity evidence. Prometheus HTTP metrics use bounded route-template labels rather than raw request paths.
 
 ## Scheduled governance
 
@@ -133,17 +133,19 @@ The AWS path uses GitHub OIDC, immutable ECR image digests, persistent Terraform
 
 ## Verification
 
-The current v1.0.0 release verifies:
+Current `main` verification includes:
 
 | Boundary | Status |
 |---|---:|
 | Ruff / Black / mypy / compile | **PASS** |
-| Full pytest suite | **118 passed** |
+| Full pytest suite | **PASS** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
 | Trivy filesystem / IaC scan | **PASS** |
 | Built-image vulnerability scan | **PASS** |
+| Prometheus / Compose configuration + observability smoke | **PASS in CI** |
+| Test coverage | **measured in CI; no threshold gate yet** |
 | Python dependency resolution | **exact `constraints.lock`** |
 | Architecture validation | **PASS** |
 | Workflow structure / pinning | **PASS** |
@@ -179,7 +181,7 @@ make quality
 make release-verify
 ```
 
-Run the API after generating the deterministic model artifact:
+Run the API after generating the deterministic model artifact and its integrity evidence:
 
 ```bash
 python scripts/verify_phase1.py
@@ -193,7 +195,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 ├── .github/workflows/       # CI, security, monitoring, image, gated deployment
 ├── constraints.lock         # exact Python 3.12 CI dependency resolution
 ├── configs/                 # versioned control / historical phase contracts
-├── contracts/               # data contract
+├── contracts/               # shared offline/online data contract
 ├── data/                    # generated evidence, audit, quarantine, registry, release
 ├── docker/                  # serving and local observability
 ├── docs/                    # engineering documentation and architecture assets
@@ -215,6 +217,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 - [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — evidence map
 - [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) — architecture sources and rendered figures
 - [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit scope and non-claims
+- [`docs/MAINTENANCE.md`](docs/MAINTENANCE.md) — v1.x feature-freeze and maintenance policy
 - [`docs/phases/`](docs/phases/README.md) — historical Phase 1–13 implementation notes
 
 ## Scope
@@ -233,9 +236,13 @@ It does not claim:
 
 ## Release
 
-Current stable release: **v1.0.0**
+Current stable release: **v1.0.1**
 
-See [`CHANGELOG.md`](CHANGELOG.md) and the [v1.0.0 release](https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0).
+See [`CHANGELOG.md`](CHANGELOG.md) and the [v1.0.1 release](https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.1).
+
+## Maintenance status
+
+The project is feature-frozen on the v1.x line after v1.0.1. Future changes are limited to correctness, security, reproducibility, dependency, CI/test, and documentation maintenance; no new implementation phase is planned.
 
 ## License
 

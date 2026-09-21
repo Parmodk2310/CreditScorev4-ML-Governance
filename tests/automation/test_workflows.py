@@ -27,6 +27,7 @@ def assert_actions_pinned(text: str) -> None:
 def test_ci_runs_quality_and_validates_terraform() -> None:
     text = workflow("ci.yml")
     assert "make quality" in text
+    assert "make coverage" in text
     assert "terraform validate" in text
     assert_actions_pinned(text)
 
@@ -42,6 +43,9 @@ def test_image_workflow_builds_without_push_and_smoke_tests() -> None:
     text = workflow("image.yml")
     assert "push: false" in text
     assert "verify_container.py" in text
+    assert "promtool" in text
+    assert "docker compose -f docker/phase6/docker-compose.yml config --quiet" in text
+    assert "verify_observability_stack.py" in text
     assert_actions_pinned(text)
 
 
@@ -62,3 +66,12 @@ def test_cloud_image_contains_generated_model_artifact() -> None:
 def test_security_workflow_can_read_pull_request_metadata() -> None:
     text = workflow("security.yml")
     assert "pull-requests: read" in text
+
+
+def test_release_workflow_publishes_versioned_release_after_main_merge() -> None:
+    text = workflow("release.yml")
+    assert "contents: write" in text
+    assert "branches: [main]" in text
+    assert "gh release create" in text
+    assert "pyproject.toml" in text
+    assert_actions_pinned(text)

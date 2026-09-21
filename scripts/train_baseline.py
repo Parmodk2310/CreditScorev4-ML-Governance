@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Train and evaluate the healthy Vendor A CreditScoreV4 baseline."""
 
 from __future__ import annotations
@@ -8,7 +7,8 @@ import argparse
 from creditscore.data.loader import load_csv
 from creditscore.model.evaluate import evaluate_model, save_metrics, save_roc_plot
 from creditscore.model.train import save_model, train_model
-from creditscore.utils.config import load_config, project_root
+from creditscore.utils.config import decision_target_column, decision_threshold, load_config, project_root
+from creditscore.utils.hashing import file_sha256
 
 
 def main() -> None:
@@ -22,7 +22,7 @@ def main() -> None:
     holdout_df = load_csv(root / "data/raw/vendor_a/holdout.csv")
     model = train_model(
         train_df,
-        target_column=cfg["data"]["target_column"],
+        target_column=decision_target_column(root),
         model_params=cfg["model"]["params"],
     )
     model_path = save_model(model, root / "models/baseline/creditscorev4.joblib")
@@ -30,10 +30,11 @@ def main() -> None:
         model,
         holdout_df,
         target_column=cfg["data"]["target_column"],
-        threshold=float(cfg["model"]["decision_threshold"]),
+        threshold=decision_threshold(root),
         scenario="baseline",
         vendor="vendor_a",
     )
+    metrics["model_artifact_sha256"] = file_sha256(model_path)
     save_metrics(metrics, root / "data/evidence/phase1/baseline_metrics.json")
     save_roc_plot(
         model,
@@ -43,6 +44,7 @@ def main() -> None:
     )
 
     print(f"Saved model: {model_path}")
+    print(f"Model SHA-256={metrics['model_artifact_sha256']}")
     print(f"Baseline ROC-AUC={metrics['roc_auc']:.4f}")
     print(f"Baseline device_risk_score NULL rate={metrics['device_risk_null_rate']:.3%}")
 

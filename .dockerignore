@@ -15,7 +15,9 @@ dist
 .env
 infra
 # Generated runtime evidence and local state are not image inputs.
-data/evidence
+data/evidence/**
+!data/evidence/phase1/
+!data/evidence/phase1/baseline_metrics.json
 data/audit
 data/release
 data/quarantine

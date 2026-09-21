@@ -1,0 +1,77 @@
+name: Publish release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - pyproject.toml
+      - CHANGELOG.md
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - id: version
+        name: Resolve package version
+        shell: bash
+        run: |
+          VERSION="$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          payload = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          print(payload["project"]["version"])
+          PY
+          )"
+          test -n "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - id: existing
+        name: Check for existing release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub release
+        if: steps.existing.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          cat > release-notes.md <<EOF
+          CreditScoreV4 ML Governance $TAG is a maintenance hardening release.
+
+          Highlights:
+          - shared offline/online scoring contract;
+          - model SHA-256 verification before deserialization;
+          - canonical product decision policy;
+          - bounded Prometheus route labels and sanitized serving errors;
+          - coverage reporting plus Prometheus/Compose/full observability validation;
+          - protected-main, security, container, and Terraform release gates;
+          - feature freeze for the v1.x line.
+
+          Scope remains a deterministic synthetic ML-governance case study. This release does not claim real lending production use, regulatory certification, automatic retraining/promotion, or active production AWS infrastructure.
+          EOF
+
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG — Stability & Consistency Hardening" \
+            --notes-file release-notes.md
