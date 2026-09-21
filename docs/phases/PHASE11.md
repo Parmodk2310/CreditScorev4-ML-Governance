@@ -57,7 +57,7 @@ justifies it.
 
 ## Retraining and promotion boundary
 
-Phase 11 deliberately keeps:
+Phase 11 keeps:
 
 ```text
 automatic_retraining = false

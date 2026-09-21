@@ -67,7 +67,7 @@ The release target is a synthetic fixture where:
 - `sex` alone does not FAIL;
 - `synthetic_demographic_group` alone does not FAIL;
 - `sex|synthetic_demographic_group` does FAIL;
-- the intentionally shifted non-protected features surface in proxy-risk
+- the shifted non-protected features surface in proxy-risk
   evidence;
 - protected attributes remain outside the model and SHAP feature spaces.
 

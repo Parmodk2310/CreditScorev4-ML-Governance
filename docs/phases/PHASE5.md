@@ -2,7 +2,7 @@
 
 ## Objective
 
-Phase 5 converts the evidence created by earlier controls into one deterministic, auditable model-promotion decision. It is intentionally a governance layer rather than a deployment layer.
+Phase 5 converts the evidence created by earlier controls into one deterministic, auditable model-promotion decision. It is a governance layer rather than a deployment layer.
 
 ## Evidence inputs
 
@@ -69,7 +69,7 @@ Each candidate produces:
 - registry state
 - append-only JSONL audit events
 
-Generated runtime artifacts are intentionally excluded from source control.
+Generated runtime artifacts are excluded from source control.
 
 ## Verification
 

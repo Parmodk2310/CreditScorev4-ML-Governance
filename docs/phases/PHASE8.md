@@ -2,8 +2,8 @@
 
 ## Objective
 
-Phase 8 turns the verified Phase 1–7 implementation into a reviewer-ready,
-evidence-driven ML governance case study.
+Phase 8 packages the verified Phase 1–7 implementation into an evidence-driven
+ML governance release boundary.
 
 It does not add another ML platform, orchestration framework, or cloud stack.
 Instead, it makes existing implementation claims easier to verify, reproduce,
@@ -121,20 +121,20 @@ AWS mutation remains fail-closed by default: `AWS_DEPLOY_ENABLED=false`.
 Phase 5 policy consistency, registry transition safety, Phase 6 release
 configuration, Phase 7 fail-closed deployment behavior, generated Phase 1–7
 evidence, expected governance decisions, production promotion, rollback, and the
-reviewer evidence manifest.
+evidence manifest.
 
 The verifier returns non-zero when a blocking evidence contract fails.
 
 ## Non-goals
 
-Phase 8 intentionally does not add Airflow, MLflow, Kafka, Kubernetes/EKS, RDS,
+Phase 8 does not add Airflow, MLflow, Kafka, Kubernetes/EKS, RDS,
 a feature store, another model, or another dashboard without a verified
 operational requirement.
 
 ## Acceptance criteria
 
 Phase 8 is complete only when documentation matches executable configuration,
-the reviewer evidence manifest is generated programmatically, Phase 8 tests and
+the evidence manifest is generated programmatically, Phase 8 tests and
 the cumulative Phase 1–7 regression boundary pass, quality checks pass,
 `git diff --check` passes, historical root-level package artifacts are cleaned,
 README contains only implemented claims, and PR checks pass.

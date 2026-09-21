@@ -6,7 +6,7 @@ Phase 3 proves that passing a deterministic data contract does not guarantee a b
 
 Phase 1 produced healthy Vendor A and a degraded Vendor B incident. Phase 2 correctly blocks Vendor B because its `device_risk_score` missingness exceeds the 5% contract limit.
 
-Phase 3 introduces **Vendor C**. Vendor C intentionally preserves the Phase 2 schema, types, ranges, categories, uniqueness, row count, and `device_risk_score` missingness. It therefore passes the Phase 2 gate. However, selected continuous features are shifted enough to change both feature distributions and CreditScoreV4's predicted-risk distribution.
+Phase 3 introduces **Vendor C**. Vendor C preserves the Phase 2 schema, types, ranges, categories, uniqueness, row count, and `device_risk_score` missingness. It therefore passes the Phase 2 gate. However, selected continuous features are shifted enough to change both feature distributions and CreditScoreV4's predicted-risk distribution.
 
 ## Detection
 
