@@ -28,6 +28,13 @@ jobs:
         run: make quality
       - name: Current release governance gate
         run: make release-verify
+      - name: Measure test coverage
+        run: make coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage-xml
+          path: coverage.xml
 
   terraform:
     runs-on: ubuntu-latest
