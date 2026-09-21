@@ -136,11 +136,11 @@ Phase 11 explicitly keeps automatic retraining and automatic promotion
 disabled. Drift/fairness findings remain investigation and governance inputs,
 not direct retraining or deployment triggers.
 
-For v0.13.0 the scheduled workflow preserves the Phase 11 monitoring cycle and
-manifest verification, then runs Phase 12 fairness/proxy-risk analysis and
-Phase 13 incident-operations analysis as separate current control layers.
-Their evidence is uploaded independently so the released Phase 11 monitoring
-manifest contract remains historical and intact.
+In the current v1.x release, the scheduled workflow preserves the Phase 11
+monitoring cycle and manifest verification, then runs Phase 12 fairness/proxy-risk
+analysis and Phase 13 incident-operations analysis as separate control layers.
+Their evidence is uploaded independently so the Phase 11 monitoring manifest
+contract remains stable and historically reproducible.
 
 ## 9. Evidence retention
 

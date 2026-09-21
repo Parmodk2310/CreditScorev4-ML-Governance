@@ -209,6 +209,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 
 ## Documentation
 
+- [`docs/README.md`](docs/README.md) — documentation map and audience-specific reading paths
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — system design and control boundaries
 - [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — problem, incidents, decisions, and outcomes
 - [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) — implementation details and trade-offs

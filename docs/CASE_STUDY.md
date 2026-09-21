@@ -352,19 +352,7 @@ The safest default is no AWS mutation unless prerequisites and explicit confirma
 - No production paging/on-call integration or automatic retraining/promotion is implemented.
 - Load, fault-injection, multi-region resilience, and long-running SLO evidence remain outside the current scope.
 
-## 19. Future Work
-
-Future work focuses on operational realism rather than additional isolated features:
-
-1. **Managed registry backend** — MLflow or equivalent while keeping the current evidence/policy contract.
-2. **Durable orchestration backend when scale warrants it** — Airflow, Dagster, or Argo with backfill/history while preserving the current task/governance contract.
-3. **Durable control-plane storage** — S3/PostgreSQL-backed registry, audit, and evidence metadata.
-4. **Artifact provenance** — SBOM, image signing, attestations, and verifiable build provenance.
-5. **Observability** — OpenTelemetry traces, SLOs, error budgets, and alert routing.
-6. **Performance testing** — realistic concurrency, latency distributions, capacity limits, and rollback under load.
-7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
-
-## 20. Evidence Traceability
+## 19. Evidence Traceability
 
 Phase 8 adds an evidence-traceability layer over the existing Phase 1–7
 implementation. It connects policy, release control, tests, screenshots, and
@@ -389,7 +377,7 @@ threshold, state transition, release outcome, or deployment property that the
 repository no longer implements.
 
 
-## 21. Scheduled Monitoring and Governance Orchestration
+## 20. Scheduled Monitoring and Governance Orchestration
 
 Phase 11 moves the verified controls from an entirely manual execution model to
 a scheduled, auditable control run without changing model-promotion authority.
@@ -430,7 +418,7 @@ the existing governance path rather than creating a scheduler-to-production
 shortcut.
 
 
-## 22. Vendor E — Intersectional Fairness and Proxy-Risk Review
+## 21. Vendor E — Intersectional Fairness and Proxy-Risk Review
 
 Phase 12 adds a deterministic failure mode that is harder to
 detect with single-axis monitoring.
@@ -474,3 +462,15 @@ The three stressed inputs surface as review priorities:
 This evidence supports investigation and governance review. It does not prove
 causality, legal proxy status, unlawful discrimination, or regulatory
 non-compliance.
+
+## 22. Remaining Production Gaps / Future Work
+
+Future work focuses on operational realism rather than additional isolated features:
+
+1. **Managed registry backend** — MLflow or equivalent while keeping the current evidence/policy contract.
+2. **Durable orchestration backend when scale warrants it** — Airflow, Dagster, or Argo with backfill/history while preserving the current task/governance contract.
+3. **Durable control-plane storage** — S3/PostgreSQL-backed registry, audit, and evidence metadata.
+4. **Artifact provenance** — SBOM, image signing, attestations, and verifiable build provenance.
+5. **Observability** — OpenTelemetry traces, SLOs, error budgets, and alert routing.
+6. **Performance testing** — realistic concurrency, latency distributions, capacity limits, and rollback under load.
+7. **Live gated environment** — a cost-capped AWS staging environment with actual Terraform apply/destroy evidence.
