@@ -315,7 +315,7 @@ coverage:
 
 observability-config:
 	docker run --rm --entrypoint=promtool -v "$(CURDIR)/docker/phase6/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" prom/prometheus:v3.14.0 check config /etc/prometheus/prometheus.yml
-	GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-creditscore-config-check}" docker compose -f docker/phase6/docker-compose.yml config --quiet
+	GRAFANA_ADMIN_PASSWORD="$${GRAFANA_ADMIN_PASSWORD:-creditscore-config-check}" docker compose -f docker/phase6/docker-compose.yml config --quiet
 
 diagram-validate:
 	$(PYTHON) scripts/validate_diagrams.py
