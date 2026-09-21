@@ -12,7 +12,7 @@ from creditscore.data.loader import load_csv
 from creditscore.incidents.vendor_migration import VendorMigrationConfig, VendorMigrationIncident
 from creditscore.model.evaluate import evaluate_model, save_metrics, save_roc_plot
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_config, project_root
+from creditscore.utils.config import decision_target_column, decision_threshold, load_config, project_root
 from creditscore.utils.hashing import file_sha256
 
 
@@ -40,8 +40,8 @@ def main() -> None:
     metrics, _ = evaluate_model(
         model,
         migrated,
-        target_column=cfg["data"]["target_column"],
-        threshold=float(cfg["model"]["decision_threshold"]),
+        target_column=decision_target_column(root),
+        threshold=decision_threshold(root),
         scenario="vendor_migration_incident",
         vendor="vendor_b",
     )
