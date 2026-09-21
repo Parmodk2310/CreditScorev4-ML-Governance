@@ -44,7 +44,7 @@ def test_phase8_policy_contract_matches_phase5() -> None:
     assert float(phase4["prediction"]["approval_threshold"]) == threshold
 
     phase6 = load_yaml(ROOT / "configs" / "phase6.yaml")
-    assert float(phase6["serving"]["decision_threshold"]) == threshold
+    assert str(phase6["serving"]["decision_policy_path"]) == "configs/decision_policy.yaml"
     assert "contract_path" in phase6["serving"]
     assert "model_evidence_path" in phase6["serving"]
 
