@@ -20,10 +20,17 @@ This maintenance release tightens consistency between the repository's governanc
 
 ### Validation and scope
 
-- Preserved the documented 118-test release count by strengthening existing tests rather than adding superficial test cases.
+- Added coverage measurement with an XML CI artifact without imposing an arbitrary coverage threshold.
+- Added Prometheus configuration validation, Docker Compose validation, and an API + Prometheus + Grafana integration smoke test.
+- Added direct critical-path tests for SHAP leakage protection and workflow contracts.
 - Clarified that the current model fixture uses deterministic stratified random holdout validation, not out-of-time credit validation.
 - Clarified that fairness results are deterministic point estimates and do not claim confidence intervals or population-level inference.
 - Clarified that SHA-256 integrity checks are not equivalent to signed build provenance.
+
+### Maintenance policy
+
+- v1.0.1 freezes functional expansion of the project. The v1.x line is limited to correctness, security, reproducibility, dependency, CI/test, and documentation maintenance.
+- No Phase 14, automatic retraining/promotion, unrelated platform additions, or new model families are planned for this repository.
 
 ## v1.0.0 — Stable ML Governance Case Study
 
