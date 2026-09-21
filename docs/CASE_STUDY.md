@@ -316,7 +316,7 @@ Release-level verified boundaries:
 | Phase 11 orchestration/integration/workflow-contract tests | **10 passed** |
 | Phase 12 fairness/proxy-risk tests | **11 passed** |
 | Phase 13 incident-operations tests | **16 passed** |
-| Focused test executions exercised by the cumulative current release gate | **118 passed** |
+| Focused test executions exercised by the cumulative current release gate | **PASS; coverage measured separately in CI** |
 
 ## 17. Design Decisions
 
