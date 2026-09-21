@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
+from creditscore import __version__
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import PlainTextResponse
@@ -56,7 +57,7 @@ def create_app(
 
     app = FastAPI(
         title="CreditScoreV4 Serving API",
-        version="0.6.0",
+        version=__version__,
         lifespan=lifespan,
     )
     app.state.predictor = predictor
