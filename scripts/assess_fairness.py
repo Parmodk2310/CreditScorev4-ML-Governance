@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Run Phase 2/3 pass-through controls and Phase 4 fairness assessment."""
 
 from __future__ import annotations
@@ -13,7 +12,7 @@ from creditscore.data.preprocessing import MODEL_INPUT_FEATURES
 from creditscore.drift import DriftDetector
 from creditscore.fairness import FairnessEvaluator, save_fairness_report
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_settings, load_yaml
 from creditscore.validation import DataQualityGate, load_data_contract
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +22,7 @@ def run_fairness_assessment() -> tuple:
     phase2 = load_yaml(ROOT / "configs" / "phase2.yaml")
     phase3 = load_yaml(ROOT / "configs" / "phase3.yaml")
     phase4 = load_yaml(ROOT / "configs" / "phase4.yaml")
+    _, decision_threshold = decision_settings(ROOT)
 
     reference = pd.read_csv(ROOT / phase4["scenario"]["input"])
     current = pd.read_csv(ROOT / phase4["scenario"]["output"])
@@ -52,7 +52,7 @@ def run_fairness_assessment() -> tuple:
         current,
         reference_predictions=pd.Series(reference_probabilities, name="risk_probability"),
         current_predictions=pd.Series(current_probabilities, name="risk_probability"),
-        approval_threshold=float(phase4["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold,
     )
 
     evaluator = FairnessEvaluator(phase4)
@@ -61,7 +61,7 @@ def run_fairness_assessment() -> tuple:
         current,
         reference_probabilities=reference_probabilities,
         current_probabilities=current_probabilities,
-        default_threshold=float(phase4["prediction"]["default_threshold"]),
+        default_threshold=decision_threshold,
     )
     save_fairness_report(
         fairness_report,
