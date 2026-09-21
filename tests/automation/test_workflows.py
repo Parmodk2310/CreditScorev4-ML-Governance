@@ -27,6 +27,7 @@ def assert_actions_pinned(text: str) -> None:
 def test_ci_runs_quality_and_validates_terraform() -> None:
     text = workflow("ci.yml")
     assert "make quality" in text
+    assert "make coverage" in text
     assert "terraform validate" in text
     assert_actions_pinned(text)
 
@@ -42,6 +43,9 @@ def test_image_workflow_builds_without_push_and_smoke_tests() -> None:
     text = workflow("image.yml")
     assert "push: false" in text
     assert "verify_container.py" in text
+    assert "promtool" in text
+    assert "docker compose -f docker/phase6/docker-compose.yml config --quiet" in text
+    assert "verify_observability_stack.py" in text
     assert_actions_pinned(text)
 
 
