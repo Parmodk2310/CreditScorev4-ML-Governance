@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12.14-slim-bookworm@sha256:d5ae74acb8026b32a2f6deea45003c5bd4e2880700c19c44bda54670ad3eff90
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -6,14 +6,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md constraints.lock ./
 COPY src ./src
 COPY configs ./configs
 COPY scripts ./scripts
 COPY models/baseline/creditscorev4.joblib ./models/baseline/creditscorev4.joblib
 
-RUN python -m pip install --upgrade pip \
-    && python -m pip install . \
+RUN python -m pip install . -c constraints.lock \
     && groupadd --gid 10001 creditscore \
     && useradd \
         --uid 10001 \

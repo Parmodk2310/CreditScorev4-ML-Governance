@@ -19,8 +19,11 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            constraints.lock
       - name: Install project for model generation
-        run: python -m pip install -e ".[dev]"
+        run: python -m pip install -e ".[dev]" -c constraints.lock
       - name: Generate deterministic model artifact
         run: python scripts/verify_phase1.py
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
@@ -34,5 +37,13 @@ jobs:
           tags: creditscorev4:${{ github.sha }}
       - name: Smoke test image
         run: python scripts/verify_container.py --image creditscorev4:${GITHUB_SHA}
+      - name: Scan built image for HIGH/CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: creditscorev4:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
       - name: Inspect image digest
         run: docker image inspect creditscorev4:${GITHUB_SHA} --format '{{index .RepoDigests 0}}' || true
