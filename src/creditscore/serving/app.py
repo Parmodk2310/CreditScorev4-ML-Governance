@@ -13,6 +13,7 @@ from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import PlainTextResponse
 
 from creditscore import __version__
+from creditscore.governance.registry import ModelRegistry
 from creditscore.utils.config import load_yaml
 
 from .metrics import ServingMetrics
@@ -28,6 +29,39 @@ from .schemas import (
 )
 
 
+def _resolved_path(root: Path, value: str) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else root / path
+
+
+def _expected_model_sha256(project_root: Path, phase6: dict[str, Any]) -> str:
+    serving = phase6["serving"]
+    release = phase6.get("release")
+    if isinstance(release, dict):
+        registry_path = _resolved_path(project_root, str(release.get("registry_path", "")))
+        if registry_path.is_file():
+            registry = ModelRegistry(registry_path)
+            record = registry.get(str(serving["model_name"]), str(serving["model_version"]))
+            return record.artifact_sha256.strip().lower()
+
+    digest_value = str(
+        serving.get("model_digest_path", f"{serving['model_path']}.sha256")
+    )
+    digest_path = _resolved_path(project_root, digest_value)
+    if not digest_path.is_file():
+        raise FileNotFoundError(f"Trusted model digest not found: {digest_path}")
+    digest = digest_path.read_text(encoding="utf-8").strip().split()[0]
+    if not digest:
+        raise ValueError(f"Trusted model digest is empty: {digest_path}")
+    return digest.lower()
+
+
+def _metric_route(request: Request) -> str:
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", None)
+    return str(route_path) if route_path else "__unmatched__"
+
+
 def create_app(
     *,
     root: str | Path | None = None,
@@ -39,9 +73,10 @@ def create_app(
     phase6 = config or load_yaml(project_root / "configs" / "phase6.yaml")
     serving = phase6["serving"]
     predictor = predictor or ModelPredictor(
-        model_path=project_root / str(serving["model_path"]),
+        model_path=_resolved_path(project_root, str(serving["model_path"])),
         model_name=str(serving["model_name"]),
         model_version=str(serving["model_version"]),
+        expected_artifact_sha256=_expected_model_sha256(project_root, phase6),
         decision_threshold=float(serving["decision_threshold"]),
     )
     metrics = metrics or ServingMetrics()
@@ -73,8 +108,9 @@ def create_app(
             return response
         finally:
             elapsed = time.perf_counter() - started
-            metrics.requests.labels(request.method, request.url.path, str(response_status)).inc()
-            metrics.request_latency.labels(request.url.path).observe(elapsed)
+            route_path = _metric_route(request)
+            metrics.requests.labels(request.method, route_path, str(response_status)).inc()
+            metrics.request_latency.labels(route_path).observe(elapsed)
 
     @app.get("/health", response_model=HealthResponse)
     def health() -> HealthResponse:
