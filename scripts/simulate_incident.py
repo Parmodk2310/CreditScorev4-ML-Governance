@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Apply Vendor B migration to the healthy holdout and evaluate the same model."""
 
 from __future__ import annotations
@@ -12,7 +11,7 @@ from creditscore.data.loader import load_csv
 from creditscore.incidents.vendor_migration import VendorMigrationConfig, VendorMigrationIncident
 from creditscore.model.evaluate import evaluate_model, save_metrics, save_roc_plot
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_config, project_root
+from creditscore.utils.config import decision_settings, load_config, project_root
 from creditscore.utils.hashing import file_sha256
 
 
@@ -22,6 +21,7 @@ def main() -> None:
     args = parser.parse_args()
     cfg = load_config(args.config)
     root = project_root()
+    target_column, decision_threshold = decision_settings(root)
 
     healthy = load_csv(root / "data/raw/vendor_a/holdout.csv")
     incident_cfg = VendorMigrationConfig(
@@ -40,8 +40,8 @@ def main() -> None:
     metrics, _ = evaluate_model(
         model,
         migrated,
-        target_column=cfg["data"]["target_column"],
-        threshold=float(cfg["model"]["decision_threshold"]),
+        target_column=target_column,
+        threshold=decision_threshold,
         scenario="vendor_migration_incident",
         vendor="vendor_b",
     )
