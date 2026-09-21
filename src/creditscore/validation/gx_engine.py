@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-import pandas as pd
-
 import great_expectations as gx
 import great_expectations.expectations as gxe
+import pandas as pd
+
 
 _gx: Any = cast(Any, gx)
 _gxe: Any = cast(Any, gxe)
