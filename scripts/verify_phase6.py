@@ -37,6 +37,13 @@ def _ensure_phase5_staging(config: dict) -> None:
         subprocess.run([sys.executable, str(ROOT / "scripts" / "verify_phase5.py")], check=True)
 
 
+def _trusted_model_sha256(config: dict) -> str:
+    release = config["release"]
+    registry = ModelRegistry(ROOT / str(release["registry_path"]))
+    record = registry.get(str(release["model_name"]), str(release["model_version"]))
+    return record.artifact_sha256
+
+
 def _reset_phase6(config: dict) -> None:
     for key in ("audit_log", "state_path"):
         path = ROOT / str(config["release"][key])
@@ -109,6 +116,7 @@ def main() -> int:
         model_path=ROOT / str(serving["model_path"]),
         model_name=str(serving["model_name"]),
         model_version=str(serving["model_version"]),
+        expected_artifact_sha256=_trusted_model_sha256(config),
         decision_threshold=float(serving["decision_threshold"]),
     )
     app = create_app(root=ROOT, config=config, predictor=predictor)
