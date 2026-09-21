@@ -33,7 +33,7 @@ CreditScoreV4 is a **deterministic synthetic ML-governance case study**. It uses
 - **Problem:** unsafe upstream or model changes can bypass accuracy-only monitoring.
 - **Controls:** data quality, PSI/KS drift, fairness, evidence integrity, and staged release.
 - **Engineering:** Python 3.12, FastAPI, Docker, GitHub Actions, Terraform, AWS ECS/Fargate.
-- **Verification:** 118 tests, fail-closed governance, canary rollback, and security/IaC checks.
+- **Verification:** full regression suite, fail-closed governance, canary rollback, coverage measurement, and security/IaC checks.
 
 ## System overview
 
@@ -138,12 +138,14 @@ The current v1.0.0 release verifies:
 | Boundary | Status |
 |---|---:|
 | Ruff / Black / mypy / compile | **PASS** |
-| Full pytest suite | **118 passed** |
+| Full pytest suite | **PASS** |
 | Terraform format + validation | **PASS** |
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
 | Trivy filesystem / IaC scan | **PASS** |
 | Built-image vulnerability scan | **PASS** |
+| Prometheus / Compose configuration + observability smoke | **PASS in CI** |
+| Test coverage | **measured in CI; no threshold gate yet** |
 | Python dependency resolution | **exact `constraints.lock`** |
 | Architecture validation | **PASS** |
 | Workflow structure / pinning | **PASS** |
