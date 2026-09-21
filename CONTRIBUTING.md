@@ -12,7 +12,7 @@ without corresponding evidence.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev]" -c constraints.lock
 ```
 
 Python 3.12 is the supported development runtime.
