@@ -257,7 +257,7 @@ Phase 7 adds the delivery controls needed to make the previous phases repeatable
 - Terraform format/validation
 - release manifest generation
 
-The final Phase 7 pull request completed with **5/5 successful checks**.
+The current delivery boundary verifies quality, Terraform, secrets, IaC/filesystem security, and container build/smoke behavior.
 
 ## 15. AWS/Terraform Architecture
 
@@ -317,7 +317,6 @@ Release-level verified boundaries:
 | Phase 12 fairness/proxy-risk tests | **11 passed** |
 | Phase 13 incident-operations tests | **16 passed** |
 | Focused test executions exercised by the cumulative current release gate | **118 passed** |
-| Phase 8 implementation PR #9 checks | **5/5 successful** |
 
 ## 17. Design Decisions
 

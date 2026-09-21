@@ -19,7 +19,9 @@ Python 3.12 is the supported development runtime.
 
 ## Branch and pull-request workflow
 
-Do not push directly to `main`.
+The preferred contribution workflow is a focused branch plus pull request.
+GitHub currently reports `main` as unprotected for this private repository, so
+this is a documented maintainer policy rather than a server-enforced control.
 
 Create a focused branch:
 
@@ -33,8 +35,9 @@ Before opening a pull request:
 
 ```bash
 make quality
-make phase10-verify
+make release-verify
 make phase7-terraform
+python -m pytest -q
 git diff --check
 ```
 
@@ -44,9 +47,9 @@ For workflow/security changes:
 python -m pytest -v tests/automation/test_workflows.py tests/evidence/test_phase8_evidence_contract.py
 ```
 
-## Required checks on `main`
+## Expected merge checks
 
-The branch-protection policy expects these exact job/check names:
+When branch protection is available/enabled, the repository policy expects these exact job/check names:
 
 - `quality`
 - `terraform`
@@ -74,7 +77,15 @@ When updating an Action:
 1. verify the upstream release/tag;
 2. resolve it to the underlying commit SHA;
 3. update the SHA and tag comment together;
-4. rerun workflow contract tests and Phase 8 verification.
+4. rerun workflow contract tests and `make release-verify`.
+
+## Dependency resolution
+
+`pyproject.toml` defines dependency intent and `constraints.lock` records the
+exact Python 3.12 package set validated by CI. Dependency updates should be made
+deliberately in a fresh virtual environment, followed by a regenerated
+`constraints.lock`, full verification, and a single commit containing both the
+intent and lock changes.
 
 ## ML governance invariants
 

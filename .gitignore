@@ -90,7 +90,7 @@ models/baseline/*.joblib
 # Track Phase 7 Terraform provider selections
 !/infra/terraform/.terraform.lock.hcl
 
-# Phase 8 generated reviewer evidence
+# Phase 8 generated evidence
 /data/evidence/phase8/*.json
 !data/evidence/phase8/.gitkeep
 

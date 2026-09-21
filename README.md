@@ -28,6 +28,13 @@
 
 CreditScoreV4 is a **deterministic synthetic ML-governance case study**. It uses controlled failure scenarios to exercise an end-to-end ML lifecycle without claiming real applicant data, a real banking incident, regulatory certification, or a live production deployment.
 
+## At a glance
+
+- **Problem:** unsafe upstream or model changes can bypass accuracy-only monitoring.
+- **Controls:** data quality, PSI/KS drift, fairness, evidence integrity, and staged release.
+- **Engineering:** Python 3.12, FastAPI, Docker, GitHub Actions, Terraform, AWS ECS/Fargate.
+- **Verification:** 118 tests, fail-closed governance, canary rollback, and security/IaC checks.
+
 ## System overview
 
 The current repository is one integrated ML-governance system. Phase numbers are retained only to map the implemented controls back to their historical milestones.
@@ -136,6 +143,8 @@ The current v1.0.0 release verifies:
 | Container build + smoke test | **PASS** |
 | Gitleaks | **PASS** |
 | Trivy filesystem / IaC scan | **PASS** |
+| Built-image vulnerability scan | **enabled (reporting)** |
+| Python dependency resolution | **exact `constraints.lock`** |
 | Architecture validation | **PASS** |
 | Workflow structure / pinning | **PASS** |
 
@@ -164,8 +173,7 @@ cd CreditScorev4-ML-Governance
 python -m venv .venv
 source .venv/bin/activate
 
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev]" -c constraints.lock
 
 make quality
 make release-verify
@@ -183,6 +191,7 @@ python scripts/serve_model.py --host 0.0.0.0 --port 8000
 ```text
 .
 ├── .github/workflows/       # CI, security, monitoring, image, gated deployment
+├── constraints.lock         # exact Python 3.12 CI dependency resolution
 ├── configs/                 # versioned control / historical phase contracts
 ├── contracts/               # data contract
 ├── data/                    # generated evidence, audit, quarantine, registry, release

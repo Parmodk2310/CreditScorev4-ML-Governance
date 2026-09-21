@@ -13,9 +13,8 @@ compromise build/release integrity are security-relevant.
 
 | Version | Supported |
 |---|---|
-| `0.10.x` | Yes |
-| `0.9.x` | Yes |
-| `< 0.9` | No |
+| `1.0.x` | Yes |
+| `< 1.0` | No |
 
 ## Reporting a vulnerability
 
@@ -41,7 +40,7 @@ Reports are especially useful for:
 - exposed secrets or credentials;
 - GitHub Actions permission escalation;
 - unpinned or compromised third-party Actions;
-- bypasses of `make phase10-verify` or required CI gates;
+- bypasses of `make release-verify` or required CI gates;
 - model-governance state-transition bypasses;
 - unsafe deployment-gate bypasses;
 - container or infrastructure vulnerabilities;
@@ -55,9 +54,9 @@ Repository workflows should:
 - use least-privilege `permissions`;
 - pin external GitHub Actions to full 40-character commit SHAs;
 - retain the human-readable release tag as an inline comment;
-- run Gitleaks and Trivy;
-- build/smoke-test the container before merge;
-- run cumulative Phase 10 verification before merge;
+- run Gitleaks plus Trivy filesystem/IaC checks;
+- build/smoke-test the container and report built-image HIGH/CRITICAL vulnerabilities;
+- run the cumulative `make release-verify` gate before merge;
 - keep AWS mutation disabled unless explicitly enabled and confirmed.
 
 ## Disclosure expectations

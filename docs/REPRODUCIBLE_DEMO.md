@@ -10,7 +10,7 @@ Run from the repository root with the Python 3.12 virtual environment active.
 ## Setup
 
 ```bash
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev]" -c constraints.lock
 ```
 
 ## 1. Incident reproduction
@@ -72,7 +72,7 @@ Expected observation:
 python scripts/verify_phase6.py
 ```
 
-Point out FastAPI endpoint checks, `STAGING -> SHADOW -> CANARY`, the
+Expected observation: FastAPI endpoint checks, `STAGING -> SHADOW -> CANARY`, the
 10/25/50/100% checkpoints, healthy promotion to `PRODUCTION`, and degraded
 rollback to `STAGING`.
 
@@ -84,7 +84,7 @@ Evidence: `data/evidence/phase6/phase6_release_report.json`
 python scripts/verify_phase7.py
 ```
 
-Explain GitHub Actions quality/security/image/deploy separation, Terraform
+Expected observation: GitHub Actions quality/security/image/deploy separation, Terraform
 ECS/Fargate architecture, and the default-disabled AWS deployment gate.
 
 ## 8. Evidence contract
@@ -151,13 +151,13 @@ three non-protected model inputs for the supported `female|group_c`
 intersection. Data quality passes and aggregate drift remains STABLE. The
 single axes avoid blocking FAIL, but the intersection fails.
 
-Point out the measured intersectional evidence: demographic-parity ratio
+Expected observation: demographic-parity ratio
 0.7479, equal-opportunity difference 0.1956, equalized-odds difference 0.2600,
 and false-approval-rate difference 0.2600.
 
 The proxy-review priorities are:
 `device_risk_score`, `credit_utilization`, and
-`bank_transaction_risk`. Explain that association plus SHAP influence is a
+`bank_transaction_risk`. Association plus SHAP influence is treated as a
 screening signal, not proof of causality or unlawful proxy use.
 
 For the complete release gate:
