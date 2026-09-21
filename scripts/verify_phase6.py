@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Phase 6 release gate: API serving, observability, shadow/canary, and rollback."""
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ from creditscore.release.models import ReleaseHealthSnapshot
 from creditscore.release.router import CanaryRouter
 from creditscore.serving.app import create_app
 from creditscore.serving.predictor import ModelPredictor
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_settings, load_yaml
 from creditscore.utils.hashing import file_sha256
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -115,11 +114,12 @@ def main() -> int:
 
     serving = config["serving"]
     expected_digest = _expected_model_digest(serving)
+    _, decision_threshold = decision_settings(ROOT)
     predictor = ModelPredictor(
         model_path=ROOT / str(serving["model_path"]),
         model_name=str(serving["model_name"]),
         model_version=str(serving["model_version"]),
-        decision_threshold=float(serving["decision_threshold"]),
+        decision_threshold=decision_threshold,
         expected_artifact_sha256=expected_digest,
     )
     app = create_app(root=ROOT, config=config, predictor=predictor)
