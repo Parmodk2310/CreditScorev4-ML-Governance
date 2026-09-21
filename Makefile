@@ -6,7 +6,7 @@ PHASE4_FAIRNESS_TESTS := tests/fairness/test_evaluator.py tests/fairness/test_me
 
 setup:
 	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]" -c constraints.lock
 
 lint:
 	ruff check src/creditscore scripts tests
