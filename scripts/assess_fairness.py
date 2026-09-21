@@ -13,7 +13,7 @@ from creditscore.data.preprocessing import MODEL_INPUT_FEATURES
 from creditscore.drift import DriftDetector
 from creditscore.fairness import FairnessEvaluator, save_fairness_report
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_threshold, load_yaml
 from creditscore.validation import DataQualityGate, load_data_contract
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +52,7 @@ def run_fairness_assessment() -> tuple:
         current,
         reference_predictions=pd.Series(reference_probabilities, name="risk_probability"),
         current_predictions=pd.Series(current_probabilities, name="risk_probability"),
-        approval_threshold=float(phase4["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold(ROOT),
     )
 
     evaluator = FairnessEvaluator(phase4)
@@ -61,7 +61,7 @@ def run_fairness_assessment() -> tuple:
         current,
         reference_probabilities=reference_probabilities,
         current_probabilities=current_probabilities,
-        default_threshold=float(phase4["prediction"]["default_threshold"]),
+        default_threshold=decision_threshold(ROOT),
     )
     save_fairness_report(
         fairness_report,
