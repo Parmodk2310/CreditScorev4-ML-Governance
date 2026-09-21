@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate Phase 12 intersectional fairness and proxy-risk evidence."""
 
 from __future__ import annotations
@@ -24,7 +23,7 @@ from creditscore.fairness import (
     save_proxy_risk_report,
 )
 from creditscore.model.train import load_model
-from creditscore.utils.config import load_yaml
+from creditscore.utils.config import decision_settings, load_yaml
 from creditscore.utils.hashing import file_sha256
 from creditscore.validation import DataQualityGate, load_data_contract
 
@@ -35,6 +34,7 @@ def main() -> int:
     phase2 = load_yaml(ROOT / "configs" / "phase2.yaml")
     phase3 = load_yaml(ROOT / "configs" / "phase3.yaml")
     config = load_yaml(ROOT / "configs" / "phase12.yaml")
+    _, decision_threshold = decision_settings(ROOT)
 
     (
         reference_raw,
@@ -81,7 +81,7 @@ def main() -> int:
             current_probabilities,
             name="risk_probability",
         ),
-        approval_threshold=float(config["prediction"]["approval_threshold"]),
+        approval_threshold=decision_threshold,
     )
 
     fairness = ExpandedFairnessEvaluator(config).evaluate(
@@ -89,7 +89,7 @@ def main() -> int:
         current,
         reference_probabilities=reference_probabilities,
         current_probabilities=current_probabilities,
-        default_threshold=float(config["prediction"]["default_threshold"]),
+        default_threshold=decision_threshold,
     )
     fairness_json, fairness_csv = save_expanded_fairness_report(
         fairness,
