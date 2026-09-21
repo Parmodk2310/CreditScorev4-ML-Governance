@@ -57,7 +57,7 @@ def _client(monkeypatch, tmp_path: Path) -> TestClient:
             "model_name": "CreditScoreV4",
             "model_version": "test",
             "contract_path": str(ROOT / "contracts" / "credit_application_contract.yaml"),
-            "decision_threshold": 0.50,
+            "decision_policy_path": "configs/decision_policy.yaml",
             "max_batch_size": 10,
         }
     }
