@@ -1,8 +1,8 @@
 <p align="center">
   <h1 align="center">CreditScoreV4 ML Governance</h1>
   <p align="center">
-    A synthetic, evidence-backed ML governance system for detecting unsafe data/model changes,
-    blocking invalid promotion, and exercising controlled serving, rollback, monitoring, and delivery.
+    Evidence-backed ML governance for data quality, drift, fairness, controlled promotion,
+    safe release, monitoring, and incident traceability.
   </p>
 </p>
 
@@ -22,98 +22,73 @@
   <img src="https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white" alt="Python 3.12" />
 </p>
 
-> **Core idea:** model accuracy alone is not enough to justify promotion.
-> CreditScoreV4 requires independent data-quality, drift, fairness, evidence-integrity,
-> release-health, and delivery controls before a candidate can progress.
+> **A model can be statistically strong and still be unsafe to promote.**
+> CreditScoreV4 demonstrates how independent data-quality, drift, fairness,
+> evidence-integrity, release-health, and delivery controls can stop unsafe
+> progression before production.
 
-This repository is a **deterministic synthetic engineering case study**. It does not use real applicant data and does not claim regulatory certification, a live banking deployment, or production on-call operations.
+CreditScoreV4 is a **deterministic synthetic ML-governance case study**. It uses controlled failure scenarios to exercise an end-to-end ML lifecycle without claiming real applicant data, a real banking incident, regulatory certification, or a live production deployment.
+
+## System overview
+
+The current repository is one integrated ML-governance system. Phase numbers are retained only to map the implemented controls back to their historical milestones.
 
 <p align="center">
-  <img src="docs/assets/diagrams/phase1-13-end-to-end.svg"
-       alt="CreditScoreV4 end-to-end ML governance architecture"
-       width="100%" />
+  <img src="docs/assets/diagrams/system-overview.svg"
+       alt="CreditScoreV4 system overview"
+       width="900" />
 </p>
 
-## Why this project exists
+<p align="center">
+  <sub><a href="docs/assets/diagrams/system-overview.mmd">Mermaid source</a></sub>
+</p>
 
-Many ML projects stop at training and offline evaluation. This project focuses on the harder operational question:
-
-**What evidence should exist between a trained model and production traffic?**
-
-The system demonstrates five independent control areas:
-
-| Control area | What it protects against |
-|---|---|
-| **Data & model risk** | schema failures, missingness, feature/prediction drift, subgroup degradation |
-| **Governance** | unsupported promotion, stale/tampered evidence, illegal registry transitions |
-| **Release safety** | unhealthy runtime behavior during shadow/canary rollout |
-| **Delivery** | unsafe CI/CD, container, Terraform, secret, and cloud-deployment changes |
-| **Operations** | incomplete scheduled governance runs, missing evidence, weak incident traceability |
+The architecture is organized by control plane rather than by implementation chronology: data/model risk → governance → serving/release → delivery/operations.
 
 ## Failure scenarios
 
-The same system is exercised against intentionally different failure classes.
-
-| Scenario | Failure mode | Control that catches it | Result |
+| Scenario | Failure mode | Control | Outcome |
 |---|---|---|---|
 | **Vendor A** | healthy reference | complete governance path | eligible for staged promotion |
 | **Vendor B** | `device_risk_score` missingness rises from **3.14%** to **22.00%** | data contract + Great Expectations | **BLOCK + quarantine** |
-| **Vendor C** | contract-valid feature/prediction shift | PSI + KS drift governance | **CRITICAL → REJECT** |
+| **Vendor C** | schema-valid feature and prediction shift | PSI + KS drift governance | **CRITICAL → REJECT** |
 | **Vendor D** | aggregate-stable subgroup degradation | fairness + SHAP-supported investigation | **FAIRNESS FAIL → REJECT** |
 | **Vendor E** | supported intersection degrades while single axes avoid blocking FAIL | intersectional fairness + proxy-risk screening | **INTERSECTION FAIL** |
 
-These thresholds are project engineering heuristics for the synthetic fixture, not legal or regulatory standards.
+These thresholds and scenarios are project engineering guardrails for deterministic synthetic fixtures, not legal or regulatory standards.
 
-## Evidence-backed release path
+## Key evidence
 
-```text
-incoming batch
-    |
-    v
-data quality
-    |
-    v
-drift
-    |
-    v
-fairness + explainability
-    |
-    v
-governance decision + evidence integrity
-    |
-    v
-STAGING -> SHADOW -> CANARY -> PRODUCTION
-              |          |
-              +----------+----> STAGING (rollback)
-```
-
-A candidate cannot jump directly from `CANDIDATE` to `PRODUCTION`.
-
-## Key verified outcomes
-
-| Boundary | Verified result |
+| Evidence | Result |
 |---|---:|
 | Healthy ROC-AUC | **0.8025** |
-| Vendor B incident ROC-AUC | **0.7329** |
+| Vendor B ROC-AUC | **0.7329** |
+| Vendor B missingness | **22.00%** vs **3.14%** healthy |
 | Vendor C prediction PSI / KS | **0.2379 / 0.1863** |
 | Vendor D demographic-parity ratio | **0.7480** |
 | Vendor E intersection demographic-parity ratio | **0.7479** |
-| Healthy canary path | **10% → 25% → 50% → 100% → PRODUCTION** |
-| Degraded canary path | **rollback to STAGING** |
 | Vendor B decision flips | **2,500 / 15,000 (16.67%)** |
-| Phase 13 root-cause completion | **690 min against 2,880 min project SLA** |
+| Healthy rollout | **10% → 25% → 50% → 100% → PRODUCTION** |
+| Degraded rollout | **rollback to STAGING** |
+| Phase 13 root-cause completion | **690 min / 2,880 min project SLA** |
 
-Current v1.0.0 verification:
+## Governance and release model
 
-- Ruff, Black, mypy, compile checks: **PASS**
-- full pytest suite: **118 passed**
-- Terraform format/validation: **PASS**
-- container build/smoke: **PASS**
-- Gitleaks: **PASS**
-- Trivy filesystem/IaC checks: **PASS**
-- architecture source/render validation: **PASS**
+A candidate is not promoted because one metric looks healthy. Promotion requires verified evidence across data quality, model performance and calibration, drift, fairness, evidence integrity, and legal registry transitions.
 
-## Serving and release controls
+<p align="center">
+  <img src="docs/assets/diagrams/governance-release-model.svg"
+       alt="CreditScoreV4 governance and release model"
+       width="820" />
+</p>
+
+<p align="center">
+  <sub><a href="docs/assets/diagrams/governance-release-model.mmd">Mermaid source</a></sub>
+</p>
+
+A direct `CANDIDATE -> PRODUCTION` transition is intentionally illegal. Failed shadow or canary gates return the candidate to `STAGING` with auditable release evidence.
+
+## Serving and observability
 
 The approved model is exposed through FastAPI:
 
@@ -126,59 +101,62 @@ GET  /model
 GET  /metrics
 ```
 
-Release gates evaluate request volume, error rate, p95 latency, and mean risk-output delta. A failed release gate returns the candidate to `STAGING` with an auditable reason.
+The serving layer exposes Prometheus-compatible operational metrics and model metadata.
 
 ## Scheduled governance
 
-The monitoring layer runs the verified control path as a dependency-ordered, fail-closed task graph.
+The monitoring layer executes governance controls as a dependency-ordered, fail-closed task graph. It records task status and attempts, required evidence paths, SHA-256 evidence hashes, a monitoring-run manifest, and a JSONL event log.
 
-It records:
+Automatic retraining and automatic promotion remain disabled.
 
-- task status and attempts;
-- configured evidence paths;
-- SHA-256 evidence hashes;
-- a run manifest;
-- a JSONL event log.
+## Delivery controls
 
-`automatic_retraining=false` and `automatic_promotion=false` remain explicit safety boundaries.
+Pull-request verification and cloud deployment are deliberately separated. Merge checks run automatically; cloud mutation requires a separate manual workflow plus explicit deployment enablement.
 
-## CI/CD and cloud boundary
+<p align="center">
+  <img src="docs/assets/diagrams/delivery-controls.svg"
+       alt="CreditScoreV4 delivery controls"
+       width="820" />
+</p>
 
-Pull requests exercise:
+<p align="center">
+  <sub><a href="docs/assets/diagrams/delivery-controls.mmd">Mermaid source</a></sub>
+</p>
 
-```text
-Ruff / Black / mypy / compile
-        +
-current release verification
-        +
-Gitleaks / Trivy
-        +
-Docker build + smoke
-        +
-Terraform fmt + validate
+The AWS path uses GitHub OIDC, immutable ECR image digests, persistent Terraform state, ECS/Fargate, and ALB health verification. `AWS_DEPLOY_ENABLED=false` remains the fail-closed default, so an unmet deployment gate performs **no cloud mutation**.
+
+## Verification
+
+The current v1.0.0 release verifies:
+
+| Boundary | Status |
+|---|---:|
+| Ruff / Black / mypy / compile | **PASS** |
+| Full pytest suite | **118 passed** |
+| Terraform format + validation | **PASS** |
+| Container build + smoke test | **PASS** |
+| Gitleaks | **PASS** |
+| Trivy filesystem / IaC scan | **PASS** |
+| Architecture validation | **PASS** |
+| Workflow structure / pinning | **PASS** |
+
+Stable verification interface:
+
+```bash
+make quality
+make release-verify
+make phase7-terraform
+python -m pytest -q
 ```
-
-The cloud design uses GitHub OIDC, ECR, ECS/Fargate, ALB, and Terraform.
-
-Cloud mutation is disabled by default:
-
-```text
-AWS_DEPLOY_ENABLED=false
-```
-
-The repository validates the delivery architecture; it does not claim that v1.0.0 is actively deployed to a production AWS environment.
 
 ## Quick start
 
-### Requirements
+Requirements:
 
 - Python **3.12**
 - `make`
 - Terraform for infrastructure validation
 - Docker for container smoke testing
-- Graphviz only if you want to regenerate SVG architecture assets
-
-### Install
 
 ```bash
 git clone https://github.com/Parmodk2310/CreditScorev4-ML-Governance.git
@@ -189,74 +167,67 @@ source .venv/bin/activate
 
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-```
 
-### Verify
-
-```bash
 make quality
 make release-verify
-make phase7-terraform
-python -m pytest -q
 ```
 
-### Run the API
+Run the API after generating the deterministic model artifact:
 
 ```bash
 python scripts/verify_phase1.py
 python scripts/serve_model.py --host 0.0.0.0 --port 8000
 ```
 
-## Repository map
+## Project structure
 
 ```text
 .
-├── .github/workflows/        # quality, security, monitoring, image, gated deployment
-├── configs/                  # versioned historical/control contracts
-├── contracts/                # input data contract
-├── data/                     # generated evidence, audit, registry, release, quarantine paths
-├── docker/                   # serving/container/observability assets
-├── docs/                     # case study, governance, validation, evidence, diagrams, history
-├── infra/terraform/          # AWS ECR/ECS/Fargate/ALB infrastructure
-├── models/                   # generated model lifecycle locations
-├── ops/                      # repository operational policy
-├── scripts/                  # verification, analysis, monitoring, serving, release tooling
-├── src/creditscore/          # application and governance implementation
-└── tests/                    # unit, integration, governance, serving, release, operations tests
+├── .github/workflows/       # CI, security, monitoring, image, gated deployment
+├── configs/                 # versioned control / historical phase contracts
+├── contracts/               # data contract
+├── data/                    # generated evidence, audit, quarantine, registry, release
+├── docker/                  # serving and local observability
+├── docs/                    # engineering documentation and architecture assets
+├── infra/terraform/         # AWS ECR/ECS/Fargate/ALB infrastructure
+├── models/                  # generated model lifecycle locations
+├── ops/                     # repository operational policy
+├── scripts/                 # verification, analysis, serving, monitoring, release
+├── src/creditscore/         # application and governance implementation
+└── tests/                   # unit, integration, governance, release, operations
 ```
 
-## Review paths
+## Documentation
 
-| Reviewer | Start here |
-|---|---|
-| **Recruiter / hiring manager** | [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) → [`docs/REPRODUCIBLE_DEMO.md`](docs/REPRODUCIBLE_DEMO.md) |
-| **Senior ML / MLOps engineer** | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) → `src/` + `tests/` |
-| **Model governance / validation** | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) → [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) → [`docs/GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) |
-| **Evidence / reproducibility** | [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) → `make release-verify` |
-| **Architecture figures** | [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) |
-| **Historical implementation evolution** | [`docs/phases/`](docs/phases/README.md) |
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — system design and control boundaries
+- [`docs/CASE_STUDY.md`](docs/CASE_STUDY.md) — problem, incidents, decisions, and outcomes
+- [`docs/TECHNICAL_DEEP_DIVE.md`](docs/TECHNICAL_DEEP_DIVE.md) — implementation details and trade-offs
+- [`docs/MODEL_VALIDATION_REPORT.md`](docs/MODEL_VALIDATION_REPORT.md) — deterministic validation evidence
+- [`docs/GOVERNANCE_POLICY.md`](docs/GOVERNANCE_POLICY.md) — executable promotion/blocking policy
+- [`docs/EVIDENCE_INDEX.md`](docs/EVIDENCE_INDEX.md) — evidence map
+- [`docs/ARCHITECTURE_FIGURES.md`](docs/ARCHITECTURE_FIGURES.md) — architecture sources and rendered figures
+- [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) — explicit scope and non-claims
+- [`docs/phases/`](docs/phases/README.md) — historical Phase 1–13 implementation notes
 
-## Scope and non-claims
+## Scope
 
-CreditScoreV4 demonstrates production-oriented controls in a synthetic environment.
+This project demonstrates **production-oriented ML controls in a synthetic environment**.
 
-It does **not** claim:
+It does not claim:
 
 - a real banking production incident;
-- real customer/applicant data;
+- real customer or applicant data;
 - regulatory certification or legal compliance;
 - causal conclusions from SHAP or fairness metrics;
-- active production AWS deployment;
-- production paging/on-call integration;
+- active production AWS infrastructure;
+- production paging/on-call operations;
 - automatic retraining or automatic promotion.
-
-See [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) for the complete boundary.
 
 ## Release
 
 Current stable release: **v1.0.0**
 
-See [`CHANGELOG.md`](CHANGELOG.md) and the GitHub Releases page for release history.
+See [`CHANGELOG.md`](CHANGELOG.md) and the [v1.0.0 release](https://github.com/Parmodk2310/CreditScorev4-ML-Governance/releases/tag/v1.0.0).
 
 ## License
 
