@@ -48,9 +48,15 @@ For workflow/security changes:
 python -m pytest -v tests/automation/test_workflows.py tests/evidence/test_phase8_evidence_contract.py
 ```
 
-## Expected merge checks
+For serving/observability changes with Docker available:
 
-When branch protection is available/enabled, the repository policy expects these exact job/check names:
+```bash
+make observability-config
+```
+
+## Required merge checks
+
+Branch protection requires these exact job/check names:
 
 - `quality`
 - `terraform`
