@@ -34,7 +34,7 @@ dev = [
     "pytest-cov>=7.1,<8",
     "ruff>=0.8,<1",
     "black>=24,<27",
-    "mypy>=1.13,<2",
+    "mypy>=1.13,<3",
     "types-PyYAML>=6.0.12",
     "httpx2>=2.13,<3",
 ]
