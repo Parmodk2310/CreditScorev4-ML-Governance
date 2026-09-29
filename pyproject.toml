@@ -24,7 +24,7 @@ dependencies = [
     "fairlearn>=0.14,<0.15",
     "shap>=0.52,<0.53",
     "fastapi>=0.140,<0.141",
-    "uvicorn>=0.53,<0.54",
+    "uvicorn>=0.53,<0.55",
     "prometheus-client>=0.26,<0.27",
 ]
 
